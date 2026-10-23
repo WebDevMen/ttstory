@@ -1,0 +1,7 @@
+build/*
+!build/timeline.json
+!build/camera.json
+out/*.part*
+node_modules/
+__pycache__/
+*.pyc
