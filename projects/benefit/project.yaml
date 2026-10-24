@@ -1,0 +1,538 @@
+# «Польза азартных игр» — спецвыпуск серии «Аферы». 100% code-drawn video from projects/benefit/script.yaml
+# (skill write-script → vg.py script project → this file).
+# Actors: library casino.js (neon_sign, slot_machine, coins), cards.js (playing_card, chips), ui/world/people/libs and the
+# project's actors/benefit.js (roulette, opera_house, mc_dots, walks). Coordinates: screen px 1080x1920. Times: "@word".
+
+title: "Польза азартных игр"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz", tail: 1.6}
+
+theme:
+  preset: minimal
+  accent: "255,211,77"
+  captions:
+    style: clean
+    top: 1250
+    size: 64
+    max_chars: 18
+    hide:
+      - {from: "@math/теория-0.1", until: "@math.end"}
+      - {from: "@science/казино-0.15", until: "@science/Сегодня-0.15"}
+      - {from: "@math_wins/забирает-0.1", until: "@math_wins/Играешь-0.15"}
+      - {from: "@cta/главная-0.1", until: "@cta/Какая-0.15"}
+
+post: {vignette: 0.3, chromatic: 0.0006, grain: 0.02}
+
+draw:
+  palette: {gold: "#ffd34d", alarm: "#ff3b4e", felt: "#0e5a3a", paper: "#f4ead8", cyan: "#4de1ff", neon: "#ff2bd6"}
+
+# shared pieces (YAML anchors)
+x-night: &night_bg {type: radial, at: "50% 38%", stops: [[0, "#2a1636"], [0.6, "#110a1a"], [1, "#05030a"]]}
+x-green: &green_bg {type: radial, at: "50% 40%", stops: [[0, "#0f3b2c"], [0.6, "#06150f"], [1, "#020806"]]}
+x-warm: &warm_bg {type: radial, at: "70% 25%", stops: [[0, "#4a2c14"], [0.55, "#1d1009"], [1, "#080403"]]}
+x-blue: &blue_bg {type: radial, at: "50% 40%", stops: [[0, "#12223a"], [1, "#03060c"]]}
+x-bricks: &bricks
+  actor: svg
+  x: 540
+  y: 960
+  w: 1240
+  h: 2080
+  opacity: 0.5
+  markup: >-
+    <svg xmlns="http://www.w3.org/2000/svg" width="1240" height="2080" viewBox="0 0 1240 2080"><defs><pattern id="brk" width="160" height="80" patternUnits="userSpaceOnUse">
+    <rect width="160" height="80" fill="#1a0f1c"/>
+    <rect x="3" y="3" width="154" height="34" rx="4" fill="#2b1726"/>
+    <rect x="-77" y="43" width="154" height="34" rx="4" fill="#2b1726"/>
+    <rect x="83" y="43" width="154" height="34" rx="4" fill="#2b1726"/></pattern></defs>
+    <rect width="1240" height="2080" fill="url(#brk)"/></svg>
+
+audio:
+  music:
+    key: D
+    mode: minor
+    bpm: 100
+    gain: -15
+    sections:
+      - {at: 0, style: pulse, chords: [Dm, Bb, F, C]}
+      - {at: "@opera.start", style: epic, chords: [Bb, C, Dm, F]}
+      - {at: "@twist.start", style: sub}
+      - {at: "@math_wins.start", style: tension}
+      - {at: "@cta.start", style: calm, chords: [Dm, Bb, F, C]}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK — вред → польза, три карты и подвох
+  - id: hook
+    accent: "255,211,77"
+    caption_marks: {"польза": "255,211,77"}
+    text: "У азартных игр есть польза. Целых три. Но одна деталь тебе точно не понравится."
+    shots:
+      - id: h_neon
+        effects:
+          - {type: glow, at: [540, 900], sigma: 420, color: [1.0, 0.25, 0.35], intensity: 0.1, until: "@есть+0.2"}
+          - {type: glow, at: [540, 980], sigma: 420, color: [1.0, 0.8, 0.3], intensity: 0.14, from: "@польза-0.1", fade_in: 0.2}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.1, sat: 1.12}}
+        ambience: [{sound: hum, gain: -20}]
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.08, y: 930}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.3}, shakes: [{at: "@польза", amp: 9, dur: 0.3}]}
+          layers:
+            - *bricks
+            - {actor: slot_machine, x: 200, y: 1980, scale: 0.55, par: 0.6, brightness: 0.5, blur: 3, title: "BONUS", neon: "#7a2cff"}
+            - {actor: slot_machine, x: 540, y: 2010, scale: 0.55, par: 0.6, brightness: 0.5, blur: 3}
+            - {actor: slot_machine, x: 880, y: 1980, scale: 0.55, par: 0.6, brightness: 0.5, blur: 3, title: "FORTUNE", neon: "#4de1ff"}
+            - {actor: neon_sign, text: "АЗАРТНЫЕ ИГРЫ", x: 540, y: 560, size: 76, color: neon}
+            - {actor: text, text: "=", x: 540, y: 760, size: 120, weight: 900, color: "#ffffff", shadow: "0 0 24px rgba(255,43,214,.9)"}
+            - {actor: neon_sign, text: "ВРЕД", x: 540, y: 980, size: 190, color: alarm, frame: false, off_at: "@есть", stagger: 0.07}
+            - {actor: neon_sign, text: "ПОЛЬЗА", x: 540, y: 980, size: 180, color: gold, frame: false, flicker: 0.1, at: "@польза-0.12", enter: {type: fade, dur: 0.15}}
+            - {actor: particles, kind: embers, region: [0, 300, 1080, 1500], count: 26, colors: ["#ffd34d", "#ff8a3c"], alpha: 0.8, at: "@польза-0.1"}
+            - {actor: timetag, text: "АФЕРЫ · СПЕЦВЫПУСК", x: 540, y: 200, size: 34, color: gold, space: screen, at: 0.1, enter: fade}
+      - id: h_three
+        start: "@Целых-0.15"
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1420
+        effects:
+          - {type: glow, at: [840, 860], sigma: 300, color: [1.0, 0.2, 0.3], intensity: 0.16, from: "@понравится-0.05", fade_in: 0.15}
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.08, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.06, x: 540, y: 960}, {t: "@понравится-0.1", z: 1.0, x: 540, y: 960}, {t: "@понравится+0.35", z: 1.16, x: 720, y: 900, ease: expo}, {t: end, z: 1.18, x: 730, y: 900}], shakes: [{at: "@понравится", amp: 7, dur: 0.3}]}
+          layers:
+            - {actor: text, text: "3 ПОЛЬЗЫ", x: 540, y: 380, size: 130, weight: 900, color: gold, stroke: {w: 10, color: "#031410"}, shadow: "0 0 30px rgba(255,211,77,.6)", at: "@Целых-0.05", enter: stamp}
+            - {actor: playing_card, rank: "A", suit: s, w: 230, x: 240, y: 860, rot: -6, back: "#b3001b", at: "@Целых", enter: drop, sfx: false}
+            - {actor: playing_card, rank: "A", suit: h, w: 230, x: 540, y: 840, back: "#b3001b", at: "@Целых+0.12", enter: drop, sfx: false}
+            - {actor: playing_card, rank: "A", suit: d, w: 230, x: 840, y: 860, rot: 6, back: "#b3001b", at: "@Целых+0.24", enter: drop, sfx: false, highlight: [{at: 0, v: 0}, {at: "@понравится", v: 1, dur: 0.2}], glow: alarm, shakes: [{at: "@понравится", amp: 6, dur: 0.5}]}
+            - {actor: text, text: "1", x: 240, y: 1120, size: 80, weight: 900, color: "#ffffff", at: "@три", enter: pop}
+            - {actor: text, text: "2", x: 540, y: 1120, size: 80, weight: 900, color: "#ffffff", at: "@три+0.1", enter: pop}
+            - {actor: text, text: "3", x: 840, y: 1120, size: 80, weight: 900, color: "#ffffff", at: "@три+0.2", enter: pop}
+            - {actor: badge, x: 540, y: 1270, icon: "!", title: "+1 ПОДВОХ", style: solid, color: alarm, size: 54, rot: -3, at: "@деталь", enter: stamp, pulse: {freq: 1.6, amp: 0.03}}
+    sfx:
+      - {sound: buzz, at: 0.05, gain: -15, f: 120, d: 0.1, n: 3}
+      - {sound: glitch, at: "@есть", gain: -14}
+      - {sound: impact, at: "@польза", gain: -12}
+      - {sound: click, at: "@Целых", gain: -16}
+      - {sound: click, at: "@Целых+0.12", gain: -17}
+      - {sound: click, at: "@Целых+0.24", gain: -17}
+      - {sound: pop, at: "@деталь", gain: -14}
+      - {sound: kick, at: "@понравится", gain: -11}
+
+  # ------------------------------------------------------------------ 2. POINT 1 — математика: Паскаль и Ферма
+  - id: math
+    accent: "255,211,77"
+    caption_marks: {"теория вероятностей": "255,211,77"}
+    text: "Первая — математика. Семнадцатый век. Игрок спросил Паскаля, как честно поделить ставку, если игру прервали. Из его переписки с Ферма родилась теория вероятностей."
+    shots:
+      - id: m_dice
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [850, 520], sigma: 300, color: [1.0, 0.7, 0.3], intensity: 0.18, pulse: {freq: 2.3, amp: 0.25}}
+        look: {bloom: [0.66, 0.4], grade: {contrast: 0.1, sat: 1.1, warmth: 0.08}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: *warm_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.08, y: 1000}], sway: {x: 3, y: 2, roll: 0.2, freq: 0.4}}
+          layers:
+            - {actor: shape, kind: rect, x: 0, y: 1080, w: 1080, h: 900, origin: top-left, fill: {linear: ["#5a3418", "#2a160a"], angle: 180}}
+            - {actor: shape, kind: rect, x: 0, y: 1080, w: 1080, h: 8, origin: top-left, fill: "#7a4a24"}
+            - {actor: image, emoji: "🕯️", x: 850, y: 900, size: 300, flicker: 0.15}
+            - {actor: image, emoji: "🪶", x: 220, y: 1140, size: 200, rot: -25}
+            - {actor: image, emoji: "🪙", x: 760, y: 1210, size: 110}
+            - {actor: image, emoji: "🪙", x: 820, y: 1180, size: 110}
+            - {actor: image, emoji: "🪙", x: 700, y: 1190, size: 110}
+            - {actor: image, emoji: "🎲", x: 420, y: 1200, size: 190, anim: [{at: 0, dur: 0.01, x: -100, y: 1100, rot: -200}, {at: 0.05, dur: 0.9, x: 420, y: 1200, rot: 15, ease: "power3.out"}]}
+            - {actor: image, emoji: "🎲", x: 580, y: 1250, size: 170, anim: [{at: 0, dur: 0.01, x: -160, y: 1200, rot: -260}, {at: 0.12, dur: 0.95, x: 580, y: 1250, rot: -12, ease: "power3.out"}]}
+            - {actor: badge, x: 540, y: 380, title: "ПОЛЬЗА №1", style: solid, color: gold, size: 52, at: "@Первая-0.05", enter: stamp}
+            - {actor: text, text: "МАТЕМАТИКА", x: 540, y: 540, size: 120, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#1d1009"}, shadow: "0 0 30px rgba(255,211,77,.5)", at: "@математика-0.05", reveal: {by: char, mode: rise, stagger: 0.03}}
+            - {actor: timetag, text: "1654 · ПАРИЖ", x: 540, y: 220, size: 38, color: gold, space: screen, at: "@Семнадцатый-0.05", enter: wipe_right, enter_dur: 0.5}
+      - id: m_question
+        start: "@Игрок-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1470
+        effects:
+          - {type: glow, at: [540, 700], sigma: 380, color: [1.0, 0.7, 0.3], intensity: 0.1}
+        look: {bloom: [0.66, 0.4], grade: {contrast: 0.1, warmth: 0.08}}
+        draw:
+          bg: *warm_bg
+          camera: {keys: [{t: 0, z: 1.05, x: 500, y: 960}, {t: end, z: 1.05, x: 580, y: 960}]}
+          layers:
+            - {actor: person, x: 250, y: 1300, scale: 1.25, look: {age: adult, outfit: casual, hair: short, color: "#7a2a1c"}, pose: [{at: 0, v: stand}, {at: "@поделить", v: shrug, dur: 0.3}], face: [{at: 0, v: talk}, {at: "@прервали", v: surprised}], talk: [["@Игрок", "@прервали.end"]]}
+            - {actor: person, x: 830, y: 1300, scale: 1.25, look: {age: adult, outfit: suit, hair: long, hair_color: "#5a4030", color: "#2a2438"}, pose: [{at: 0, v: stand}, {at: "@Паскаля", v: think, dur: 0.35}], face: neutral, look_dx: -0.6}
+            - {actor: badge, x: 830, y: 520, title: "ПАСКАЛЬ", style: dark, color: gold, size: 40, at: "@Паскаля-0.05", enter: pop}
+            - {actor: shape, kind: rect, x: 540, y: 1260, w: 1100, h: 300, radius: 20, fill: {linear: ["#0e5a3a", "#06301e"], angle: 180}, stroke: "#7a4a24", sw: 14}
+            - {actor: image, emoji: "🪙", x: 470, y: 1220, size: 100}
+            - {actor: image, emoji: "🪙", x: 540, y: 1200, size: 100}
+            - {actor: image, emoji: "🪙", x: 610, y: 1225, size: 100}
+            - {actor: image, emoji: "🪙", x: 540, y: 1260, size: 100}
+            - {actor: shape, kind: line, points: [[580, 1130], [580, 1370]], stroke: gold, sw: 6, dash: "14 10", at: "@поделить-0.05", enter: draw, enter_dur: 0.4}
+            - {actor: text, text: "?", x: 460, y: 1060, size: 90, weight: 900, color: gold, at: "@поделить", enter: pop, wiggle: {rot: 10, freq: 1.4}}
+            - {actor: text, text: "?", x: 680, y: 1060, size: 90, weight: 900, color: gold, at: "@поделить+0.1", enter: pop, wiggle: {rot: 10, freq: 1.4}}
+            - {actor: bubble, text: "КАК ЧЕСТНО ПОДЕЛИТЬ СТАВКУ?", x: 560, y: 330, width: 520, size: 40, side: left, at: "@Игрок", enter: pop}
+            - {actor: playing_card, rank: "K", suit: s, w: 110, x: 330, y: 1250, rot: -30, face: 1, at: "@прервали-0.05", enter: drop}
+            - {actor: playing_card, rank: "7", suit: h, w: 110, x: 400, y: 1290, rot: 20, face: 1, at: "@прервали", enter: drop}
+            - {actor: text, text: "ИГРА ПРЕРВАНА", x: 540, y: 980, size: 70, weight: 900, color: alarm, stroke: {w: 8, color: "#080403"}, rot: -4, space: screen, at: "@прервали", enter: stamp}
+      - id: m_letters
+        start: "@переписки-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 420], sigma: 380, color: [1.0, 0.8, 0.3], intensity: 0.16, from: "@теория-0.1", fade_in: 0.2}
+        look: {bloom: [0.66, 0.4], grade: {contrast: 0.1}}
+        draw:
+          bg: *warm_bg
+          camera: {keys: [{t: 0, z: 1.08, y: 1000}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - actor: map
+              x: 470
+              y: 1080
+              w: 1000
+              h: 900
+              focus: ["Belgium", "Spain", "Switzerland"]
+              projection: mercator
+              land: "#3a2614"
+              ocean: "rgba(0,0,0,0)"
+              stroke: "#a9824e"
+              highlight: ["France"]
+              hi: "#5a3a1c"
+              pins:
+                - {lon: 2.35, lat: 48.86, label: "ПАСКАЛЬ", at: 0.05, color: gold}
+                - {lon: 1.44, lat: 43.6, label: "ФЕРМА", at: 0.2, color: gold}
+              routes:
+                - {src: [2.35, 48.86], dst: [1.44, 43.6], at: "@переписки", dur: 0.8, color: gold, width: 5, packets: 3, period: 0.7}
+                - {src: [1.44, 43.6], dst: [2.35, 48.86], at: "@Ферма", dur: 0.8, color: "#ffffff", width: 4, packets: 3, period: 0.7}
+            - {actor: image, emoji: "✉️", x: 520, y: 900, size: 120, at: "@переписки", until: "@теория", enter: pop, exit: fade, anim: [{at: "@переписки", dur: 0.9, dx: -60, dy: 360, ease: inOut}]}
+            - {actor: text, text: "½", x: 300, y: 980, size: 110, weight: 900, color: gold, at: "@Ферма", enter: pop, float: {amp: 14, freq: 0.8}, anim: [{at: "@теория-0.05", dur: 0.35, x: 540, y: 420, scale: 0.2, opacity: 0, ease: in}]}
+            - {actor: text, text: "¾", x: 780, y: 1000, size: 110, weight: 900, color: gold, at: "@Ферма+0.1", enter: pop, float: {amp: 14, freq: 0.9}, anim: [{at: "@теория-0.05", dur: 0.35, x: 540, y: 420, scale: 0.2, opacity: 0, ease: in}]}
+            - {actor: text, text: "P(A)", x: 330, y: 1380, size: 80, font: serif, italic: true, color: "#ffffff", at: "@Ферма+0.2", enter: pop, float: {amp: 12, freq: 0.7}, anim: [{at: "@теория-0.05", dur: 0.35, x: 540, y: 420, scale: 0.2, opacity: 0, ease: in}]}
+            - {actor: text, text: "E = Σ p·x", x: 760, y: 1400, size: 70, font: serif, italic: true, color: "#ffffff", at: "@Ферма+0.3", enter: pop, float: {amp: 12, freq: 0.75}, anim: [{at: "@теория-0.05", dur: 0.35, x: 540, y: 420, scale: 0.2, opacity: 0, ease: in}]}
+            - {actor: text, text: "ТЕОРИЯ ВЕРОЯТНОСТЕЙ", x: 540, y: 400, size: 104, width: 1000, line: 1.0, weight: 900, color: gold, stroke: {w: 10, color: "#1d1009"}, shadow: "0 0 34px rgba(255,211,77,.8)", space: screen, at: "@теория-0.05", reveal: {by: word, mode: slam, stagger: 0.3}}
+    sfx:
+      - {sound: click, at: 0.1, gain: -16}
+      - {sound: click, at: 0.5, gain: -18}
+      - {sound: typing, at: "@Семнадцатый", gain: -17}
+      - {sound: pop, at: "@Игрок", gain: -14}
+      - {sound: scrape, at: "@прервали", gain: -15}
+      - {sound: slam, at: "@прервали+0.05", gain: -15}
+      - {sound: whoosh, at: "@переписки", gain: -15}
+      - {sound: sparkle, at: "@Ферма", gain: -15}
+      - {sound: impact, at: "@теория", gain: -12}
+
+  # ------------------------------------------------------------------ 3. POINT 2 — наука: пасьянс → метод Монте-Карло
+  - id: science
+    accent: "77,225,255"
+    caption_marks: {"Монте-Карло": "77,225,255"}
+    text: "Вторая — наука. Физик раскладывал пасьянс и придумал метод, названный в честь казино Монте-Карло. Сегодня на нём считают прогноз погоды и риски банков."
+    shots:
+      - id: s_solitaire
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1420
+        effects:
+          - {type: glow, at: [540, 980], sigma: 400, color: [0.3, 0.85, 1.0], intensity: 0.08}
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.08}}
+        draw:
+          bg: *blue_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 1000}, {t: end, z: 1.08, y: 960}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 1000, w: 1000, h: 640, radius: 40, fill: {linear: ["#2c3e5c", "#1a2740"], angle: 180}, rot: -2}
+            - {actor: playing_card, rank: "K", suit: h, w: 120, x: 160, y: 850, face: [{at: 0, v: 0}, {at: "@пасьянс", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "Q", suit: s, w: 120, x: 290, y: 880, face: [{at: 0, v: 0}, {at: "@пасьянс+0.08", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "J", suit: d, w: 120, x: 420, y: 910, face: [{at: 0, v: 0}, {at: "@пасьянс+0.16", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "10", suit: c, w: 120, x: 550, y: 940, face: [{at: 0, v: 0}, {at: "@пасьянс+0.24", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "9", suit: h, w: 120, x: 680, y: 970, face: [{at: 0, v: 0}, {at: "@пасьянс+0.32", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "8", suit: s, w: 120, x: 810, y: 1000, face: [{at: 0, v: 0}, {at: "@пасьянс+0.4", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "7", suit: d, w: 120, x: 940, y: 1030, face: [{at: 0, v: 0}, {at: "@пасьянс+0.48", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "6", suit: c, w: 120, x: 350, y: 1130, rot: 8, face: 1, at: "@раскладывал", enter: fly_left}
+            - {actor: playing_card, rank: "5", suit: h, w: 120, x: 720, y: 1150, rot: -8, face: 1, at: "@раскладывал+0.2", enter: fly_right}
+            - {actor: image, emoji: "💡", x: 540, y: 640, size: 170, at: "@придумал-0.05", enter: pop, glow: {color: "#ffd34d", r: 30, a: 1}, pulse: {freq: 1.5, amp: 0.06}}
+            - {actor: badge, x: 540, y: 380, title: "ПОЛЬЗА №2 · НАУКА", style: solid, color: cyan, size: 52, at: "@Вторая-0.05", enter: stamp}
+            - {actor: timetag, text: "1946 · ЛОС-АЛАМОС", x: 540, y: 220, size: 38, color: cyan, space: screen, at: "@Физик-0.05", enter: wipe_right, enter_dur: 0.5}
+            - {actor: text, text: "МЕТОД", x: 540, y: 520, size: 96, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#03060c"}, at: "@метод-0.05", enter: pop}
+      - id: s_casino
+        start: "@казино-0.15"
+        transition: {type: zoom, dur: 0.25}
+        effects:
+          - {type: glow, at: [540, 420], sigma: 320, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.1, sat: 1.12}}
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 940}, {t: end, z: 1.06, y: 980}]}
+          layers:
+            - *bricks
+            - {actor: neon_sign, text: "MONTE-CARLO", x: 540, y: 400, size: 110, color: gold}
+            - {actor: mc_dots, x: 540, y: 960, size: 620, count: 1200, from: 0.25, dur: 1.0, color: cyan}
+            - {actor: text, text: "π ≈ {n}", x: 540, y: 1360, size: 70, font: mono, color: cyan, count: {from: 2.4, to: 3.14, at: 0.25, dur: 1.0, decimals: 2}}
+            - {actor: text, text: "МЕТОД МОНТЕ-КАРЛО", x: 540, y: 1480, size: 76, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#05030a"}, at: 0.05, enter: rise}
+      - id: s_weather
+        start: "@Сегодня-0.15"
+        transition: {type: whip_y, flash: 0.06}
+        captions_top: 1460
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.08}}
+        draw:
+          bg: *blue_bg
+          camera: {keys: [{t: 0, z: 1.04, y: 900}, {t: end, z: 1.0, y: 980}]}
+          layers:
+            - actor: map
+              x: 540
+              y: 640
+              w: 1000
+              h: 640
+              focus: ["Ireland", "Norway", "Spain", "Iceland"]
+              projection: mercator
+              land: "#1c3350"
+              ocean: "#0a1626"
+              stroke: "#2f5a86"
+              routes:
+                - {src: [-35, 42], dst: [-6, 56], at: "@погоды-0.3", dur: 0.9, color: cyan, width: 4}
+                - {src: [-35, 42], dst: [2, 52], at: "@погоды-0.25", dur: 0.9, color: cyan, width: 4}
+                - {src: [-35, 42], dst: [8, 47], at: "@погоды-0.2", dur: 0.9, color: cyan, width: 4}
+                - {src: [-35, 42], dst: [-2, 46], at: "@погоды-0.15", dur: 0.9, color: "#ffffff", width: 4}
+                - {src: [-35, 42], dst: [12, 58], at: "@погоды-0.1", dur: 0.9, color: cyan, width: 4}
+                - {src: [-35, 42], dst: [-9, 40], at: "@погоды-0.05", dur: 0.9, color: cyan, width: 4}
+            - {actor: image, emoji: "🌀", x: 210, y: 790, size: 140, spin: -120}
+            - {actor: badge, x: 540, y: 300, icon: "🌦️", title: "ПРОГНОЗ ПОГОДЫ", style: solid, color: cyan, size: 46, at: "@прогноз-0.05", enter: pop}
+            - {actor: shape, kind: rect, x: 540, y: 1180, w: 1000, h: 470, radius: 24, fill: "rgba(8,14,26,.9)", stroke: "#2f5a86", sw: 4}
+            - {actor: walks, x: 540, y: 1180, w: 920, h: 400, n: 22, steps: 70, history: 0.4, vol: 0.05, drift: 0.002, start: 0.5, colors: ["#4de1ff", "#3cff8a", "#ff3b4e", "#ffd34d"], width: 4, axis: true, draw: [{at: 0, v: 0.38}, {at: "@банков-0.4", v: 1, dur: 0.8, ease: out}]}
+            - {actor: badge, x: 540, y: 960, icon: "🏦", title: "РИСКИ БАНКОВ", style: solid, color: gold, size: 46, at: "@банков-0.05", enter: pop}
+    sfx:
+      - {sound: whoosh, at: "@Вторая", gain: -15}
+      - {sound: click, at: "@пасьянс", gain: -16}
+      - {sound: click, at: "@пасьянс+0.24", gain: -18}
+      - {sound: chime, at: "@придумал", gain: -17}
+      - {sound: buzz, at: "@казино", gain: -15, f: 120, d: 0.08, n: 3}
+      - {sound: typing, at: "@казино+0.3", gain: -18}
+      - {sound: noise_sweep, at: "@погоды", gain: -16}
+      - {sound: blip, at: "@банков", gain: -14}
+
+  # ------------------------------------------------------------------ 4. POINT 3 — красота: Сиднейская опера на лотереях
+  - id: opera
+    accent: "255,211,77"
+    caption_marks: {"сто два миллиона долларов": "255,211,77"}
+    text: "Третья — красота. Сиднейскую оперу построили на деньги лотерей. Восемьдесят шесть миллионов билетов — сто два миллиона долларов. Без лотерей её бы просто не было."
+    shots:
+      - id: o_house
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [700, 760], sigma: 420, color: [1.0, 0.65, 0.35], intensity: 0.14}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.08, sat: 1.12, warmth: 0.06}}
+        ambience: [{sound: ocean, gain: -20}]
+        draw:
+          bg: "#0b0a12"
+          world: [1400, 1920]
+          camera: {keys: [{t: 0, x: 820, y: 960, z: 1.0}, {t: end, x: 580, y: 960, z: 1.04}]}
+          layers:
+            - {actor: sky, hour: 18.6, w: 1400, h: 1250, par: 0, x: 700, y: 0, origin: top}
+            - {actor: skyline, x: 1200, y: 1180, w: 600, h: 180, color: "#2a1f33", color2: "#3a2a44", lit: 0.35, par: 0.4}
+            - {actor: shape, kind: rect, x: 0, y: 1180, w: 1400, h: 760, origin: top-left, fill: {linear: ["#2a3a66", "#0c1430"], angle: 180}}
+            - {actor: particles, kind: sparkles, region: [0, 1200, 1400, 1700], count: 40, colors: ["#ffc98a", "#ffffff"], alpha: 0.7}
+            - {actor: opera_house, x: 600, y: 1190, w: 980, rise: [{at: 0, v: 0}, {at: "@Сиднейскую-0.1", v: 1, dur: 1.3, ease: linear}], tickets: [{at: 0, v: 0}, {at: "@лотерей", v: 1, dur: 0.25}]}
+            - {actor: badge, x: 540, y: 380, title: "ПОЛЬЗА №3 · КРАСОТА", style: solid, color: gold, size: 52, space: screen, at: "@Третья-0.05", enter: stamp}
+            - {actor: timetag, text: "СИДНЕЙ · 1957–1973", x: 540, y: 220, size: 38, color: gold, space: screen, at: "@Сиднейскую-0.05", enter: wipe_right, enter_dur: 0.5}
+            - {actor: text, text: "ОПЕРА НА ЛОТЕРЕЯХ", x: 540, y: 560, size: 96, width: 1000, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#2a0a10"}, shadow: "0 0 30px rgba(255,59,78,.7)", rot: -4, space: screen, at: "@лотерей-0.05", enter: stamp}
+      - id: o_tickets
+        start: "@Восемьдесят-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1100
+        effects:
+          - {type: glow, at: [540, 760], sigma: 380, color: [1.0, 0.8, 0.3], intensity: 0.14, from: "@сто-0.1", fade_in: 0.3}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: {type: linear, angle: 180, stops: [[0, "#1a1030"], [0.6, "#4a2440"], [1, "#0c1430"]]}
+          camera: {keys: [{t: 0, z: 1.08}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: coins, kind: bill, rain: {from: "@Восемьдесят", until: "@просто", count: 36}}
+            - {actor: image, emoji: "🎟️", x: 160, y: 300, size: 120, rot: -20, at: "@Восемьдесят", anim: [{at: "@Восемьдесят", dur: 3.5, dy: 1500, rot: 160, ease: linear}]}
+            - {actor: image, emoji: "🎟️", x: 900, y: 180, size: 140, rot: 15, at: "@Восемьдесят+0.3", anim: [{at: "@Восемьдесят+0.3", dur: 3.2, dy: 1600, rot: -200, ease: linear}]}
+            - {actor: image, emoji: "🎟️", x: 420, y: 100, size: 110, rot: 30, at: "@шесть", anim: [{at: "@шесть", dur: 3.0, dy: 1600, rot: 180, ease: linear}]}
+            - {actor: image, emoji: "🎟️", x: 700, y: 60, size: 120, rot: -10, at: "@билетов", anim: [{at: "@билетов", dur: 3.3, dy: 1700, rot: -150, ease: linear}]}
+            - {actor: text, text: "{n}", x: 540, y: 380, size: 100, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#1a1030"}, count: {from: 0, to: 86700000, at: "@Восемьдесят", dur: 1.2, sep: " "}, at: "@Восемьдесят-0.05", enter: pop}
+            - {actor: text, text: "БИЛЕТОВ", x: 540, y: 480, size: 52, font: mono, color: "#e9d8ff", at: "@билетов-0.05", enter: rise}
+            - {actor: text, text: "${n}", x: 540, y: 690, size: 132, weight: 900, color: gold, stroke: {w: 10, color: "#1a1030"}, shadow: "0 0 34px rgba(255,211,77,.7)", count: {from: 0, to: 102000000, at: "@сто", dur: 1.0, sep: " "}, at: "@сто-0.05", enter: pop}
+            - {actor: text, text: "СМЕТА: $7 000 000", x: 540, y: 850, size: 50, font: mono, color: "#c8bcd8", at: "@долларов", enter: fade}
+            - {actor: shape, kind: line, points: [[300, 850], [780, 850]], stroke: alarm, sw: 8, at: "@долларов+0.3", enter: draw, enter_dur: 0.3}
+            - {actor: opera_house, x: 540, y: 1560, w: 760, reflect: false, glow: {color: "#ffd34d", r: 30, a: 0.9}, glow_k: [{at: 0, v: 0}, {at: "@просто-0.1", v: 1, dur: 0.4}]}
+            - {actor: badge, x: 540, y: 980, icon: "✓", title: "БЕЗ ЛОТЕРЕЙ — НЕ БЫЛО БЫ", style: solid, color: gold, size: 40, at: "@Без-0.05", enter: pop}
+    sfx:
+      - {sound: whoosh, at: "@Третья", gain: -15}
+      - {sound: riser, at: "@Сиднейскую", gain: -17, d: 1.0}
+      - {sound: impact, at: "@лотерей", gain: -12}
+      - {sound: typing, at: "@Восемьдесят", gain: -17}
+      - {sound: typing, at: "@сто", gain: -17}
+      - {sound: sparkle, at: "@долларов", gain: -14}
+      - {sound: chime, at: "@просто", gain: -15}
+
+  # ------------------------------------------------------------------ 5. TWIST — всем, кроме игроков
+  - id: twist
+    accent: "255,59,78"
+    caption_marks: {"Кроме самих игроков": "255,59,78"}
+    text: "А теперь заметь: польза досталась всем. Кроме самих игроков."
+    shots:
+      - id: t_three
+        transition: {type: flash, dur: 0.25}
+        captions_top: 1340
+        effects:
+          - {type: glow, at: [540, 500], sigma: 420, color: [1.0, 0.8, 0.3], intensity: 0.14, from: "@всем-0.1", fade_in: 0.3}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.08, sat: 1.1}}
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.08, y: 900}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {actor: shape, kind: polygon, points: [[120, 620], [960, 620], [1080, 1560], [0, 1560]], fill: {linear: ["rgba(255,211,77,.35)", "rgba(255,211,77,0)"], angle: 180}, at: "@всем-0.1", enter: wipe_down, enter_dur: 0.4}
+            - {actor: card, x: 210, y: 500, w: 300, emoji: "🎲", title: "МАТЕМАТИКА", color: "#ffd34d", style: dark, size: 30, at: "@заметь-0.05", enter: pop, number: 1}
+            - {actor: card, x: 540, y: 470, w: 300, emoji: "🌦️", title: "НАУКА", color: "#4de1ff", style: dark, size: 30, at: "@заметь+0.15", enter: pop, number: 2}
+            - {actor: card, x: 870, y: 500, w: 300, emoji: "🎭", title: "ОПЕРА", color: "#ff8a3c", style: dark, size: 30, at: "@заметь+0.3", enter: pop, number: 3}
+            - {actor: silhouette, x: 120, y: 1560, w: 170, h: 220, color: [{at: 0, v: "#2b2033"}, {at: "@всем", v: "#c99a2e", dur: 0.4}]}
+            - {actor: silhouette, x: 290, y: 1590, w: 190, h: 250, color: [{at: 0, v: "#2b2033"}, {at: "@всем+0.05", v: "#d8a836", dur: 0.4}]}
+            - {actor: silhouette, x: 460, y: 1560, w: 170, h: 220, color: [{at: 0, v: "#2b2033"}, {at: "@всем+0.1", v: "#c99a2e", dur: 0.4}]}
+            - {actor: silhouette, x: 630, y: 1600, w: 200, h: 260, color: [{at: 0, v: "#2b2033"}, {at: "@всем+0.15", v: "#e0b03c", dur: 0.4}]}
+            - {actor: silhouette, x: 800, y: 1560, w: 170, h: 220, color: [{at: 0, v: "#2b2033"}, {at: "@всем+0.2", v: "#c99a2e", dur: 0.4}]}
+            - {actor: silhouette, x: 960, y: 1590, w: 190, h: 250, color: [{at: 0, v: "#2b2033"}, {at: "@всем+0.25", v: "#d8a836", dur: 0.4}]}
+            - {actor: text, text: "ВСЕМ", x: 540, y: 960, size: 180, weight: 900, color: gold, stroke: {w: 12, color: "#05030a"}, shadow: "0 0 40px rgba(255,211,77,.8)", at: "@всем-0.05", enter: stamp}
+            - {actor: particles, kind: sparkles, region: [0, 300, 1080, 1500], count: 30, colors: ["#ffd34d", "#ffffff"], at: "@всем"}
+      - id: t_player
+        start: "@Кроме-0.15"
+        transition: {type: glitch, dur: 0.3}
+        captions_top: 1480
+        effects:
+          - {type: glow, at: [540, 900], sigma: 300, color: [0.8, 0.9, 1.0], intensity: 0.1}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.15, sat: 0.35}}
+        draw:
+          bg: "#030405"
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.14, y: 920}], shakes: [{at: "@игроков", amp: 10, dur: 0.35}]}
+          layers:
+            - {actor: shape, kind: polygon, points: [[470, 0], [610, 0], [960, 1500], [120, 1500]], fill: {linear: ["rgba(220,235,255,.45)", "rgba(220,235,255,.04)"], angle: 180}}
+            - {actor: person, x: 540, y: 1420, scale: 1.35, look: {age: adult, outfit: casual, hair: short, color: "#3a3f4a"}, pose: [{at: 0, v: stand}, {at: "@игроков", v: shrug, dur: 0.3}], face: [{at: 0, v: neutral}, {at: "@игроков", v: sad}]}
+            - {actor: shape, kind: rect, x: 540, y: 1340, w: 1000, h: 260, radius: 30, fill: {linear: ["#0e5a3a", "#06301e"], angle: 180}, stroke: "#3a2414", sw: 14}
+            - {actor: chips, x: 430, y: 1330, w: 120, count: 14, color: "#d3122f", anim: [{at: "@игроков-0.1", dur: 0.6, x: 1250, ease: in}]}
+            - {actor: chips, x: 560, y: 1330, w: 120, count: 10, color: "#1f6fd6", anim: [{at: "@игроков", dur: 0.6, x: 1300, ease: in}]}
+            - {actor: chips, x: 680, y: 1330, w: 120, count: 7, color: "#2fa84f", anim: [{at: "@игроков+0.1", dur: 0.6, x: 1350, ease: in}]}
+            - {actor: text, text: "КРОМЕ ИГРОКОВ", x: 540, y: 380, size: 96, width: 1000, weight: 900, color: "#ffffff", stroke: {w: 12, color: "#c2001f"}, rot: -6, space: screen, at: "@игроков-0.05", enter: stamp, shadow: "0 0 34px rgba(255,40,60,.8)"}
+    sfx:
+      - {sound: chime, at: "@заметь", gain: -16}
+      - {sound: sparkle, at: "@всем", gain: -14}
+      - {sound: boom, at: "@Кроме", gain: -13}
+      - {sound: slam, at: "@игроков", gain: -11}
+
+  # ------------------------------------------------------------------ 6. PAYOFF — та же математика против игрока
+  - id: math_wins
+    accent: "255,59,78"
+    caption_marks: {"почти три процента": "255,59,78"}
+    text: "По той же теории вероятностей рулетка забирает почти три процента с каждой ставки. Играешь дольше — проигрываешь вернее."
+    shots:
+      - id: w_wheel
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 820], sigma: 420, color: [0.3, 1.0, 0.55], intensity: 0.1, from: "@рулетка", fade_in: 0.3}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.12, y: 860, roll: -3}, {t: end, z: 1.0, y: 960, roll: 1}], shakes: [{at: "@процента", amp: 8, dur: 0.3}]}
+          layers:
+            - {actor: roulette, x: 540, y: 830, w: 880, speed: 60, ball_speed: 330, land: "@рулетка+0.5", zero: [{at: 0, v: 0}, {at: "@рулетка+0.5", v: 1, dur: 0.3}]}
+            - {actor: badge, x: 540, y: 300, title: "ТА ЖЕ МАТЕМАТИКА", style: solid, color: gold, size: 48, space: screen, at: "@теории-0.05", enter: stamp}
+            - {actor: text, text: "1 из 37 — зеро казино", x: 540, y: 1340, size: 58, font: mono, color: "#3cff8a", space: screen, at: "@забирает-0.05", enter: rise}
+            - {actor: text, text: "−2,7%", x: 540, y: 1480, size: 150, weight: 900, color: alarm, stroke: {w: 10, color: "#030806"}, shadow: "0 0 34px rgba(255,59,78,.7)", space: screen, at: "@три-0.05", enter: stamp}
+            - {actor: text, text: "С КАЖДОЙ СТАВКИ", x: 540, y: 1600, size: 50, weight: 900, color: "#ffffff", space: screen, at: "@каждой-0.05", enter: fade}
+      - id: w_curve
+        start: "@Играешь-0.15"
+        transition: {type: whip_x, flash: 0.06}
+        captions_top: 1460
+        effects:
+          - {type: glow, at: [800, 1150], sigma: 300, color: [1.0, 0.2, 0.3], intensity: 0.12, from: "@вернее-0.1", fade_in: 0.3}
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.1}}
+        draw:
+          bg: *blue_bg
+          camera: {keys: [{t: 0, z: 1.1, x: 420, y: 900}, {t: end, z: 1.0, x: 560, y: 960}]}
+          layers:
+            - {actor: text, text: "БАЛАНС ИГРОКА", x: 300, y: 430, size: 44, font: mono, color: "#aab4c8"}
+            - {actor: walks, x: 540, y: 860, w: 940, h: 640, n: 1, steps: 90, vol: 0.05, drift: -0.009, start: 0.85, color: alarm, width: 8, axis: true, dot: true, seed: 7, draw: [{at: 0, v: 0}, {at: "@Играешь", v: 1, dur: 2.2, ease: linear}]}
+            - {actor: text, text: "СТАВОК: {n}", x: 760, y: 1250, size: 46, font: mono, color: "#ffffff", count: {from: 0, to: 1000, at: "@Играешь", dur: 2.2}}
+            - {actor: badge, x: 540, y: 300, icon: "↓", title: "ДОЛЬШЕ = ВЕРНЕЕ", style: solid, color: alarm, size: 48, space: screen, at: "@вернее-0.05", enter: stamp}
+    sfx:
+      - {sound: riser, at: "@теории", gain: -17, d: 0.8}
+      - {sound: click, at: "@рулетка+0.5", gain: -13}
+      - {sound: kick, at: "@процента", gain: -11}
+      - {sound: typing, at: "@Играешь", gain: -18}
+      - {sound: hiss, at: "@вернее", gain: -15}
+
+  # ------------------------------------------------------------------ 7. PROOF — обыграл блэкджек и ушёл на биржу
+  - id: thorp
+    accent: "60,255,138"
+    text: "Даже профессор, обыгравший блэкджек, ушёл с этой математикой на биржу."
+    shots:
+      - id: w_thorp
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1470
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.08, sat: 1.05}}
+        draw:
+          bg: *blue_bg
+          world: [1700, 1920]
+          camera: {keys: [{t: 0, x: 540, y: 960, z: 1.0}, {t: "@ушёл-0.1", x: 600, y: 960, z: 1.0}, {t: end, x: 1160, y: 960, z: 1.02, ease: inOut}]}
+          layers:
+            - {actor: shape, kind: rect, x: 380, y: 1260, w: 760, h: 320, radius: 160, fill: {linear: ["#0e5a3a", "#06301e"], angle: 180}, stroke: "#7a4a24", sw: 14}
+            - {actor: text, text: "BLACKJACK PAYS 3 TO 2", x: 380, y: 1340, size: 30, font: serif, color: "rgba(255,211,77,.7)"}
+            - {actor: playing_card, rank: "10", suit: s, w: 130, x: 320, y: 1220, rot: -6, face: [{at: 0, v: 0}, {at: "@профессор", v: 1, dur: 0.25}]}
+            - {actor: playing_card, rank: "A", suit: h, w: 130, x: 440, y: 1220, rot: 6, face: [{at: 0, v: 0}, {at: "@профессор+0.1", v: 1, dur: 0.25}], highlight: [{at: 0, v: 0}, {at: "@обыгравший", v: 1, dur: 0.2}], glow: gold}
+            - {actor: chips, x: 590, y: 1250, w: 110, count: 18, color: "#ffd34d"}
+            - {actor: chips, x: 170, y: 1250, w: 110, count: 12, color: "#d3122f"}
+            - {actor: shape, kind: rect, x: 1250, y: 820, w: 780, h: 560, radius: 24, fill: "rgba(4,10,8,.92)", stroke: [{at: 0, v: "#1a2a22"}, {at: "@биржу-0.1", v: "#3cff8a", dur: 0.3}], sw: 6}
+            - {actor: text, text: "БИРЖА", x: 1250, y: 600, size: 44, font: mono, color: "#3cff8a", at: "@биржу-0.1", enter: fade}
+            - {actor: walks, x: 1250, y: 860, w: 700, h: 400, n: 1, steps: 60, vol: 0.04, drift: 0.01, start: 0.15, color: "#3cff8a", width: 7, dot: true, seed: 4, draw: [{at: 0, v: 0}, {at: "@биржу-0.15", v: 1, dur: 0.9, ease: out}]}
+            - {actor: person, x: 520, y: 1660, scale: 1.3, look: {age: adult, outfit: suit, hair: side, glasses: true, color: "#2a3346"}, until: "@ушёл-0.05", pose: [{at: 0, v: stand}, {at: "@обыгравший", v: cheer, dur: 0.3}], face: happy}
+            - {actor: person, view: side, x: 520, y: 1660, scale: 1.3, look: {age: adult, outfit: suit, hair: side, glasses: true, color: "#2a3346"}, at: "@ушёл-0.05", walk: [{at: 0, v: 2.2}, {at: "@биржу+0.3", v: 0}], anim: [{at: "@ушёл-0.05", dur: 1.3, x: 1050, ease: inOut}], face: happy}
+            - {actor: timetag, text: "1962 · ОБЫГРАЛ БЛЭКДЖЕК", x: 540, y: 220, size: 38, color: gold, space: screen, at: "@профессор-0.05", enter: wipe_right, enter_dur: 0.5}
+            - {actor: badge, x: 540, y: 340, icon: "📈", title: "УШЁЛ НА БИРЖУ", style: solid, color: "#3cff8a", size: 48, space: screen, at: "@биржу-0.05", enter: stamp}
+    sfx:
+      - {sound: click, at: "@профессор", gain: -15}
+      - {sound: sparkle, at: "@обыгравший", gain: -16}
+      - {sound: footstep, at: "@ушёл", gain: -16}
+      - {sound: footstep, at: "@ушёл+0.45", gain: -17}
+      - {sound: ping, at: "@биржу", gain: -14}
+
+  # ------------------------------------------------------------------ 8. CTA — главная польза + 1, 2 или 3
+  - id: cta
+    accent: "255,211,77"
+    text: "Выходит, главная польза азартных игр — понять, почему играть невыгодно. Какая из трёх удивила больше? Пиши цифру."
+    shots:
+      - id: z_sign
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 820], sigma: 420, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.1, sat: 1.12}}
+        ambience: [{sound: hum, gain: -22}]
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.08, y: 930}, {t: end, z: 1.0, y: 960}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.3}}
+          layers:
+            - *bricks
+            - {actor: neon_sign, text: "ГЛАВНАЯ ПОЛЬЗА =", x: 540, y: 520, size: 64, color: gold, at: "@главная-0.1", enter: {type: fade, dur: 0.15}}
+            - {actor: neon_sign, text: "ПОНЯТЬ", x: 540, y: 780, size: 170, color: gold, frame: false, at: "@понять-0.1", enter: {type: fade, dur: 0.15}}
+            - {actor: neon_sign, text: "ИГРАТЬ", x: 540, y: 1040, size: 150, color: alarm, frame: false, off_at: "@невыгодно+0.25", stagger: 0.06, at: "@играть-0.1", enter: {type: fade, dur: 0.12}}
+            - {actor: text, text: "НЕВЫГОДНО", x: 540, y: 1060, size: 120, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -7, at: "@невыгодно-0.05", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.8)"}
+            - {actor: particles, kind: embers, region: [0, 300, 1080, 1500], count: 20, colors: ["#ffd34d", "#ff8a3c"], alpha: 0.7}
+            - {actor: timetag, text: "АФЕРЫ · СПЕЦВЫПУСК", x: 540, y: 200, size: 34, color: gold, space: screen}
+      - id: z_choice
+        start: "@Какая-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1440
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.08, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: text, text: "КАКАЯ УДИВИЛА?", x: 540, y: 380, size: 100, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#031410"}, at: "@Какая-0.05", enter: pop}
+            - {actor: playing_card, rank: "A", suit: s, w: 230, x: 210, y: 860, rot: -6, back: "#b3001b", until: "@Какая+0.2", exit: {type: fade, dur: 0.15}}
+            - {actor: playing_card, rank: "A", suit: h, w: 230, x: 540, y: 840, back: "#b3001b", until: "@Какая+0.35", exit: {type: fade, dur: 0.15}}
+            - {actor: playing_card, rank: "A", suit: d, w: 230, x: 870, y: 860, rot: 6, back: "#b3001b", until: "@Какая+0.5", exit: {type: fade, dur: 0.15}}
+            - {actor: card, x: 210, y: 860, w: 290, rot: -6, emoji: "🎲", title: "МАТЕМАТИКА", sub: "Паскаль и Ферма", color: "#ffd34d", style: dark, size: 32, number: 1, at: "@Какая+0.2", enter: flip_y, shakes: [{at: "@цифру", amp: 5, dur: 0.3}]}
+            - {actor: card, x: 540, y: 840, w: 290, emoji: "🌦️", title: "НАУКА", sub: "Монте-Карло", color: "#4de1ff", style: dark, size: 32, number: 2, at: "@Какая+0.35", enter: flip_y, shakes: [{at: "@цифру+0.1", amp: 5, dur: 0.3}]}
+            - {actor: card, x: 870, y: 860, w: 290, rot: 6, emoji: "🎭", title: "ОПЕРА", sub: "102 млн на лотереях", color: "#ff8a3c", style: dark, size: 32, number: 3, at: "@Какая+0.5", enter: flip_y, shakes: [{at: "@цифру+0.2", amp: 5, dur: 0.3}]}
+            - {actor: text, text: "1, 2 ИЛИ 3?", x: 540, y: 1130, size: 96, weight: 900, color: gold, stroke: {w: 8, color: "#031410"}, shadow: "0 0 30px rgba(255,211,77,.6)", at: "@больше-0.05", enter: pop}
+            - {actor: badge, x: 540, y: 1290, icon: "💬", title: "ПИШИ ЦИФРУ", style: solid, color: gold, size: 50, at: "@Пиши-0.05", enter: drop, pulse: {freq: 1.6, amp: 0.04}}
+    sfx:
+      - {sound: buzz, at: "@главная", gain: -15, f: 120, d: 0.08, n: 3}
+      - {sound: buzz, at: "@понять", gain: -16, f: 120, d: 0.08, n: 2}
+      - {sound: glitch, at: "@невыгодно", gain: -14}
+      - {sound: slam, at: "@невыгодно+0.05", gain: -14}
+      - {sound: click, at: "@Какая+0.2", gain: -15}
+      - {sound: click, at: "@Какая+0.35", gain: -16}
+      - {sound: click, at: "@Какая+0.5", gain: -16}
+      - {sound: pop, at: "@больше", gain: -14}
+      - {sound: pop, at: "@Пиши", gain: -14}
