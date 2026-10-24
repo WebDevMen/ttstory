@@ -103,7 +103,7 @@ python3 vg.py script project blackout                # черновик projects
 
 Подробно (доли времени, цель каждого блока, подходящие крючки и визуал): `python3 vg.py script formats <имя>`, файл [`engine/script/data/formats.yaml`](../engine/script/data/formats.yaml). Структура — отправная точка: блоки можно делить, добавлять и переставлять, но обязательные роли формата должны остаться.
 
-**Роли блоков:** `hook`, `context`, `setup`, `stakes`★, `problem`, `point`★, `step`★, `mistake`★, `escalation`★, `twist`★, `proof`★, `reveal`★, `payoff`★, `recap`★, `cta`, `loop`. ★ — «награда»: зритель получает новый факт, шаг или ответ.
+**Роли блоков:** `hook`, `context`, `setup`, `stakes`★, `problem`★, `point`★, `step`★, `mistake`★, `escalation`★, `twist`★, `proof`★, `reveal`★, `payoff`★, `recap`★, `cta`, `loop`. ★ — «награда»: зритель получает новый факт, шаг или ответ.
 
 ## 6. Удержание: награды, петли, приёмы
 

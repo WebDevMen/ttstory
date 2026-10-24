@@ -3,6 +3,7 @@
 Results are cached per scene (text + voice settings hash) in build/<project>/vo/.
 """
 import asyncio
+import time
 import hashlib
 import json
 import os
@@ -41,6 +42,20 @@ async def _synth(text, voice, rate, pitch, mp3_path):
     return words
 
 
+def synth(text, voice, rate, pitch, mp3_path, attempts=6):
+    """_synth with retries: the free Edge TTS service now and then answers with no audio for a while."""
+    err = None
+    for i in range(attempts):
+        try:
+            words = asyncio.run(_synth(text, voice, rate, pitch, mp3_path))
+            if words:
+                return words
+        except Exception as e:                 # edge_tts raises its own exception types (NoAudioReceived, …)
+            err = e
+        time.sleep(min(20, 2 * 2 ** i))
+    raise RuntimeError(f"Edge TTS failed {attempts} times ({err or 'no words'}) — try again later or another voice")
+
+
 def run(pid, force=False):
     p = load_project(pid)
     _patch_certifi(pid)
@@ -57,9 +72,7 @@ def run(pid, force=False):
             if m.get("key") == key and os.path.exists(mp3):
                 report.append((sc["id"], m["words"][-1]["end"], "cached"))
                 continue
-        words = asyncio.run(_synth(text, v["voice"], v["rate"], v["pitch"], mp3))
-        if not words:
-            raise RuntimeError(f"TTS returned no words for scene {sc['id']}")
+        words = synth(text, v["voice"], v["rate"], v["pitch"], mp3)
         json.dump({"key": key, "text": text, "voice": v["voice"], "words": words}, open(meta, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         report.append((sc["id"], words[-1]["end"], "new"))
     total = 0

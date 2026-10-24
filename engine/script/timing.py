@@ -5,12 +5,10 @@ Fitted on 21 real scenes of the repo's projects (Edge TTS, Dmitry/Svetlana, rate
 ≈1% over a whole video. `tts=True` synthesizes every beat with the real voice (cached) and uses exact word timings.
 The video timeline then follows engine/compile.py: lead_in + speech + gaps between scenes + tail.
 """
-import asyncio
 import hashlib
 import json
 import os
 import re
-import time
 
 from ..common import DEFAULTS, build_dir, norm_word
 
@@ -62,11 +60,6 @@ def estimate_speech(text, rate_f):
     return out, t
 
 
-async def _tts(text, voice, rate, pitch, mp3):
-    from ..tts import _synth
-    return await _synth(text, voice, rate, pitch, mp3)
-
-
 def tts_speech(pid, beat_id, text, v):
     """Real Edge-TTS word timings (cached), with long pauses shortened like engine/compile.py."""
     from ..tts import _patch_certifi
@@ -80,17 +73,8 @@ def tts_speech(pid, beat_id, text, v):
             words = m["words"]
     if words is None:
         _patch_certifi(pid)
-        err = None
-        for attempt in range(3):              # the TTS service fails now and then: retry before giving up
-            try:
-                words = asyncio.run(_tts(text, v["voice"], v["rate"], v["pitch"], os.path.join(d, f"{beat_id}.mp3")))
-                if words:
-                    break
-            except Exception as e:            # network / service errors (edge_tts raises its own types)
-                err = e
-            time.sleep(2 * (attempt + 1))
-        if not words:
-            raise RuntimeError(f"TTS failed for beat {beat_id}: {err or 'no words'}")
+        from ..tts import synth
+        words = synth(text, v["voice"], v["rate"], v["pitch"], os.path.join(d, f"{beat_id}.mp3"))
         json.dump({"key": key, "words": words}, open(f, "w", encoding="utf-8"), ensure_ascii=False)
     out, shift, t0 = [], 0.0, words[0]["start"]
     for i, w in enumerate(words):

@@ -6,5 +6,14 @@ import * as world from "./world.js";
 import * as interior from "./interior.js";
 import * as ui from "./ui.js";
 import * as libs from "./libs.js";
+import * as casino from "./casino.js";
+import * as cards from "./cards.js";
 
-export default { ...basic, ...people, ...world, ...interior, ...ui, ...libs };
+const FILES = { basic, people, world, interior, ui, libs, casino, cards };
+const seen = {};
+for (const [file, mod] of Object.entries(FILES)) for (const name of Object.keys(mod)) {
+  if (seen[name]) throw new Error(`draw actor '${name}' is defined twice: actors/${seen[name]}.js and actors/${file}.js`);
+  seen[name] = file;
+}
+
+export default Object.assign({}, ...Object.values(FILES));

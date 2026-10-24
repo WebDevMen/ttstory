@@ -1,4 +1,4 @@
-// Casino actors for «Как обыграть казино телефоном»: slot_machine, cctv, hand, neon_sign, buzz, coins, digits.
+// Casino actors (first made for projects/slots): slot_machine, cctv, hand, neon_sign, buzz, coins, digits.
 // Times in params (spins[].at, press, wins, …) are absolute seconds after compile ("@слово" works in YAML).
 
 const MONO = (H) => `"${H.fonts.mono}", monospace`;
