@@ -180,6 +180,15 @@ export const map = {
         .attr("paint-order", "stroke").attr("stroke", "rgba(0,0,0,.6)").attr("stroke-width", 6).text(pn.label);
       return { pn, g };
     });
+    // routes: great-circle arcs drawn over time, with a glowing head and optional repeating "packets"
+    const routes = (p.routes || []).map((rt) => {
+      const c = H.col(rt.color ?? p.pin_color ?? "#4de1ff"), sw = rt.width ?? 6;
+      const g = sel.append("g");
+      const line = g.append("path").attr("fill", "none").attr("stroke", c).attr("stroke-width", sw).attr("stroke-linecap", "round")
+        .style("filter", `drop-shadow(0 0 ${sw * 1.5}px ${c})`);
+      const dots = Array.from({ length: 1 + (rt.packets ?? 0) }, () => g.append("circle").attr("r", sw * 1.5).attr("fill", "#fff").style("filter", `drop-shadow(0 0 ${sw * 2}px ${c})`));
+      return { rt, line, dots };
+    });
     const redraw = () => { paths.attr("d", path); sel.selectAll(".sph, .grat").attr("d", path); };
     redraw();
     let lastRot = null;
@@ -189,6 +198,19 @@ export const map = {
         if (p.projection === "orthographic" && it.tracks.rotate) {
           const r = it.v("rotate", [138, 36]);
           if (!lastRot || r[0] !== lastRot[0] || r[1] !== lastRot[1]) { proj.rotate([-r[0], -r[1]]); redraw(); lastRot = r; }
+        }
+        for (const { rt, line, dots } of routes) {
+          const k = H.ease(rt.ease ?? "inOut")(H.P(t, rt.at ?? startOf(p, it), rt.dur ?? 1.4));
+          line.attr("d", path({ type: "LineString", coordinates: [rt.src, rt.dst] }) || "");
+          const node = line.node(), len = node.getTotalLength ? node.getTotalLength() : 0;
+          line.attr("stroke-dasharray", `${len} ${len}`).attr("stroke-dashoffset", len * (1 - k)).attr("opacity", k > 0 ? 1 : 0);
+          dots.forEach((d, i) => {
+            const per = rt.period ?? 0.9, u = i === 0 ? k : ((t - (rt.at ?? 0) - (rt.dur ?? 1.4) + i * per / dots.length) % per) / per;
+            const on = len > 0 && (i === 0 ? k > 0 && k < 1 : t > (rt.at ?? 0) + (rt.dur ?? 1.4) && u >= 0);
+            if (!on) { d.attr("opacity", 0); return; }
+            const pt = node.getPointAtLength(len * H.clamp(u));
+            d.attr("cx", pt.x).attr("cy", pt.y).attr("opacity", 1);
+          });
         }
         for (const { pn, g } of pins) {
           const xy = proj([pn.lon, pn.lat]);

@@ -101,7 +101,7 @@ python3 vg.py actors my                     # список актёров (вс�
 | `enter` | появление: `fade pop zoom stamp grow grow_x grow_y slide_up slide_down slide_left slide_right rise drop fly_left fly_right fly_up fly_down spin flip_x flip_y blur wipe_left wipe_right wipe_up wipe_down iris draw`. Длительность — `enter_dur`; объект `{type, dur, ease, dist, delay}` |
 | `exit` | исчезновение в конце `until`: `fade shrink zoom slide_* fall fly_* blur wipe_left wipe_right iris draw`, `exit_dur` |
 | `anim` | шаги анимации (§5) |
-| `float`, `bob`, `wiggle`, `sway`, `pulse`, `spin`, `blink`, `flicker`, `shakes` | «живые» циклы: парение `{amp, freq}`, подпрыгивание, покачивание `{rot, freq}`, плавное покачивание, пульсация `{amp, freq}`, вращение (°/с), мигание, мерцание неона, тряска `[{at, amp, dur}]` |
+| `float`, `bob`, `wiggle`, `sway`, `pulse`, `spin`, `blink`, `flicker`, `shakes` | «живые» циклы: парение `{amp, freq}`, подпрыгивание, покачивание `{rot, freq}`, плавное покачивание, пульсация `{amp, freq, phase}`, вращение (°/с), мигание `{freq, duty, min, phase}` (две мигалки в противофазе — `phase: 3.14`), мерцание неона, тряска `[{at, amp, dur}]` |
 | `glow` | свечение: цвет или `{color, r, a}`; сила во времени — `glow_k` |
 | `shadow` | мягкая тень: `true` или `{x, y, blur, color, a}` |
 | `blur`, `brightness`, `saturate`, `contrast`, `hue`, `grayscale` | CSS-фильтры (можно анимировать) |
@@ -242,7 +242,7 @@ anim:
 | `lottie` | анимация Lottie/Bodymovin | `src` (json в проекте) или `data`, `w h speed loop segment start` |
 | `sketch` | «нарисовано от руки» (rough.js) | `kind: rect circle ellipse line polygon curve path arrow`, `w h points d stroke sw fill fill_style roughness bowing hachure_gap seed`, `boil` (перерисовок в секунду — «живая» линия), `draw` |
 | `chart` | графики (D3) | `type: bar hbar line pie donut`, `data: [{label, value, color}]`, `w h max suffix decimals size ink values grow: {at, dur, stagger}` |
-| `map` | карта/глобус (D3-geo, Natural Earth) | `focus` (страны), `highlight`, `projection: mercator natural orthographic`, `rotate` (дорожка для глобуса), `land ocean stroke hi graticule detail pins: [{lon, lat, label, at, color}]` |
+| `map` | карта/глобус (D3-geo, Natural Earth) | `focus` (страны), `highlight`, `projection: mercator natural orthographic`, `rotate` (дорожка для глобуса), `land ocean stroke hi graticule detail pins: [{lon, lat, label, at, color}]`, `routes: [{src: [lon, lat], dst: [lon, lat], at, dur, color, width, packets, period}]` — дуга большого круга рисуется во времени, по ней бегут «пакеты» |
 | `holo` | 3D-модель (three.js) | `model: globe still tanker` (или своя из `engine/hud/models`), `params` (дорожки), `opts`, `color w h` |
 | `particles` | частицы внутри сцены | `kind: petals snow confetti leaves bubbles dust embers steam sparkles stars burst hearts`, `region count size speed sway wind colors alpha seed from rise drift` |
 
@@ -285,6 +285,8 @@ export const sunburst = {
 };
 ```
 
+Пример побольше — [`projects/slots/actors/casino.js`](../projects/slots/actors/casino.js): игровой автомат с крутящимися барабанами (`spins`, `wins`, `press`, `credits`, режим «цифры»), оверлей камеры наблюдения `cctv` (зерно, таймкод, рамка захвата), рука `hand`, неоновая вывеска `neon_sign`, вибрация `buzz`, монеты и купюры `coins` (canvas), «цифровой дождь» `digits`.
+
 Внутри доступно всё из `H`: цвета (`H.col`, `H.rgba`, `H.shade`), `H.svg/H.div/H.el`, `H.child(spec, container)` — вложить любой другой актёр со всеми общими свойствами, `H.track`, `H.ease`, `H.noise`, `H.rng(seed)`, `H.asset("file.png")`, `H.json(url)`, `H.anchorOf("id.name")`, `H.TL` (таймлайн, слова диктора). Свои стили — `projects/<id>/draw.css`.
 
 Встроенные актёры — в `engine/hud/draw/actors/*.js`; новый файл подключается строкой в `actors/index.js`.
@@ -324,4 +326,6 @@ export const sunburst = {
 | выноска/бейдж уезжает за край на панораме | `space: screen` |
 | текст японского шрифта «моноширинный» по-русски | для кириллицы используйте `font: hand` (Caveat) или Montserrat, `jp` — для иероглифов |
 | `draw frame N of shot S is missing` | запустите `vg.py draw <id>` (или `scene` — он вызывает рисование сам) |
+| в кадре чёрные прямоугольники 512×512 | так выглядела нехватка видеопамяти программного GPU при растеризации; рендер теперь растеризует тайлы на CPU (`--disable-gpu-rasterization` в `engine/render_hud.cjs`) |
+| параметр-объект вроде `count: {from, to, at}` ведёт себя как анимация | такие ключи (`count`, `reveal`, `grow`, `routes`, `spins`, `bursts`, `rain`…) не считаются дорожками (`CONFIG_KEYS` в `engine/hud/draw/core.js`); для своего актёра не называйте ключи настроек `to`/`v` |
 | долго перерисовывается | `vg.py draw` пропускает неизменённые шоты; правьте по одному шоту и смотрите `preview --at` |

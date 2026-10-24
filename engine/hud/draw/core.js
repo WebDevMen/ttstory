@@ -48,6 +48,7 @@ function mixHex(a, b, f) {
 // A prop is a track when it is {at, to|v, ...} or a list of such keys: [{at, v, dur|until, ease, from}].
 // Numbers, number arrays and "#rrggbb" colors are interpolated; anything else switches at `at`.
 const isKey = (k) => k != null && typeof k === "object" && !Array.isArray(k) && "at" in k;
+const CONFIG_KEYS = new Set(["count", "reveal", "grow", "routes", "spins", "bursts", "rain", "enter", "exit", "follow", "highlight"]);
 export const isTrack = (v) => (Array.isArray(v) ? v.length > 0 && v.every(isKey) && v.some((k) => "v" in k || "to" in k) : isKey(v) && ("to" in v || "v" in v));
 const isObj = (v) => v != null && typeof v === "object" && !Array.isArray(v);
 const lerpable = (a, b) => (typeof a === "number" && typeof b === "number")
@@ -208,9 +209,11 @@ export class Item {
     this.visible = false;
     // static props for create(); track-valued props are passed with their value at the item's start
     const props = {};
-    for (const [k, v] of Object.entries(spec)) props[k] = isTrack(v) ? track(v, this.at > -1e8 ? this.at : 0, undefined) : v;
+    // config objects that look like a one-step track ({at, from, to, dur}) but are not animated values
+    const raw = (k, v) => CONFIG_KEYS.has(k) || !isTrack(v);
+    for (const [k, v] of Object.entries(spec)) props[k] = raw(k, v) ? v : track(v, this.at > -1e8 ? this.at : 0, undefined);
     this.props = props;
-    for (const [k, v] of Object.entries(spec)) if (isTrack(v)) this.tracks[k] = v;
+    for (const [k, v] of Object.entries(spec)) if (!raw(k, v)) this.tracks[k] = v;
     // anim: [{at, dur, ease, x, dx, y, dy, scale, rot, opacity, <any actor prop>, path, orient}]
     const steps = [...(spec.anim || [])].sort((a, b) => a.at - b.at);
     const cur = {};
@@ -266,6 +269,8 @@ export class Item {
     this.w = typeof w === "function" ? w(this.props) : w;
     this.h = typeof h === "function" ? h(this.props) : h;
     if ((this.w == null || this.h == null) && this.inst.el) {
+      // children of a group / phone screen are built before their parent is in the document: measure on first show
+      if (!this.inst.el.isConnected) this.remeasure = [this.w == null, this.h == null];
       const r = this.inst.el.getBoundingClientRect();
       this.w ??= r.width; this.h ??= r.height;
     }
@@ -279,6 +284,15 @@ export class Item {
   // phase 1: visibility + local matrix (recursive)
   prepare(t) {
     this.t = t;
+    if (this.remeasure && this.inst.el.isConnected) {
+      const el = this.inst.el, [mw, mh] = this.remeasure;
+      const bw = el.offsetWidth ?? el.getBoundingClientRect().width, bh = el.offsetHeight ?? el.getBoundingClientRect().height;
+      if (mw) this.w = bw;
+      if (mh) this.h = bh;
+      this.fx.style.width = `${this.w}px`; this.fx.style.height = `${this.h}px`;
+      this.origin = resolveOrigin(this.spec.origin ?? this.inst.origin ?? this.def.origin, this.w, this.h);
+      this.remeasure = null;
+    }
     const vis = this.v("visible", true);
     this.visible = vis !== false && vis !== 0 && t >= this.at - 1e-6 && t <= this.until + 1e-6;
     if (!this.visible) return;
@@ -357,7 +371,7 @@ export class Item {
     } else w.style.transform = `matrix(${m.a},${m.b},${m.c},${m.d},${m.e},${m.f})`;
     let op = this.v("opacity", 1) * (a?.op ?? 1) * (b?.op ?? 1);
     const sp = this.spec;
-    if (sp.blink) { const f = sp.blink.freq ?? 1.5; op *= Math.sin(t * 6.283 * f) > (sp.blink.duty ?? -0.2) ? 1 : sp.blink.min ?? 0.15; }
+    if (sp.blink) { const f = sp.blink.freq ?? 1.5; op *= Math.sin(t * 6.283 * f + (sp.blink.phase ?? 0)) > (sp.blink.duty ?? -0.2) ? 1 : sp.blink.min ?? 0.15; }
     if (sp.flicker) { const fr = Math.floor(t * 30); if (hash(fr * 1.7 + this.seed) > 1 - (sp.flicker.prob ?? 0.06)) op *= sp.flicker.min ?? 0.35; }
     w.style.opacity = op;
     this.fx.style.filter = this.filters(a, b);

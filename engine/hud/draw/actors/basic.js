@@ -173,7 +173,13 @@ export const text = {
         }
       }
     };
-    const txt0 = p.count ? "" : String(p.text ?? "");
+    // a counter is measured with its longest value, so that the anchor (center) stays put while the number grows
+    const countText = (c, v) => {
+      let n = Number(v).toFixed(c.decimals ?? 0);
+      if (c.sep) n = n.replace(/\B(?=(\d{3})+(?!\d))/g, c.sep === true ? " " : c.sep);
+      return (p.text ?? "{n}").replace("{n}", n);
+    };
+    const txt0 = p.count ? [countText(p.count, p.count.from ?? 0), countText(p.count, p.count.to ?? 100)].sort((a, b) => b.length - a.length)[0] : String(p.text ?? "");
     fill(txt0);
     shown = txt0;
     return {
@@ -182,10 +188,7 @@ export const text = {
         let txt = String(it.v("text", p.text ?? ""));
         if (p.count) {
           const c = p.count, k = H.ease(c.ease || "outCubic")(H.P(t, c.at ?? it.at, c.dur ?? 1));
-          let n = (c.from ?? 0) + ((c.to ?? 100) - (c.from ?? 0)) * k;
-          n = n.toFixed(c.decimals ?? 0);
-          if (c.sep) n = n.replace(/\B(?=(\d{3})+(?!\d))/g, c.sep === true ? " " : c.sep);
-          txt = (p.text ?? "{n}").replace("{n}", n);
+          txt = countText(c, (c.from ?? 0) + ((c.to ?? 100) - (c.from ?? 0)) * k);
         }
         if (txt !== shown) { fill(txt); shown = txt; }
         if (rv) {

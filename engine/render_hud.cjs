@@ -26,7 +26,10 @@ async function openPage(browser, pid) {
 
 function launch() {
   const opts = { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--disable-gpu-vsync",
-    "--font-render-hinting=none", "--force-color-profile=srgb"] };
+    "--font-render-hinting=none", "--force-color-profile=srgb",
+    // CPU tile raster: with SwiftShader GPU raster, frames with many big glowing layers (box-shadows, filters) lose whole
+    // 512 px tiles (they come out black). Compositing (and WebGL for three.js) stays on the GPU.
+    "--disable-gpu-rasterization"] };
   if (process.env.CHROMIUM) opts.executablePath = process.env.CHROMIUM;
   return chromium.launch(opts);
 }

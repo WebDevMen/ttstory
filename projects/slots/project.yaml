@@ -1,0 +1,686 @@
+# «Как обыграть казино телефоном» — 100% code-drawn video from projects/slots/script.yaml (skill write-script →
+# vg.py script project → this file). Story: the St. Petersburg slot-machine hack (2014), sources in script.md.
+# Own actors: projects/slots/actors/casino.js (slot_machine, cctv, hand, neon_sign, buzz, coins, digits).
+# Coordinates in draw shots are screen pixels 1080x1920 (world = screen unless `world:` is wider). Times: "@word".
+
+title: "Как обыграть казино телефоном"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz", tail: 1.6}
+
+theme:
+  preset: minimal
+  accent: "255,211,77"
+  captions:
+    style: clean
+    top: 1250
+    size: 64
+    max_chars: 18
+    hide:
+      - {from: "@hook/обыграл-0.1", until: "@hook/телефоном.end+0.15"}
+      - {from: "@cta/взлом-0.1", until: "@cta/математика.end+0.2"}
+
+post: {vignette: 0.3, chromatic: 0.0009, grain: 0.022}
+
+draw:
+  palette: {gold: "#ffd34d", neon: "#ff2bd6", violet: "#7a2cff", code: "#4de1ff", alarm: "#ff3b4e", cam: "#3cff8a", ink: "#ffffff"}
+
+# shared pieces (YAML anchors)
+x-bg: &casino_bg {type: radial, at: "50% 36%", stops: [[0, "#33105c"], [0.55, "#150727"], [1, "#05020b"]]}
+x-floor: &floor {actor: shape, kind: rect, x: -400, y: 1480, w: 1900, h: 600, fill: {linear: ["#3a0d2e", "#12040e"], angle: 180}, origin: top-left}
+x-machine: &machine {actor: slot_machine, w: 520, color: "#2a0f4a", trim: "#ffd34d", neon: "#ff2bd6"}
+
+audio:
+  music:
+    key: E
+    mode: minor
+    bpm: 104
+    gain: -15
+    sections:
+      - {at: 0, style: pulse, chords: [Em, C, G, D]}
+      - {at: "@problem.start", style: tension}
+      - {at: "@formula.start", style: pulse, chords: [Em, C, Am, B]}
+      - {at: "@ban.start", style: sub}
+      - {at: "@arrest.start", style: epic, chords: [C, D, Em, Em]}
+      - {at: "@nofix.start", style: tension}
+      - {at: "@cta.start", style: pulse, chords: [Em, C, G, D]}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK — обыграл казино телефоном
+  - id: hook
+    accent: "255,211,77"
+    caption_marks: {"телефоном": "255,211,77"}
+    text: Этот человек обыграл казино обычным телефоном. И автомат он даже не взламывал.
+    shots:
+      - id: h_win
+        effects:
+          - {type: glow, at: [600, 560], sigma: 360, color: [1.0, 0.3, 0.85], intensity: 0.12, pulse: {freq: 0.8, amp: 0.3}}
+          - {type: particles, mode: rise, count: 40, size: [2, 5], speed: [0.02, 0.05], color: [1, 0.85, 0.4], alpha: 0.5}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.15}}
+        ambience: [{sound: room, gain: -20}]
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 980}, {t: end, z: 1.09, y: 940}], shakes: [{at: "@обыграл", amp: 14, dur: 0.35}]}
+          layers:
+            - {<<: *machine, x: 80, y: 1260, scale: 0.55, par: 0.45, brightness: 0.45, blur: 3, title: "BONUS", neon: "#7a2cff"}
+            - {<<: *machine, x: 1010, y: 1260, scale: 0.55, par: 0.45, brightness: 0.45, blur: 3, title: "FORTUNE", neon: "#4de1ff"}
+            - *floor
+            - <<: *machine
+              id: m
+              x: 610
+              y: 1600
+              scale: 1.06
+              start: [bar, cherry, star]
+              spins: [{at: "@start", dur: 0.45, stagger: 0.27, result: [seven, seven, seven]}]
+              wins: ["@обыграл+0.02"]
+              credits: [{at: 0, v: 40}, {at: "@обыграл", v: 1300, dur: 1.4}]
+            - {actor: coins, bursts: [{at: "@обыграл", x: 610, y: 1440, count: 30, power: 1700, spread: 80}]}
+            - {actor: hand, pose: hold_back, x: 300, y: 1060, rot: -9, scale: 0.5, sleeve: "#161a28"}
+            - id: ph
+              actor: phone
+              x: 300
+              y: 1060
+              rot: -9
+              scale: 0.5
+              screen: app
+              glow: "#ff3b4e"
+              shakes: [{at: "@человек", amp: 9, dur: 0.4}, {at: "@телефоном", amp: 9, dur: 0.4}]
+              children:
+                - {actor: shape, kind: rect, x: 262, y: 462, w: 400, h: 560, fill: "none", stroke: "#ffffff", sw: 3, opacity: 0.5}
+                - {actor: shape, kind: line, points: [[212, 462], [312, 462]], stroke: "#ffffff", sw: 3, opacity: 0.6}
+                - {actor: text, text: "● REC 00:07", x: 262, y: 120, size: 34, font: mono, color: "#ff3b4e", blink: {freq: 1.2}}
+                - {actor: text, text: "7  7  7", x: 262, y: 462, size: 96, weight: 900, color: "#ffd34d", at: "@обыграл", enter: pop}
+            - {actor: hand, pose: hold_front, x: 300, y: 1060, rot: -9, scale: 0.5}
+            - {actor: buzz, x: 300, y: 1060, w: 300, h: 260, color: gold, times: ["@человек", "@телефоном"]}
+            - actor: text
+              text: "ОБЫГРАЛ [КАЗИНО](#ffd34d)\nТЕЛЕФОНОМ"
+              x: 540
+              y: 330
+              size: 100
+              width: 1000
+              color: "#ffffff"
+              stroke: {w: 10, color: "#12051f"}
+              shadow: "0 0 30px rgba(255,43,214,.7)"
+              space: screen
+              at: "@обыграл-0.05"
+              reveal: {by: word, mode: slam, stagger: 0.32}
+      - id: h_lock
+        start: "@автомат-0.12"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 700], sigma: 420, color: [0.5, 0.25, 1.0], intensity: 0.1}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.08, sat: 1.1}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.12, y: 900}, {t: end, z: 1.0, y: 960}], sway: {x: 4, y: 3, roll: 0.4, freq: 0.3}}
+          layers:
+            - *floor
+            - {<<: *machine, x: 540, y: 1720, scale: 1.12, start: [seven, seven, seven], wins: [-10], lights: 0.6}
+            - {actor: badge, x: 540, y: 1060, icon: "🛡️", title: "НЕ ВЗЛОМАН", sub: "ПЛОМБА ЦЕЛА", style: solid, color: cam, size: 52, at: "@даже-0.05", enter: stamp, sfx: {sound: kick, gain: -12}}
+            - {actor: prop, kind: question, x: 250, y: 470, scale: 2.2, color: neon, at: "@взламывал", enter: pop, wiggle: {rot: 8, freq: 1.3}, glow: {color: "#ff2bd6", r: 14, a: 0.9}}
+            - {actor: prop, kind: question, x: 540, y: 380, scale: 2.8, color: gold, at: "@взламывал+0.12", enter: pop, wiggle: {rot: 8, freq: 1.1}, glow: {color: "#ffd34d", r: 14, a: 0.9}}
+            - {actor: prop, kind: question, x: 830, y: 470, scale: 2.2, color: code, at: "@взламывал+0.24", enter: pop, wiggle: {rot: 8, freq: 1.5}, glow: {color: "#4de1ff", r: 14, a: 0.9}}
+    sfx:
+      - {sound: buzz, at: "@человек", gain: -15, f: 120, d: 0.08, n: 3}
+      - {sound: kick, at: "@обыграл", gain: -11}
+      - {sound: sparkle, at: "@обыграл+0.1", gain: -13}
+      - {sound: buzz, at: "@телефоном", gain: -15, f: 120, d: 0.08, n: 3}
+      - {sound: chime, at: "@телефоном+0.3", gain: -18}
+      - {sound: pop, at: "@взламывал", gain: -15}
+
+  # ------------------------------------------------------------------ 2. PROBLEM — казино в минусе
+  - id: problem
+    accent: "255,59,78"
+    caption_marks: {"больше": "255,59,78"}
+    text: Июнь две тысячи четырнадцатого. Автоматы казино в Сент-Луисе за два дня отдали больше, чем приняли.
+    shots:
+      - id: p_floor
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: particles, mode: rise, count: 30, size: [2, 4], speed: [0.02, 0.04], color: [1, 0.8, 0.5], alpha: 0.4}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.1, sat: 1.12}}
+        ambience: [{sound: room, gain: -19}]
+        draw:
+          bg: *casino_bg
+          world: [2300, 1920]
+          camera: {keys: [{t: 0, x: 640, y: 960, z: 1.0}, {t: end, x: 1660, y: 960, z: 1.05, ease: linear}]}
+          layers:
+            - {actor: shape, kind: ellipse, x: 1150, y: 260, w: 2600, h: 260, fill: {radial: ["rgba(255,43,214,.35)", "rgba(255,43,214,0)"]}, par: 0.3}
+            - {actor: neon_sign, text: "CASINO", x: 1150, y: 430, size: 130, color: neon, par: 0.4}
+            - {<<: *machine, x: 300, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2, title: "BONUS", neon: "#7a2cff"}
+            - {<<: *machine, x: 620, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2, title: "FORTUNE", neon: "#4de1ff"}
+            - {<<: *machine, x: 940, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2}
+            - {<<: *machine, x: 1260, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2, title: "BONUS", neon: "#7a2cff"}
+            - {<<: *machine, x: 1580, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2, title: "FORTUNE", neon: "#4de1ff"}
+            - {<<: *machine, x: 1900, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2}
+            - {<<: *machine, x: 2220, y: 1230, scale: 0.5, par: 0.6, brightness: 0.55, blur: 2, title: "BONUS", neon: "#7a2cff"}
+            - {actor: shape, kind: rect, x: -600, y: 1440, w: 3600, h: 700, fill: {linear: ["#3a0d2e", "#12040e"], angle: 180}, origin: top-left}
+            - {<<: *machine, x: 420, y: 1640, scale: 0.8, start: [bell, bar, star], spins: [{at: "@Автоматы", dur: 0.6, result: [seven, seven, seven]}], wins: ["@Автоматы+1.3"]}
+            - {<<: *machine, x: 980, y: 1640, scale: 0.8, title: "FORTUNE", neon: "#4de1ff", start: [star, cherry, bar], spins: [{at: "@Автоматы+0.3", dur: 0.6, result: [cherry, cherry, cherry]}], wins: ["@Автоматы+1.6"]}
+            - {<<: *machine, x: 1540, y: 1640, scale: 0.8, title: "BONUS", neon: "#7a2cff", start: [bar, star, bell], spins: [{at: "@Автоматы+0.6", dur: 0.6, result: [bell, bell, bell]}], wins: ["@Автоматы+1.9"]}
+            - {<<: *machine, x: 2100, y: 1640, scale: 0.8, start: [cherry, bell, seven], spins: [{at: "@Автоматы+0.9", dur: 0.6, result: [star, star, star]}], wins: ["@Автоматы+2.2"]}
+            - {actor: coins, w: 2300, bursts: [{at: "@Автоматы+1.3", x: 420, y: 1500, count: 14, power: 1300}, {at: "@Автоматы+1.6", x: 980, y: 1500, count: 14, power: 1300}, {at: "@Автоматы+1.9", x: 1540, y: 1500, count: 14, power: 1300}, {at: "@Автоматы+2.2", x: 2100, y: 1500, count: 14, power: 1300}]}
+            - {actor: timetag, text: "ИЮНЬ 2014 · СЕНТ-ЛУИС, США", x: 540, y: 250, size: 38, color: gold, space: screen, at: "@Июнь-0.05", enter: wipe_right, enter_dur: 0.6}
+      - id: p_chart
+        start: "@отдали-0.12"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: tint_pulse, at: "@приняли", decay: 0.6, gain: [0.25, 0.0, 0.0], lift: [0.06, 0.0, 0.0]}
+        look: {bloom: [0.75, 0.25]}
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#1d0b2e"], [1, "#05020b"]]}
+          camera: {keys: [{t: 0, z: 1.05}, {t: end, z: 1.12}]}
+          layers:
+            - {actor: shape, kind: rect, x: 90, y: 330, w: 900, h: 780, radius: 28, fill: "rgba(20,8,32,.85)", stroke: "rgba(255,211,77,.5)", sw: 3, origin: top-left}
+            - {actor: text, text: "ЗА 2 ДНЯ", x: 540, y: 410, size: 46, font: mono, color: "#c9b8e8"}
+            - actor: chart
+              type: bar
+              x: 540
+              y: 760
+              w: 760
+              h: 560
+              max: 110
+              size: 34
+              ink: "#ffffff"
+              values: false
+              data: [{label: "ПРИНЯЛИ", value: 62, color: "#7a2cff"}, {label: "ОТДАЛИ", value: 100, color: "#ff3b4e"}]
+              grow: {at: "@отдали", dur: 0.9, stagger: 0.35}
+            - {actor: badge, x: 540, y: 1170, icon: "!", title: "КАЗИНО В МИНУСЕ", style: solid, color: alarm, size: 54, at: "@приняли-0.05", enter: stamp}
+    sfx:
+      - {sound: typing, at: "@Июнь", gain: -18}
+      - {sound: riser, at: "@отдали", gain: -16, d: 1.0}
+      - {sound: buzz, at: "@приняли", gain: -14}
+
+  # ------------------------------------------------------------------ 3. CCTV — камеры нашли игрока
+  - id: cctv
+    accent: "60,255,138"
+    caption_marks: {"двадцать одну тысячу долларов": "255,211,77"}
+    text: Камеры нашли игрока. Он подносил телефон к экрану — и выиграл двадцать одну тысячу долларов.
+    shots:
+      - id: c_cam
+        transition: {type: glitch, dur: 0.3}
+        look: {grade: {contrast: 0.12}}
+        ambience: [{sound: hum, gain: -22}]
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#5a4c6e"], [1, "#1c1726"]]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@нашли", z: 1.0, x: 540, y: 960}, {t: "@нашли+0.4", z: 1.18, x: 470, y: 980, ease: "expo.out"}, {t: "@телефон", z: 1.18, x: 470, y: 980}, {t: "@телефон+0.4", z: 1.42, x: 520, y: 900, ease: "expo.out"}]}
+          layers:
+            - {<<: *machine, x: 160, y: 1290, scale: 0.6, brightness: 0.7}
+            - {<<: *machine, x: 940, y: 1290, scale: 0.6, brightness: 0.7}
+            - {actor: shape, kind: rect, x: -300, y: 1280, w: 1700, h: 700, fill: "#1a1220", origin: top-left}
+            - {<<: *machine, id: target_m, x: 600, y: 1420, scale: 0.78}
+            - id: guy
+              actor: person
+              view: side
+              x: 330
+              y: 1440
+              scale: 1.55
+              look: {age: adult, outfit: casual, hair: short, silhouette: "#050308"}
+              pose: [{at: 0, v: stand}, {at: "@подносил", v: reach, dur: 0.45}]
+              hold: phone
+            - actor: cctv
+              space: screen
+              cam: "CAM 07 · ЗАЛ B"
+              date: "2014-06-02"
+              clock: 85200
+              label: "ЦЕЛЬ"
+              box_at: "@нашли"
+              box: [{at: 0, v: [250, 640, 360, 820]}, {at: "@телефон", v: [430, 650, 260, 260], dur: 0.4}]
+            - {actor: callout, target: "target_m.screen", x: 760, y: 470, title: "ТЕЛЕФОН У ЭКРАНА", color: alarm, size: 40, at: "@телефон", enter: pop, space: screen}
+      - id: c_money
+        start: "@выиграл-0.12"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: flash, events: [{at: "@тысячу", amp: 0.35, decay: 0.4}]}
+          - {type: glow, at: [540, 1000], sigma: 380, color: [1.0, 0.8, 0.3], intensity: 0.1}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1, sat: 1.15}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], shakes: [{at: "@тысячу", amp: 12, dur: 0.3}]}
+          layers:
+            - <<: *machine
+              x: 540
+              y: 2060
+              scale: 1.62
+              start: [seven, seven, seven]
+              wins: ["@тысячу"]
+              credits: [{at: 0, v: 1300}, {at: "@выиграл", v: 21000, dur: 1.15, ease: inOut}]
+            - {actor: coins, bursts: [{at: "@тысячу", x: 540, y: 1150, count: 40, power: 1900, spread: 110}]}
+            - actor: text
+              text: "${n}"
+              x: 540
+              y: 300
+              size: 150
+              weight: 900
+              color: gold
+              stroke: {w: 10, color: "#12051f"}
+              shadow: "0 0 34px rgba(255,211,77,.7)"
+              count: {from: 0, to: 21000, at: "@двадцать", dur: 1.0, sep: " "}
+              at: "@двадцать-0.05"
+              enter: pop
+            - {actor: text, text: "ЗА 2 ДНЯ", x: 540, y: 430, size: 56, font: mono, color: "#ffffff", at: "@долларов", enter: rise}
+    sfx:
+      - {sound: blip, at: "@нашли", gain: -14}
+      - {sound: click, at: "@телефон", gain: -14}
+      - {sound: typing, at: "@выиграл", gain: -18}
+      - {sound: sparkle, at: "@тысячу", gain: -13}
+
+  # ------------------------------------------------------------------ 4. FORMULA — случайность это формула
+  - id: formula
+    accent: "77,225,255"
+    caption_marks: {"формулу": "77,225,255", "формула": "77,225,255"}
+    text: Фокус в том, что автомат не случаен. Результат выбирает формула. А формулу можно вычислить.
+    shots:
+      - id: f_reels
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 900], sigma: 420, color: [0.3, 0.85, 1.0], intensity: 0.1}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.45, y: 980}]}
+          layers:
+            - {actor: digits, color: code, size: 30, speed: 2.5, density: 0.55, opacity: [{at: 0, v: 0}, {at: "@Фокус", v: 0.6, dur: 1.2}]}
+            - <<: *machine
+              x: 540
+              y: 1700
+              scale: 1.25
+              start: [cherry, seven, bell]
+              spins: [{at: "@start", dur: 2.0, stagger: 0.2, result: [bar, star, cherry], loops: 3}]
+              digits: [{at: 0, v: 0}, {at: "@Фокус", v: 1, dur: 1.0}]
+            - {actor: text, text: "СЛУЧАЙНО", x: 540, y: 380, size: 110, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#05020b"}, space: screen, at: "@автомат", enter: pop}
+            - {actor: text, text: "ПСЕВДО", x: 540, y: 260, size: 84, weight: 900, color: code, stroke: {w: 8, color: "#05020b"}, rot: -6, space: screen, at: "@случаен", enter: stamp, shadow: "0 0 28px rgba(77,225,255,.8)"}
+      - id: f_math
+        start: "@Результат-0.12"
+        transition: {type: dissolve, dur: 0.35}
+        look: {bloom: [0.7, 0.35]}
+        draw:
+          bg: {type: radial, at: "50% 35%", stops: [[0, "#0b2230"], [1, "#03070c"]]}
+          camera: {keys: [{t: 0, z: 1.08}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: digits, color: code, size: 28, speed: 2, density: 0.45, opacity: 0.35}
+            - {actor: text, text: "ФОРМУЛА", x: 540, y: 300, size: 46, font: mono, color: "#8fdcef", at: "@выбирает", enter: fade, letter: 6}
+            - actor: text
+              text: "Xₙ₊₁ = (a·Xₙ + c) mod m"
+              x: 540
+              y: 420
+              size: 66
+              font: mono
+              color: code
+              shadow: "0 0 26px rgba(77,225,255,.8)"
+              at: "@формула-0.1"
+              reveal: {by: char, mode: type, stagger: 0.035}
+            - {actor: text, text: "условная схема", x: 540, y: 500, size: 28, font: mono, color: "#5f8796", at: "@формула+0.6", enter: fade}
+            - {actor: shape, kind: arrow, points: [[540, 560], [540, 690]], stroke: code, sw: 8, at: "@вычислить-0.1", enter: draw, enter_dur: 0.4}
+            - <<: *machine
+              x: 540
+              y: 1290
+              scale: 0.58
+              neon: "#4de1ff"
+              start: [bar, cherry, bell]
+              spins: [{at: "@формулу", dur: 0.6, stagger: 0.15, result: [seven, seven, seven]}]
+              wins: ["@вычислить+0.15"]
+            - {actor: badge, x: 540, y: 1130, title: "МОЖНО ВЫЧИСЛИТЬ", style: solid, color: code, size: 50, at: "@вычислить", enter: stamp}
+    sfx:
+      - {sound: noise_sweep, at: "@Фокус", gain: -16}
+      - {sound: kick, at: "@случаен", gain: -12}
+      - {sound: typing, at: "@формула", gain: -16}
+      - {sound: ping, at: "@вычислить", gain: -14}
+
+  # ------------------------------------------------------------------ 5. REMOTE — мозг схемы в Петербурге
+  - id: remote
+    accent: "77,225,255"
+    caption_marks: {"Петербург": "77,225,255", "четверть секунды": "255,211,77"}
+    text: Телефон снимал пару десятков вращений и отправлял видео в Петербург. Там вычисляли ритм машины. И за четверть секунды до нужного нажатия телефон вибрировал.
+    shots:
+      - id: r_rec
+        transition: {type: whip_y, flash: 0.08}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.08}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.07, y: 940}]}
+          layers:
+            - {<<: *machine, x: 540, y: 2000, scale: 1.7, blur: 9, brightness: 0.5, start: [seven, bar, cherry], spins: [{at: "@start", dur: 0.5, result: [bell, star, cherry]}, {at: "@start+1.0", dur: 0.5, result: [bar, bar, seven]}, {at: "@start+2.0", dur: 0.5, result: [cherry, bell, star]}]}
+            - {actor: hand, pose: hold_back, x: 540, y: 960, scale: 0.92, sleeve: "#161a28"}
+            - id: ph
+              actor: phone
+              x: 540
+              y: 960
+              scale: 0.92
+              screen: app
+              glow: "#ff3b4e"
+              children:
+                - {<<: *machine, x: 262, y: 840, scale: 0.62, start: [seven, bar, cherry], spins: [{at: "@start", dur: 0.5, result: [bell, star, cherry]}, {at: "@start+1.0", dur: 0.5, result: [bar, bar, seven]}, {at: "@start+2.0", dur: 0.5, result: [cherry, bell, star]}]}
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 524, h: 924, fill: "rgba(0,0,0,.25)", origin: top-left}
+                - {actor: text, text: "● REC", x: 110, y: 72, size: 34, font: mono, color: "#ff3b4e", blink: {freq: 1.2}}
+                - {actor: text, text: "ВРАЩЕНИЙ: {n}", x: 262, y: 150, size: 40, font: mono, color: "#ffffff", count: {from: 1, to: 24, at: "@снимал", dur: 1.4}}
+                - {actor: meter, x: 262, y: 875, w: 440, value: [{at: 0, v: 0}, {at: "@отправлял", v: 100, dur: 0.7}], max: 100, label: "ОТПРАВКА", color: code, size: 26, at: "@отправлял-0.1", enter: fade}
+            - {actor: hand, pose: hold_front, x: 540, y: 960, scale: 0.92}
+            - {actor: text, text: "24 ВРАЩЕНИЯ", x: 540, y: 250, size: 70, weight: 900, color: gold, stroke: {w: 8, color: "#05020b"}, space: screen, at: "@десятков", enter: pop}
+            - {actor: shape, kind: rect, x: 520, y: 520, w: 40, h: 40, radius: 8, fill: code, glow: {color: "#4de1ff", r: 16, a: 1}, at: "@отправлял", anim: [{at: "@отправлял", dur: 0.55, dy: -700, ease: in}], enter: pop}
+            - {actor: shape, kind: rect, x: 470, y: 560, w: 30, h: 30, radius: 6, fill: code, glow: {color: "#4de1ff", r: 14, a: 1}, at: "@отправлял+0.12", anim: [{at: "@отправлял+0.12", dur: 0.55, dy: -760, ease: in}], enter: pop}
+            - {actor: shape, kind: rect, x: 590, y: 560, w: 30, h: 30, radius: 6, fill: code, glow: {color: "#4de1ff", r: 14, a: 1}, at: "@отправлял+0.24", anim: [{at: "@отправлял+0.24", dur: 0.55, dy: -760, ease: in}], enter: pop}
+      - id: r_map
+        start: "@Петербург-0.12"
+        transition: {type: whip_x, flash: 0.06}
+        effects:
+          - {type: glow, at: [700, 520], sigma: 300, color: [0.3, 0.85, 1.0], intensity: 0.12, pulse: {freq: 1.0, amp: 0.3}}
+        look: {bloom: [0.7, 0.35]}
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#0d1530"], [1, "#03050c"]]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - {actor: stars, region: [0, 0, 1080, 1920], count: 140, size: 2.5}
+            - actor: map
+              x: 540
+              y: 760
+              w: 980
+              h: 980
+              projection: orthographic
+              rotate: [{at: 0, v: [-62, 42]}, {at: "@вычисляли", v: [-25, 50], dur: 2.2}]
+              land: "#1d2c52"
+              ocean: "#0a1226"
+              stroke: "#2b3f73"
+              graticule: true
+              pin_color: gold
+              pins:
+                - {lon: -90.2, lat: 38.63, label: "СЕНТ-ЛУИС", at: "@start", size: 34}
+                - {lon: 30.31, lat: 59.94, label: "ПЕТЕРБУРГ", at: "@Петербург+0.9", size: 40, color: code}
+              routes:
+                - {src: [-90.2, 38.63], dst: [30.31, 59.94], at: "@Петербург-0.05", dur: 1.0, color: code, width: 7, packets: 3, period: 1.1}
+            - actor: group
+              x: 740
+              y: 1010
+              scale: 0.85
+              at: "@вычисляли-0.05"
+              enter: pop
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 520, h: 300, radius: 20, fill: "rgba(6,20,32,.92)", stroke: code, sw: 3}
+                - {actor: text, text: "РИТМ МАШИНЫ", x: 0, y: -105, size: 30, font: mono, color: code}
+                - {actor: chart, type: line, x: 0, y: 30, w: 440, h: 190, values: false, color: "#4de1ff", size: 1, data: [{label: "", value: 3}, {label: "", value: 8}, {label: "", value: 2}, {label: "", value: 9}, {label: "", value: 4}, {label: "", value: 7}, {label: "", value: 1}, {label: "", value: 8}, {label: "", value: 5}], grow: {at: "@вычисляли", dur: 1.0}}
+      - id: r_buzz
+        start: "@четверть-0.12"
+        captions_top: 1480
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: flash, events: [{at: "@вибрировал+0.3", amp: 0.3, decay: 0.35}]}
+          - {type: glow, at: [690, 1180], sigma: 220, color: [1.0, 0.25, 0.35], intensity: 0.12, pulse: {freq: 2, amp: 0.4}}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1, sat: 1.15}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: "@вибрировал", z: 1.1, y: 960}], shakes: [{at: "@вибрировал", amp: 10, dur: 0.3}, {at: "@вибрировал+0.25", amp: 16, dur: 0.3}]}
+          layers:
+            - <<: *machine
+              x: 540
+              y: 1600
+              scale: 1.25
+              start: [bar, cherry, star]
+              spins: [{at: "@четверть", dur: 1.75, stagger: 0.12, result: [seven, seven, seven], loops: 4}]
+              press: ["@вибрировал+0.25"]
+              wins: ["@вибрировал+0.45"]
+              button_glow: 1
+            - {actor: coins, bursts: [{at: "@вибрировал+0.45", x: 540, y: 1470, count: 24, power: 1500}]}
+            - {actor: phone, x: 175, y: 930, rot: -12, scale: 0.42, screen: lock, time: "03:41", glow: "#ffd34d", shakes: [{at: "@вибрировал", amp: 10, dur: 0.35}]}
+            - {actor: buzz, x: 175, y: 930, w: 270, h: 230, color: gold, times: ["@вибрировал"]}
+            - id: finger
+              actor: hand
+              pose: point
+              x: 690
+              y: 1265
+              rot: 160
+              scale: 0.9
+              sleeve: "#161a28"
+              anim: [{at: "@вибрировал+0.17", dur: 0.08, dy: 75, ease: in}, {at: "@вибрировал+0.42", dur: 0.25, dy: -50}]
+            - actor: text
+              text: "{n} С"
+              x: 540
+              y: 190
+              size: 110
+              weight: 900
+              color: gold
+              stroke: {w: 10, color: "#05020b"}
+              shadow: "0 0 30px rgba(255,211,77,.7)"
+              space: screen
+              count: {from: 1.0, to: 0.25, at: "@четверть", dur: 0.6, decimals: 2}
+              at: "@четверть-0.05"
+              enter: pop
+    sfx:
+      - {sound: click, at: "@снимал", gain: -15}
+      - {sound: whoosh, at: "@отправлял", gain: -15}
+      - {sound: noise_sweep, at: "@Петербург", gain: -16}
+      - {sound: blip, at: "@ритм", gain: -15}
+      - {sound: buzz, at: "@вибрировал", gain: -13, f: 120, d: 0.08, n: 3}
+      - {sound: kick, at: "@вибрировал+0.25", gain: -11}
+      - {sound: sparkle, at: "@вибрировал+0.45", gain: -14}
+
+  # ------------------------------------------------------------------ 6. BAN — подарок от запрета
+  - id: ban
+    accent: "255,59,78"
+    caption_marks: {"запретила казино": "255,59,78"}
+    text: Откуда у них такие автоматы? В две тысячи девятом Россия запретила казино — и машины распродали за бесценок.
+    shots:
+      - id: b_sign
+        transition: {type: flash, dur: 0.25}
+        effects:
+          - {type: glow, at: [540, 720], sigma: 380, color: [1.0, 0.2, 0.8], intensity: 0.14, until: "@запретила+0.6", fade_out: 0.5}
+          - {type: tint_pulse, at: "@запретила", decay: 0.7, gain: [0.3, 0.0, 0.02], lift: [0.06, 0.0, 0.0]}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1}}
+        ambience: [{sound: wind, gain: -22}, {sound: city, gain: -24}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.1, y: 900}]}
+          layers:
+            - {actor: sky, hour: 22.5, par: 0, clouds: 3}
+            - {actor: skyline, x: 540, y: 1180, w: 1600, h: 420, color: "#0e0a1c", color2: "#171030", lit: 0.25, par: 0.35}
+            - {actor: shape, kind: rect, x: 60, y: 560, w: 960, h: 1000, fill: {linear: ["#1c1230", "#0d0818"], angle: 180}, stroke: "#2a1f45", sw: 4, origin: top-left}
+            - {actor: shape, kind: rect, x: 340, y: 1060, w: 400, h: 500, radius: 10, fill: "#07040d", stroke: "#3a2a5c", sw: 6, origin: top-left}
+            - {actor: neon_sign, text: "КАЗИНО", x: 540, y: 780, size: 150, color: neon, off_at: "@запретила", stagger: 0.09}
+            - {actor: timetag, text: "РОССИЯ · 1 ИЮЛЯ 2009", x: 540, y: 250, size: 38, color: alarm, space: screen, at: "@две-0.05", enter: wipe_right, enter_dur: 0.5}
+            - {actor: text, text: "ЗАПРЕТ", x: 540, y: 1220, size: 150, weight: 900, color: alarm, stroke: {w: 10, color: "#05020b"}, rot: -8, space: screen, at: "@запретила", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
+            - {actor: prop, kind: question, x: 900, y: 470, scale: 2.2, color: gold, at: "@Откуда", until: "@две", enter: pop, exit: shrink, wiggle: {rot: 8, freq: 1.2}, glow: {color: "#ffd34d", r: 14, a: 0.9}}
+      - id: b_sale
+        start: "@машины-0.12"
+        transition: {type: whip_x, flash: 0.06}
+        look: {bloom: [0.7, 0.3]}
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#241034"], [1, "#07030c"]]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540}, {t: end, z: 1.0, x: 700}]}
+          layers:
+            - {actor: shape, kind: rect, x: -400, y: 1330, w: 2200, h: 700, fill: "#140a1c", origin: top-left}
+            - {<<: *machine, x: 160, y: 1340, scale: 0.6, lights: 0.2, anim: [{at: "@бесценок", dur: 0.7, dx: 1500, ease: in}]}
+            - {<<: *machine, x: 540, y: 1340, scale: 0.6, lights: 0.2, title: "FORTUNE", neon: "#4de1ff", anim: [{at: "@бесценок+0.08", dur: 0.7, dx: 1500, ease: in}]}
+            - {<<: *machine, x: 920, y: 1340, scale: 0.6, lights: 0.2, title: "BONUS", neon: "#7a2cff", anim: [{at: "@бесценок+0.16", dur: 0.7, dx: 1500, ease: in}]}
+            - {actor: badge, x: 160, y: 900, title: "УЦЕНКА", style: solid, color: alarm, size: 44, rot: -10, at: "@машины", enter: stamp, anim: [{at: "@бесценок", dur: 0.7, dx: 1500, ease: in}]}
+            - {actor: badge, x: 540, y: 900, title: "УЦЕНКА", style: solid, color: alarm, size: 44, rot: 6, at: "@машины+0.12", enter: stamp, anim: [{at: "@бесценок+0.08", dur: 0.7, dx: 1500, ease: in}]}
+            - {actor: badge, x: 920, y: 900, title: "УЦЕНКА", style: solid, color: alarm, size: 44, rot: -6, at: "@машины+0.24", enter: stamp, anim: [{at: "@бесценок+0.16", dur: 0.7, dx: 1500, ease: in}]}
+            - {actor: text, text: "РАСПРОДАЖА", x: 540, y: 330, size: 110, weight: 900, color: gold, stroke: {w: 8, color: "#05020b"}, space: screen, at: "@машины", enter: stamp, shadow: "0 0 30px rgba(255,211,77,.6)"}
+    sfx:
+      - {sound: glitch, at: "@Откуда", gain: -15}
+      - {sound: slam, at: "@запретила", gain: -11}
+      - {sound: pop, at: "@машины", gain: -14}
+      - {sound: whoosh, at: "@бесценок", gain: -14}
+
+  # ------------------------------------------------------------------ 7. ARREST — четверть миллиона и арест
+  - id: arrest
+    accent: "255,211,77"
+    caption_marks: {"двухсот пятидесяти тысяч долларов": "255,211,77"}
+    text: Команда из четырёх таких игроков могла поднять больше двухсот пятидесяти тысяч долларов за неделю. В декабре четверых из них арестовали.
+    shots:
+      - id: a_team
+        transition: {type: whip_y, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 420], sigma: 360, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.12, y: 1000}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {<<: *machine, x: 140, y: 1330, scale: 0.62, par: 0.6, brightness: 0.55, blur: 2}
+            - {<<: *machine, x: 420, y: 1330, scale: 0.62, par: 0.6, brightness: 0.55, blur: 2, title: "FORTUNE", neon: "#4de1ff"}
+            - {<<: *machine, x: 700, y: 1330, scale: 0.62, par: 0.6, brightness: 0.55, blur: 2, title: "BONUS", neon: "#7a2cff"}
+            - {<<: *machine, x: 980, y: 1330, scale: 0.62, par: 0.6, brightness: 0.55, blur: 2}
+            - {actor: shape, kind: rect, x: -400, y: 1320, w: 2000, h: 700, fill: {linear: ["#3a0d2e", "#12040e"], angle: 180}, origin: top-left}
+            - {actor: person, x: 210, y: 1560, scale: 1.45, look: {age: adult, outfit: casual, silhouette: "#0a0710"}, at: "@четырёх-0.1", enter: rise}
+            - {actor: person, x: 430, y: 1560, scale: 1.5, look: {age: adult, outfit: suit, silhouette: "#0a0710"}, at: "@четырёх+0.05", enter: rise}
+            - {actor: person, x: 650, y: 1560, scale: 1.45, look: {age: adult, outfit: casual, hair: long, silhouette: "#0a0710"}, at: "@четырёх+0.2", enter: rise}
+            - {actor: person, x: 870, y: 1560, scale: 1.5, look: {age: adult, outfit: casual, hat: cap, silhouette: "#0a0710"}, at: "@четырёх+0.35", enter: rise}
+            - {actor: coins, kind: bill, rain: {from: "@двухсот", until: "@неделю+1", count: 46}}
+            - actor: text
+              text: "${n}+"
+              x: 540
+              y: 340
+              size: 140
+              weight: 900
+              color: gold
+              stroke: {w: 10, color: "#12051f"}
+              shadow: "0 0 34px rgba(255,211,77,.7)"
+              space: screen
+              count: {from: 0, to: 250000, at: "@двухсот", dur: 1.5, sep: " "}
+              at: "@двухсот-0.05"
+              enter: pop
+            - {actor: text, text: "ЗА НЕДЕЛЮ", x: 540, y: 475, size: 60, font: mono, color: "#ffffff", space: screen, at: "@неделю-0.05", enter: rise}
+      - id: a_cuffs
+        start: "@декабре-0.12"
+        transition: {type: flash, dur: 0.2}
+        look: {bloom: [0.6, 0.4], grade: {contrast: 0.12}}
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#1a0c22"], [1, "#05020a"]]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@арестовали", amp: 14, dur: 0.35}]}
+          layers:
+            - {actor: shape, kind: circle, x: 180, y: 900, r: 760, fill: {radial: ["rgba(255,40,60,.75)", "rgba(255,40,60,0)"]}, blink: {freq: 2.2, duty: 0, min: 0.05}}
+            - {actor: shape, kind: circle, x: 900, y: 900, r: 760, fill: {radial: ["rgba(40,110,255,.75)", "rgba(40,110,255,0)"]}, blink: {freq: 2.2, duty: 0, min: 0.05, phase: 3.14}}
+            - {actor: shape, kind: rect, x: -400, y: 1320, w: 2000, h: 700, fill: "#0c0610", origin: top-left}
+            - {actor: person, x: 210, y: 1560, scale: 1.45, look: {age: adult, outfit: casual, silhouette: "#05030a"}, pose: [{at: 0, v: stand}, {at: "@арестовали", v: arms_up, dur: 0.3}]}
+            - {actor: person, x: 430, y: 1560, scale: 1.5, look: {age: adult, outfit: suit, silhouette: "#05030a"}, pose: [{at: 0, v: stand}, {at: "@арестовали+0.08", v: arms_up, dur: 0.3}]}
+            - {actor: person, x: 650, y: 1560, scale: 1.45, look: {age: adult, outfit: casual, hair: long, silhouette: "#05030a"}, pose: [{at: 0, v: stand}, {at: "@арестовали+0.16", v: arms_up, dur: 0.3}]}
+            - {actor: person, x: 870, y: 1560, scale: 1.5, look: {age: adult, outfit: casual, hat: cap, silhouette: "#05030a"}, pose: [{at: 0, v: stand}, {at: "@арестовали+0.24", v: arms_up, dur: 0.3}]}
+            - {actor: text, text: "АРЕСТ", x: 540, y: 380, size: 170, weight: 900, color: "#ffffff", stroke: {w: 12, color: "#c2001f"}, rot: -6, space: screen, at: "@арестовали-0.05", enter: stamp, shadow: "0 0 40px rgba(255,40,60,.8)"}
+            - {actor: timetag, text: "ДЕКАБРЬ 2014 · СЕНТ-ЛУИС", x: 540, y: 250, size: 36, color: alarm, space: screen, at: "@декабре", enter: wipe_right, enter_dur: 0.5}
+            - {actor: badge, x: 540, y: 560, title: "10+ КАЗИНО · 3 ШТАТА", style: dark, color: alarm, size: 40, space: screen, at: "@арестовали+0.45", enter: pop}
+    sfx:
+      - {sound: footstep, at: "@четырёх", gain: -16}
+      - {sound: sparkle, at: "@неделю", gain: -15}
+      - {sound: alarm, at: "@декабре", gain: -18}
+      - {sound: slam, at: "@арестовали", gain: -11}
+
+  # ------------------------------------------------------------------ 8. NOFIX — починить нельзя, выдаёт палец
+  - id: nofix
+    accent: "255,59,78"
+    caption_marks: {"палец": "255,211,77"}
+    text: Но автоматы так и не починили — пришлось бы менять все. Единственная примета для охраны — палец, который слишком долго висит над кнопкой.
+    shots:
+      - id: n_rows
+        transition: {type: dip, dur: 0.35}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.1}}
+        ambience: [{sound: room, gain: -20}]
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.25, y: 1000}, {t: end, z: 0.95, y: 960}]}
+          layers:
+            - {<<: *machine, x: 100, y: 1050, scale: 0.36, brightness: 0.5, lights: [{at: 0, v: 0.15}, {at: "@менять", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 320, y: 1050, scale: 0.36, brightness: 0.5, lights: [{at: 0, v: 0.15}, {at: "@менять+0.05", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 540, y: 1050, scale: 0.36, brightness: 0.5, lights: [{at: 0, v: 0.15}, {at: "@менять+0.1", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 760, y: 1050, scale: 0.36, brightness: 0.5, lights: [{at: 0, v: 0.15}, {at: "@менять+0.15", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 980, y: 1050, scale: 0.36, brightness: 0.5, lights: [{at: 0, v: 0.15}, {at: "@менять+0.2", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 0, y: 1500, scale: 0.5, brightness: 0.75, lights: [{at: 0, v: 0.15}, {at: "@менять+0.1", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 300, y: 1500, scale: 0.5, brightness: 0.75, title: "FORTUNE", neon: "#4de1ff", lights: [{at: 0, v: 0.15}, {at: "@менять+0.15", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 600, y: 1500, scale: 0.5, brightness: 0.75, title: "BONUS", neon: "#7a2cff", lights: [{at: 0, v: 0.15}, {at: "@менять+0.2", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 900, y: 1500, scale: 0.5, brightness: 0.75, lights: [{at: 0, v: 0.15}, {at: "@менять+0.25", v: 1, dur: 0.2}]}
+            - {<<: *machine, x: 1200, y: 1500, scale: 0.5, brightness: 0.75, title: "FORTUNE", neon: "#4de1ff", lights: [{at: 0, v: 0.15}, {at: "@менять+0.3", v: 1, dur: 0.2}]}
+            - {actor: shape, kind: rect, x: -600, y: 1490, w: 2400, h: 700, fill: {linear: ["#3a0d2e", "#12040e"], angle: 180}, origin: top-left}
+            - {actor: image, emoji: "🔧", x: 540, y: 420, size: 220, space: screen, at: "@автоматы", enter: pop}
+            - {actor: shape, kind: line, points: [[400, 560], [680, 280]], stroke: alarm, sw: 26, cap: round, space: screen, at: "@починили", enter: draw, enter_dur: 0.3}
+            - {actor: badge, x: 540, y: 690, title: "ЗАМЕНИТЬ ВСЕ?", style: solid, color: gold, size: 54, space: screen, at: "@менять", enter: stamp}
+      - id: n_finger
+        start: "@Единственная-0.12"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 1180], sigma: 260, color: [1.0, 0.25, 0.4], intensity: 0.12, pulse: {freq: 1.2, amp: 0.4}}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.12, y: 1000}]}
+          layers:
+            - {<<: *machine, x: 228, y: 1450, scale: 2.6, button_glow: 1, lights: 0.6, start: [seven, bar, cherry]}
+            - {actor: hand, pose: point, x: 540, y: 850, rot: 180, scale: 1.0, sleeve: "#161a28", wiggle: {rot: 0.6, freq: 3}, bob: {amp: 4, freq: 1.4}}
+            - actor: cctv
+              space: screen
+              cam: "CAM 12 · ЗАЛ B"
+              date: "2014-06-02"
+              clock: 85420
+              label: "ПАЛЕЦ НАД КНОПКОЙ"
+              box_at: "@палец-0.05"
+              box: [420, 540, 240, 440]
+            - actor: text
+              text: "ЖДЁТ: {n} С"
+              x: 540
+              y: 1150
+              size: 56
+              font: mono
+              color: "#ffffff"
+              space: screen
+              count: {from: 0, to: 4.0, at: "@палец", dur: 2.5, decimals: 1}
+              at: "@палец"
+              enter: fade
+    sfx:
+      - {sound: buzz, at: "@починили", gain: -15}
+      - {sound: groan, at: "@менять", gain: -15}
+      - {sound: blip, at: "@палец", gain: -14}
+      - {sound: heartbeat, at: "@висит", gain: -12}
+
+  # ------------------------------------------------------------------ 9. CTA — взлом или математика + петля к началу
+  - id: cta
+    accent: "255,211,77"
+    text: "Это взлом или просто математика? Пиши одним словом — и подпишись: дальше афера ещё наглее."
+    shots:
+      - id: z_choice
+        transition: {type: whip_x, flash: 0.08}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: digits, color: code, size: 28, speed: 1.6, density: 0.3, opacity: 0.18}
+            - actor: group
+              x: 540
+              y: 560
+              at: "@взлом-0.05"
+              enter: stamp
+              pulse: {freq: 1.6, amp: 0.03}
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 760, h: 220, radius: 110, origin: center, fill: {linear: ["#ff5a6e", "#b3001b"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#ff3b4e", r: 30, a: 0.9}}
+                - {actor: text, text: "ВЗЛОМ", x: 0, y: 4, size: 110, weight: 900, color: "#ffffff"}
+            - {actor: text, text: "ИЛИ", x: 540, y: 760, size: 70, font: mono, color: "#ffffff", at: "@или", enter: pop, blink: {freq: 1.5, min: 0.4}}
+            - actor: group
+              x: 540
+              y: 960
+              at: "@математика-0.05"
+              enter: stamp
+              pulse: {freq: 1.6, amp: 0.03, phase: 3.14}
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 900, h: 220, radius: 110, origin: center, fill: {linear: ["#5ee8ff", "#0a7fa6"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#4de1ff", r: 30, a: 0.9}}
+                - {actor: text, text: "МАТЕМАТИКА", x: 0, y: 4, size: 100, weight: 900, color: "#ffffff"}
+            - {actor: badge, x: 540, y: 330, icon: "🔔", title: "АФЕРА №2 — ЕЩЁ НАГЛЕЕ", style: solid, color: gold, size: 46, at: "@подпишись", enter: drop}
+      - id: z_loop
+        start: "@наглее-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [600, 560], sigma: 360, color: [1.0, 0.3, 0.85], intensity: 0.12, pulse: {freq: 0.8, amp: 0.3}}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.15}}
+        draw:
+          bg: *casino_bg
+          camera: {keys: [{t: 0, z: 1.06, y: 940}, {t: end, z: 1.0, y: 980}]}
+          layers:
+            - {<<: *machine, x: 80, y: 1260, scale: 0.55, par: 0.45, brightness: 0.45, blur: 3, title: "BONUS", neon: "#7a2cff"}
+            - {<<: *machine, x: 1010, y: 1260, scale: 0.55, par: 0.45, brightness: 0.45, blur: 3, title: "FORTUNE", neon: "#4de1ff"}
+            - *floor
+            - {<<: *machine, x: 610, y: 1600, scale: 1.06, start: [bar, cherry, star], spins: [{at: "@start+0.3", dur: 2.0, result: [seven, bell, star], loops: 4}], button_glow: 1}
+            - {actor: hand, pose: hold_back, x: 300, y: 1060, rot: -9, scale: 0.5, sleeve: "#161a28"}
+            - {actor: phone, x: 300, y: 1060, rot: -9, scale: 0.5, screen: app, glow: "#ff3b4e", shakes: [{at: "@наглее", amp: 9, dur: 0.5}], children: [{actor: text, text: "● REC 00:00", x: 262, y: 120, size: 34, font: mono, color: "#ff3b4e", blink: {freq: 1.2}}]}
+            - {actor: hand, pose: hold_front, x: 300, y: 1060, rot: -9, scale: 0.5}
+            - {actor: buzz, x: 300, y: 1060, w: 300, h: 260, color: gold, times: ["@наглее", "@наглее+0.8"]}
+    sfx:
+      - {sound: blip, at: "@взлом", gain: -14}
+      - {sound: blip, at: "@математика", gain: -14, f: 1900}
+      - {sound: pop, at: "@подпишись", gain: -15}
+      - {sound: buzz, at: "@наглее", gain: -13, f: 120, d: 0.08, n: 3}
+      - {sound: buzz, at: "@наглее+0.8", gain: -15, f: 120, d: 0.08, n: 3}
