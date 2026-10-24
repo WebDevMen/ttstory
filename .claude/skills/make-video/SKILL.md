@@ -21,8 +21,8 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 
 ## 1. Script → project skeleton
 
-1. Agree on the script. If the user gives only an idea, write it: hook in the first 2 s, 3–4 content blocks, a final question/choice + CTA. ~2.5 words/s at rate +20% (60 s ≈ 145 words). Write `ё` where stress matters.
-2. `python3 vg.py new <id> [--from tea|tanker]`, fill in `title`, `voice`, `theme`, and the scenes with `text` and one shot each (plate names you will generate).
+1. Agree on the script. If `projects/<id>/script.yaml` exists (made with the write-script skill), it is the source of truth: `python3 vg.py script check <id>` must be ready, then `python3 vg.py script project <id>` writes a draft `project.yaml` (voice, scenes, shots cut on words, transitions, music sections, sfx, caption marks; each shot is an animatic card with its visual plan as comments) — build the real graphics from those comments and keep the script's timing, on-screen texts and sounds. If the user gives only an idea, write the script first with the write-script skill (or at least: hook in the first 2 s, 3–4 content blocks, a final question/choice + CTA; ~2.5 words/s at rate +20%, 60 s ≈ 145 words; `ё` where stress matters).
+2. Without a script.yaml: `python3 vg.py new <id> [--from tea|tanker]`, fill in `title`, `voice`, `theme`, and the scenes with `text` and one shot each (plate names you will generate).
 3. `python3 vg.py voice <id> && python3 vg.py compile <id>` → check the duration. Trim or extend the text **before** generating images.
 
 ## 2. Style bible → keyframes

@@ -9,6 +9,8 @@
 | «Один день в японской школе», 59 с | **100% своя графика** (без нейросетей): персонажи, панорамы с параллаксом, моушн-дизайн | [`out/school.mp4`](out/school.mp4) | [`projects/school`](projects/school/project.yaml) |
 | «Три часа ночи», 19 с | своя графика в стиле ночных объяснялок: телефон-оповещение, панелька, окна, батарея | [`out/showcase.mp4`](out/showcase.mp4) | [`projects/showcase`](projects/showcase/project.yaml) |
 
+**Сценарии.** Перед видео — инструмент сценариев: тема → исследование с источниками → угол подачи → 8+ крючков → текст по секундам → раскадровка (что в кадре, камера, анимация, графика, звук и переходы на словах) → удержание, вовлечение, упаковка для TikTok/Reels/Shorts → автоматическая проверка с оценкой готовности → документ `script.md` и черновик проекта. Пример: [`projects/blackout/script.md`](projects/blackout/script.md) («3 дня без света в многоэтажке»).
+
 ![Актёры для своей графики](docs/img/actors.jpg)
 
 ![Кадры из «Танкера»](out/preview.jpg)
@@ -17,7 +19,10 @@
 
 ```bash
 ./setup.sh && source .venv/bin/activate     # один раз: пакеты, Chromium, модели
-python3 vg.py new my_video                  # projects/my_video/ из шаблона
+python3 vg.py script new my_video --topic "…" --format what_if   # сценарий (необязательно): script.yaml
+python3 vg.py script check my_video && python3 vg.py script render my_video   # проверка и документ script.md
+python3 vg.py script project my_video       # черновик project.yaml из сценария
+python3 vg.py new my_video                  # …или projects/my_video/ из шаблона
 #   → положить кадры 9:16 в projects/my_video/plates/ (или нарисовать шоты кодом: draw:), написать project.yaml
 python3 vg.py voice my_video && python3 vg.py compile my_video   # длительность и тайминги
 python3 vg.py prep my_video && python3 vg.py grid my_video       # апскейл, глубина, сетка координат
@@ -25,10 +30,11 @@ python3 vg.py preview my_video --shots      # быстрые превью-кад
 python3 vg.py all my_video                  # готовый out/my_video.mp4
 ```
 
-Ещё проще — через Claude Code: откройте сессию с этим репозиторием и напишите «Сделай ролик по сценарию: …» (или `/make-video`). Claude пройдёт весь процесс по инструкции [`.claude/skills/make-video/SKILL.md`](.claude/skills/make-video/SKILL.md).
+Ещё проще — через Claude Code: откройте сессию с этим репозиторием и напишите «Напиши сценарий на тему …» (или `/write-script`) — Claude изучит тему и пришлёт проверенный сценарий по [`.claude/skills/write-script/SKILL.md`](.claude/skills/write-script/SKILL.md). «Сделай ролик по сценарию: …» (или `/make-video`) — Claude соберёт видео по инструкции [`.claude/skills/make-video/SKILL.md`](.claude/skills/make-video/SKILL.md).
 
 ## Документация
 
+- **[docs/SCRIPTING.md](docs/SCRIPTING.md)** — сценарии: процесс от темы до готового сценария, что важно TikTok/Reels/Shorts (с источниками), крючки, форматы, удержание, текст для диктора, раскадровка, упаковка, справочник `script.yaml` и все правила проверки.
 - **[docs/MANUAL.md](docs/MANUAL.md)** — мануал от А до Я: как устроен конвейер, как писать сценарий и промпты для кадров, как оживлять кадры, делать графику и звук, рецепты разных стилей, чек-лист качества, разбор «Танкера», решение проблем.
 - **[docs/DRAW.md](docs/DRAW.md)** — своя графика без нейросетей: нарисованные шоты `draw:`, камера и параллакс, анимация по словам, каталог всех актёров, библиотеки, как написать своего актёра.
 - **[docs/REFERENCE.md](docs/REFERENCE.md)** — справочник по всем параметрам: камера, маски, 20+ эффектов, 24 HUD-компонента, 4 темы, 6 стилей субтитров, 30+ звуков, 15 амбиенсов, 10 музыкальных стилей.
@@ -37,8 +43,9 @@ python3 vg.py all my_video                  # готовый out/my_video.mp4
 ## Устройство
 
 ```
-vg.py                     команды по этапам: voice, compile, prep, grid, preview, scene, audio, hud, mux, qa, all
+vg.py                     команды по этапам: script, voice, compile, prep, grid, preview, scene, audio, hud, mux, qa, all
 engine/
+  script/                 сценарии: база знаний (форматы, крючки, приёмы, площадки), тайминг, проверка, документ, черновик проекта
   tts.py                  озвучка (Microsoft Edge neural TTS) с таймингами слов
   compile.py              таймлайн: сцены, шоты, ссылки на слова "@Слово" → секунды
   prep.py                 Real-ESRGAN ×4 + Depth Anything V2 (ONNX Runtime)
@@ -49,7 +56,7 @@ engine/
   hud/vendor/             GSAP, lottie-web, rough.js, D3, topojson + Natural Earth, three.js — локально, офлайн
   render_hud.cjs          покадровый рендер HUD и нарисованных шотов в headless Chromium (Playwright)
   mux.py, qa.py           финальная сборка (−14 LUFS), контактные листы, сетки координат
-projects/<id>/            project.yaml + plates/ (ключевые кадры) и/или actors/ (свои актёры проекта)
+projects/<id>/            script.yaml + script.md (сценарий), project.yaml + plates/ (ключевые кадры) и/или actors/ (свои актёры проекта)
 out/                      готовые ролики
 ```
 

@@ -394,3 +394,8 @@ audio:
 | `python3 vg.py mux <id> [--maxrate 8M]` | итоговый файл `out/<id>.mp4` |
 | `python3 vg.py qa <id>` | контактные листы (кадр в секунду) и громкость |
 | `python3 vg.py all <id>` | всё по порядку (voice → compile → prep → draw → scene → audio → hud → mux → qa) |
+| `python3 vg.py script formats [имя]` | форматы, типы крючков, роли, приёмы, звуки ([SCRIPTING.md](SCRIPTING.md)) |
+| `python3 vg.py script new <id> --topic "…" [--format f] [--duration 60]` | заготовка сценария `projects/<id>/script.yaml` |
+| `python3 vg.py script check <id> [--tts]` | тайминг сценария, замечания, оценка готовности 0–100 |
+| `python3 vg.py script render <id> [--tts]` | документ сценария `projects/<id>/script.md` |
+| `python3 vg.py script project <id> [--force]` | черновик `project.yaml` из сценария |

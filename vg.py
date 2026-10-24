@@ -16,6 +16,13 @@
   python3 vg.py mux <id>                  final mp4 -> out/<id>.mp4 (loudness -14 LUFS)
   python3 vg.py qa <id>                   contact sheets (1 frame per second) + loudness report
   python3 vg.py all <id>                  voice → compile → prep → draw → scene → audio → hud → mux → qa
+
+Scripts (before production, docs/SCRIPTING.md):
+  python3 vg.py script formats [name]     formats, hook types, retention devices, roles, sounds
+  python3 vg.py script new <id> --topic "…" [--format what_if] [--duration 60]   script.yaml skeleton
+  python3 vg.py script check <id> [--tts] timeline, findings, readiness score
+  python3 vg.py script render <id>        full script document → projects/<id>/script.md
+  python3 vg.py script project <id>       draft project.yaml from the script (handoff to production)
 """
 import argparse
 import functools
@@ -247,6 +254,8 @@ def main():
     p = sub.add_parser("hud"); p.add_argument("id"); p.add_argument("--workers", type=int, default=3); p.set_defaults(fn=cmd_hud)
     p = sub.add_parser("mux"); p.add_argument("id"); p.add_argument("--maxrate", default="8M"); p.set_defaults(fn=cmd_mux)
     p = sub.add_parser("qa"); p.add_argument("id"); p.set_defaults(fn=cmd_qa)
+    from engine.script import cli as script_cli
+    script_cli.add_parser(sub)
     p = sub.add_parser("all"); p.add_argument("id"); p.add_argument("--force", action="store_true"); p.add_argument("--jobs", type=int, default=4)
     p.add_argument("--fast", action="store_true"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=4)
     p.add_argument("--stems", action="store_true"); p.add_argument("--maxrate", default="8M"); p.set_defaults(fn=cmd_all)
