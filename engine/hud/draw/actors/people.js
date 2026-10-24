@@ -61,6 +61,19 @@ const SIDE_POSES = {
 };
 const NEUTRAL = { a1: [0, 0], a2: [0, 0], l1: [0, 0], l2: [0, 0], lean: 0, bow: 0, sit: 0, tilt: 0, nod: 0, jump: 0 };
 
+// natural joint ranges (degrees, screen terms): poses and walk cycles are clamped to them, so an arm never twists
+// backwards and a knee never bends the wrong way; a clamped pose is reported by the layout audit
+const LIMITS = { arm: [-40, 178], elbow: [-160, 165], hip: [-60, 110], knee: [-5, 150], lean: [-35, 95], tilt: [-25, 25], nod: [-30, 35] };
+function clampPose(q, item) {
+  let hit = null;
+  const cl = (v, [a, b], name) => { if (v < a - 0.01 || v > b + 0.01) { hit = name; return Math.min(b, Math.max(a, v)); } return v; };
+  for (const k of ["a1", "a2"]) q[k] = [cl(q[k][0], LIMITS.arm, `${k} плечо`), cl(q[k][1], LIMITS.elbow, `${k} локоть`)];
+  for (const k of ["l1", "l2"]) q[k] = [cl(q[k][0], LIMITS.hip, `${k} бедро`), cl(q[k][1], LIMITS.knee, `${k} колено`)];
+  q.lean = cl(q.lean ?? 0, LIMITS.lean, "наклон"); q.tilt = cl(q.tilt ?? 0, LIMITS.tilt, "голова"); q.nod = cl(q.nod ?? 0, LIMITS.nod, "кивок");
+  item.poseClamped = hit;
+  return q;
+}
+
 function poseObj(v, side) {
   const base = side ? SIDE_POSES : FRONT_POSES;
   const o = typeof v === "string" ? base[v] ?? base.stand : v ?? base.stand;
@@ -363,6 +376,7 @@ export const person = {
           bob = Math.abs(Math.sin(ph)) * (run ? 10 : 5);
         }
         if (it.v("wave_hand", false) || (typeof item.spec.pose === "string" && item.spec.pose === "wave")) q.a2[1] += 25 * Math.sin(t * 9);
+        clampPose(q, item);
         const sit = q.sit ?? 0, bowK = q.bow ?? 0;
         // body placement
         const jump = q.jump ?? 0;

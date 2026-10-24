@@ -162,11 +162,22 @@ export const FIT_MARGIN = 48;            // auto-fit keeps a text at least this 
 // named places for the main kinds of on-screen text (screen space, centred on the vertical axis)
 export const SLOTS = { tag: 200, title: 400, subtitle: 540, main: 880, lower: 1200, footer: 1420 };
 
+// real-world sizes in metres ({h} = height, {w} = width) — with `draw.px_per_m` on a shot, items of these actors are
+// scaled to their real size automatically (their `scale` then means depth: 0.8 = a bit further away), and the layout
+// audit compares the proportions of everything in the frame. Project actors can declare `size_m: {h|w}` on their def.
+export const REAL = {
+  person: (p) => ({ h: { adult: 1.75, student: 1.62, kid: 1.25 }[(p.look && p.look.age) || "student"] ?? 1.62 }),
+  slot_machine: { h: 1.8 }, roulette: { w: 0.8 }, playing_card: { h: 0.089 }, chips: { w: 0.04 }, phone: { h: 0.15 },
+  desk: { h: 0.76 }, streetlight: { h: 4.5 }, clock: { w: 0.35 }, shoe: { w: 0.26 },
+};
+// actors that stand on the ground (origin = bottom): with `draw.floor` they are checked for floor contact
+export const GROUNDED = new Set(["person", "slot_machine", "desk", "streetlight", "tree", "house", "building", "school", "lockers"]);
+
 // ------------------------------------------------------------------ items
 const UNIVERSAL = new Set(["actor", "id", "x", "y", "scale", "sx", "sy", "rot", "opacity", "flip", "par", "space", "at", "until",
   "enter", "enter_dur", "enter_ease", "exit", "exit_dur", "anim", "float", "bob", "wiggle", "sway", "pulse", "spin", "blink",
   "flicker", "shakes", "glow", "glow_k", "shadow", "blur", "brightness", "saturate", "contrast", "hue", "grayscale", "blend",
-  "origin", "sfx", "sfx_gain", "z", "visible", "note", "persp", "tilt_x", "tilt_y", "clip", "fit", "slot"]);
+  "origin", "sfx", "sfx_gain", "z", "visible", "note", "persp", "tilt_x", "tilt_y", "clip", "fit", "slot", "real", "size_m", "depth", "air", "ground"]);
 const TRACKABLE = ["x", "y", "scale", "sx", "sy", "rot", "opacity", "blur", "brightness", "saturate", "contrast", "hue", "grayscale",
   "glow_k", "tilt_x", "tilt_y", "visible"];
 const TIMING = new Set(["at", "dur", "until", "ease", "path", "orient", "from"]);
@@ -287,6 +298,15 @@ export class Item {
     }
     if (this.w != null) { this.fx.style.width = `${this.w}px`; this.fx.style.height = `${this.h}px`; }
     this.origin = resolveOrigin(this.spec.origin ?? this.inst.origin ?? def.origin, this.w, this.h);
+    // real size: scale from metres when the shot sets px_per_m (explicit `scale` is then a depth factor only with real: true)
+    const rm = this.spec.size_m ?? def.size_m ?? REAL[this.spec.actor];
+    this.realM = this.spec.real === false ? null : typeof rm === "function" ? rm(this.props) : rm || null;
+    this.realK = 1;
+    const pxm = H.shot && H.shot.draw && H.shot.draw.px_per_m;
+    if (pxm && this.realM && !this.parent && (this.spec.scale == null || this.spec.real === true)) {
+      const nat = this.realM.h ? this.h : this.w, m = this.realM.h ?? this.realM.w;
+      if (nat) this.realK = (pxm * m) / nat;
+    }
     this.fitK = 1;
     this.fitOn = this.spec.fit !== false && (this.spec.fit != null || (!this.parent && TEXTY.has(this.spec.actor)));
     if (this.fitOn) this.updateFit();
@@ -320,7 +340,7 @@ export class Item {
     this.eo = ext ? P(t, this.until - xd, xd) : 0;
     const a = ent ? enterFx(ent, this.ei, sp.enter) : null, b = ext ? exitFx(ext, this.eo, sp.exit) : null;
     let x = this.v("x", 0), y = this.v("y", 0), rot = this.v("rot", 0);
-    const s = this.v("scale", 1) * (this.fitK ?? 1);
+    const s = this.v("scale", 1) * (this.fitK ?? 1) * (this.realK ?? 1);
     let sx = s * this.v("sx", 1) * (this.v("flip", false) ? -1 : 1), sy = s * this.v("sy", 1);
     for (const p of this.paths) {
       if (t < p.at) continue;

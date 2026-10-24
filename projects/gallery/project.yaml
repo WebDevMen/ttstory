@@ -147,3 +147,19 @@ scenes:
                 - {actor: card, emoji: "🌦️", title: "ДВА", w: 280, style: dark, color: "#4de1ff"}
                 - {actor: card, emoji: "🎭", title: "ТРИ", w: 280, style: dark, color: "#ff8a3c"}
             - {actor: text, slot: footer, text: "НЕВЕРОЯТНОСТЬ", size: 160, rot: -6, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}}
+  - id: physics
+    text: Пропорции.
+    shots:
+      - id: physics
+        draw:
+          bg: "#1a1622"
+          floor: 1500
+          px_per_m: 420
+          layers:
+            - {actor: shape, kind: rect, x: 0, y: 1500, w: 1080, h: 420, origin: top-left, fill: "#2c2433"}
+            - {actor: slot_machine, x: 225, y: floor}
+            - {actor: person, x: 505, y: floor, look: {age: adult, outfit: suit, hair: short}, pose: wave, face: smile}
+            - {actor: person, x: 715, y: floor, look: {age: kid, outfit: casual, hair: short}, pose: cheer, face: happy}
+            - {actor: desk, part: desk, x: 905, y: floor}
+            - {actor: text, slot: title, text: "px_per_m: 420 · y: floor", size: 60, color: "#ffd34d"}
+            - {actor: text, slot: subtitle, text: "автомат 1,8 м · взрослый 1,75 м · ребёнок 1,25 м · парта 0,76 м", size: 30, width: 900, color: "#aab4c8"}

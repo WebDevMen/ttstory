@@ -2,7 +2,7 @@
 // Open /engine/hud/draw.html?project=<id>; window.drawShotFrame(shotId, frame) draws one frame of one shot and returns
 // {cam, anchors} for the scene layer / HUD. Actors: engine/hud/draw/actors/* + projects/<id>/actors/*.js.
 import * as lib from "../lib.js";
-import { Item, ease, track, mix, noise, rng, hex, smoothPath, isTrack, TEXTY, SLOTS } from "./core.js";
+import { Item, ease, track, mix, noise, rng, hex, smoothPath, isTrack, TEXTY, SLOTS, GROUNDED } from "./core.js";
 import BUILTIN from "./actors/index.js";
 import rough from "../vendor/rough.esm.js";
 
@@ -192,7 +192,12 @@ async function buildStage(shot) {
   let layer = null;
   for (const spec0 of d.layers || []) {
     // slot: tag | title | subtitle | main | lower | footer — a named place on the vertical axis (screen space)
-    const spec = spec0.slot ? { x: 540, y: SLOTS[spec0.slot] ?? Number(spec0.slot), space: "screen", ...spec0 } : spec0;
+    let spec = spec0.slot ? { x: 540, y: SLOTS[spec0.slot] ?? Number(spec0.slot), space: "screen", ...spec0 } : spec0;
+    // y: floor / ground: true — stand on the shot's floor line (draw.floor, world px)
+    if (spec.y === "floor" || spec.ground === true) {
+      if (d.floor == null) throw new Error(`shot ${shot.id}: '${spec.actor}' uses the floor, but draw.floor is not set`);
+      spec = { ...spec, y: d.floor };
+    }
     if (spec0.slot && !(spec0.slot in SLOTS) && Number.isNaN(Number(spec0.slot))) throw new Error(`shot ${shot.id}: unknown slot '${spec0.slot}' (${Object.keys(SLOTS).join(", ")})`);
     const space = spec.space === "screen" ? "screen" : "world";
     const par = space === "screen" ? null : Number(spec.par ?? 1);
@@ -285,6 +290,17 @@ function layoutOf(it, out, parentPath, parentMoving) {
     const el = it.inst.el;
     if (el && el.scrollWidth && el.clientWidth && el.scrollWidth > el.clientWidth + 3 && getComputedStyle(el).overflow !== "visible") rec.overflow = true;
   }
+  // real size (proportions), floor contact, pose limits
+  if (it.realM && it.spec.real !== false) {
+    const m = it.screenMatrix(), dim = it.realM.h ? "h" : "w";
+    const px = dim === "h" ? it.h * Math.hypot(m.b, m.d) : it.w * Math.hypot(m.a, m.c);
+    rec.real = { m: it.realM.h ?? it.realM.w, dim, px: Math.round(px), depth: Number(it.spec.depth ?? 1), par: it.layer ? it.layer.par : null };
+  }
+  const floor = H.shot && H.shot.draw && H.shot.draw.floor;
+  if (floor != null && !it.parent && GROUNDED.has(it.spec.actor) && (it.spec.space ?? "world") !== "screen" && (it.layer?.par ?? 1) === Number(H.shot.draw.floor_par ?? 1)) {
+    rec.ground = { y: Math.round(it.v("y", 0)), floor, air: !!it.spec.air };
+  }
+  if (it.poseClamped) rec.pose_clamped = it.poseClamped;
   out.push(rec);
   for (const c of it.children) layoutOf(c, out, path, moving);
 }
