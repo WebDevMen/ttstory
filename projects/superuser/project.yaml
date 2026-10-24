@@ -431,6 +431,7 @@ scenes:
             - {actor: shape, kind: rect, x: 810, y: 900, w: 510, h: 400, radius: 22, fill: "rgba(255,59,78,.0)", stroke: alarm, sw: 8, at: "@сети", enter: zoom, blink: {freq: 2, min: 0.4}, glow: {color: "#ff3b4e", r: 26, a: 1}}
       - id: n_curve
         start: "@аккаунты-0.12"
+        captions_top: 1460      # ниже подписи оси графика
         transition: {type: zoom, dur: 0.3}
         effects:
           - {type: glow, at: [1150, 860], sigma: 240, color: [1.0, 0.3, 0.35], intensity: 0.1, from: "@статистика", fade_in: 0.2}
