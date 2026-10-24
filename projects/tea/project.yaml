@@ -1,0 +1,167 @@
+# «3 правила чайной церемонии» — demo of a completely different look made with the same engine:
+# hand-painted anime plates, female voice, light minimal HUD, box captions, calm pentatonic music, petals & steam.
+
+title: "3 правила чайной церемонии"
+
+voice:
+  voice: ru-RU-SvetlanaNeural
+  rate: "+8%"
+  pitch: "+0Hz"
+  lead_in: 0.3
+  gap: 0.5
+  tail: 1.9
+
+theme:
+  preset: minimal
+  accent: "236,110,150"
+  captions: {style: box_word, uppercase: false, size: 58, top: 1300, hide: [{from: "@cue:cta-0.05"}]}
+
+post: {vignette: 0.3, chromatic: 0, grain: 0.012}
+
+audio:
+  music:
+    key: A
+    mode: minor
+    bpm: 72
+    gain: -11
+    sections:
+      - {at: 0, style: calm, chords: [Am, F, C, G], div: 4}
+      - {at: "@rule1.start", style: calm, chords: [Am, F, C, G], div: 8}
+      - {at: "@rule3.start", style: calm, chords: [F, G, Am, C], div: 8, cutoff: 1300}
+  duck: 0.55
+
+scenes:
+  - id: hook
+    accent: "236,110,150"
+    text: Ты пьёшь чай неправильно. В Японии чаепитие — это целое искусство. Вот три правила, которые знает каждый мастер.
+    shots:
+      - id: garden
+        plate: d1_garden
+        transition: {type: fade, dur: 0.5}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 648, y: 1250}, {t: end, z: 1.12, x: 600, y: 1150}]
+          sway: {x: 4, y: 4, roll: 0.3, freq: 0.1}
+          parallax: {px: 10, py: 4, freq: 0.1, k: [0, 0.06], k_ease: inout}
+        effects:
+          - {type: water, region: [0, 1820, 1296, 2304], amp: 2.0}
+          - {type: fog, color: [1.0, 0.95, 0.9], density: 0.12, curve: 2.0, scale: 2.4, vel: [8, -2], lift: 0.4}
+          - {type: god_rays, at: [250, 120], horizon: 700, intensity: 0.05, sigma: 700, color: [1, 0.95, 0.85]}
+          - {type: glow, at: [580, 1160], depth: 0.4, sigma: 140, color: [1, 0.7, 0.4], intensity: 0.06, pulse: {freq: 0.3, amp: 0.3}}
+          - {type: particles, mode: fall_loop, shape: petal, count: 55, size: [7, 12], speed: [90, 170], sway: 50, drift: 25, color: [1.0, 0.8, 0.87], alpha: 0.95, soft: 0.8}
+        look: {bloom: [0.8, 0.25, [1, 0.95, 0.9]], grade: {exposure: 1.0, contrast: 0.08, sat: 1.05, lift: [0.01, 0.005, 0]}}
+        ambience: [{sound: birds, gain: -11}, {sound: water_calm, gain: -13}, {sound: chimes, gain: -16, base: 880}]
+    hud:
+      - {component: lower_third, at: 0.5, until: 4.2, title: "Киото, Япония", subtitle: "ЧАЙНЫЙ ДОМИК · ВЕСНА", x: 60, y: 300, sfx: false}
+      - {component: title, at: "@Вот-0.1", kicker: "ТЯДО · ПУТЬ ЧАЯ", text: "3 ПРАВИЛА\nЧАЙНОЙ ЦЕРЕМОНИИ", size: 78, width: 860, y: 560, decode: false, sfx: false, exit: fade}
+    sfx:
+      - {sound: bell, at: "@Вот", gain: -12, f: 660, reverb: hall, wet: 0.4}
+      - {sound: sparkle, at: "@Вот+0.1", gain: -20}
+
+  - id: rule1
+    accent: "90,160,70"
+    text: Правило первое — вода никогда не кипит. Идеальная температура — около восьмидесяти градусов, иначе чай станет горьким.
+    shots:
+      - id: kettle
+        plate: d2_kettle
+        transition: {type: dissolve, dur: 0.6}
+        camera:
+          keys: [{t: 0, z: 1.05, x: 700, y: 1500}, {t: end, z: 1.15, y: 1440}]
+          sway: {x: 3, y: 3, roll: 0.2, freq: 0.1}
+          parallax: {px: 8, py: 3, freq: 0.12, d0: 0.7}
+        effects:
+          - {type: particles, mode: smoke, center: [700, 1520], count: 26, size: [18, 70], rise: 700, drift: -60, spread: 15, wobble: 30, life: [2.5, 4.0], depth: 0.7, color: [1, 1, 1], alpha: 0.08}
+          - {type: particles, mode: drift, region: [0, 200, 700, 1500], depth: [0.2, 0.8], count: 60, size: [1.2, 3], color: [1, 0.92, 0.75], alpha: 0.25}
+          - {type: glow, at: [700, 1830], depth: 0.8, sigma: 60, color: [1, 0.45, 0.15], intensity: 0.18, pulse: {freq: 1.3, amp: 0.4}}
+          - {type: fog, color: [1, 0.93, 0.8], density: 0.08, curve: 1.5, scale: 2.0, vel: [4, -6], lift: 0.4}
+        look: {bloom: [0.78, 0.3, [1, 0.92, 0.8]], grade: {exposure: 1.0, contrast: 0.09, sat: 1.04}}
+        ambience: [{sound: fire, gain: -15, lowpass: 3000}, {sound: room, gain: -18}]
+      - id: whisk
+        plate: d3_whisk
+        start: "@иначе-0.15"
+        transition: {type: dissolve, dur: 0.5}
+        captions_top: 1340
+        camera:
+          keys: [{t: 0, z: 1.08, x: 760, y: 1180, roll: 0}, {t: end, z: 1.16, roll: 4}]
+          sway: {x: 3, y: 3, roll: 0.2, freq: 0.12}
+          parallax: {k: [0, 0.04]}
+        masks:
+          matcha: {hue: green, hue_range: [0.08, 0.3], circle: [760, 1180, 280], soft: 20}
+        effects:
+          - {type: ripples, points: [[820, 1250]], circle: [760, 1180, 260], reach: 220, amp: 2.0, freq: 0.12, speed: 9}
+          - {type: flow, mask: matcha, texture: fine, scale: 1.2, stretch: [1, 1], angle: 90, speed: 30, threshold: 0.6, gain: 0.35, color: [0.85, 1, 0.7]}
+          - {type: particles, mode: smoke, center: [760, 1120], count: 18, size: [20, 60], rise: 420, drift: 30, spread: 60, life: [2.5, 3.5], depth: 0.6, color: [1, 1, 1], alpha: 0.07}
+        look: {bloom: [0.8, 0.25, [1, 0.95, 0.85]], grade: {exposure: 1.0, contrast: 0.09, sat: 1.08}}
+        ambience: [{sound: room, gain: -18}]
+    hud:
+      - {component: marker, at: "@rule1.vo_start-0.05", icon: "🍵", text: "**ПРАВИЛО №1** · ВОДА", sfx: false}
+      - {component: counter, at: "@температура-0.1", until: "@shot:whisk.start+0.1", count_at: "@восьмидесяти-0.4", from: 100, to: 80, dur: 1.0, suffix: "°C", label: "ИДЕАЛЬНАЯ ТЕМПЕРАТУРА", y: 470, size: 170}
+      - {component: chip, at: "@горьким-0.1", icon: cross, text: "КИПЯТОК = ГОРЕЧЬ", color: red, x: 540, y: 360, align: center top}
+    sfx:
+      - {sound: chime, at: "@rule1.vo_start", gain: -16, freqs: [880, 1320]}
+      - {sound: hiss, at: "@shot:whisk.start+0.25", gain: -19, d: 0.14, f0: 4500, f1: 2500, repeat: {count: 16, every: 0.17}}
+
+  - id: rule2
+    accent: "90,110,200"
+    captions_top: 780
+    text: Правило второе — чашу поворачивают перед глотком, чтобы не пить с её лицевой стороны. Так гость проявляет скромность и уважение к хозяину.
+    shots:
+      - id: bowl
+        plate: d4_bowl
+        transition: {type: dissolve, dur: 0.6}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 600, y: 1250}, {t: end, z: 1.1, x: 560, y: 1330}]
+          sway: {x: 4, y: 3, roll: 0.3, freq: 0.12}
+          parallax: {px: 14, py: 6, freq: 0.12, d0: 0.85}
+        effects:
+          - {type: particles, mode: smoke, center: [520, 1420], count: 16, size: [15, 50], rise: 380, drift: 20, spread: 50, life: [2.5, 3.5], depth: 0.85, color: [1, 1, 1], alpha: 0.07}
+          - {type: particles, mode: drift, region: [150, 150, 900, 1000], depth: [0.05, 0.15], count: 30, size: [3, 6], color: [1, 0.82, 0.9], alpha: 0.6}
+          - {type: god_rays, at: [600, 280], horizon: 1000, intensity: 0.05, sigma: 600, color: [1, 0.95, 0.8]}
+          - {type: glow, at: [600, 300], sigma: 260, color: [1, 0.9, 0.7], intensity: 0.08}
+        look: {bloom: [0.78, 0.3, [1, 0.93, 0.85]], grade: {exposure: 1.0, contrast: 0.08, sat: 1.05}}
+        ambience: [{sound: birds, gain: -15, density: 0.8}, {sound: room, gain: -20}]
+    hud:
+      - {component: marker, at: "@rule2.vo_start-0.05", icon: "🙏", text: "**ПРАВИЛО №2** · ЧАША", sfx: false}
+      - {component: text, at: "@поворачивают", style: box, text: "↻ повернуть чашу\n**лицом от себя**", size: 48, width: 640, y: 340}
+      - {component: text, at: "@скромность-0.1", style: pill, text: "скромность и уважение", size: 40, y: 1430}
+    sfx:
+      - {sound: chime, at: "@rule2.vo_start", gain: -16, freqs: [988, 1480]}
+
+  - id: rule3
+    accent: "240,130,70"
+    text: Правило третье — последний глоток делают с лёгким звуком, так ты благодаришь за чай. Какое правило удивило тебя больше всего? Пиши в комментариях!
+    cues: {cta: "@Пиши"}
+    shots:
+      - id: sunset
+        plate: d5_sunset
+        transition: {type: dissolve, dur: 0.8}
+        camera:
+          keys: [{t: 0, z: 1.08, x: 700, y: 1200}, {t: end, z: 1.0, x: 680, y: 1150}]
+          sway: {x: 4, y: 3, roll: 0.25, freq: 0.1}
+          parallax: {px: 12, py: 4, freq: 0.1, d0: 0.3}
+        effects:
+          - {type: water, region: [480, 1360, 1296, 1720], amp: 2.2}
+          - {type: sky_drift, y_max: [900, 1200], speed: 1.0, wobble: 2}
+          - {type: glow, at: [470, 560], depth: 0.6, sigma: 80, color: [1, 0.65, 0.3], intensity: 0.25, pulse: {freq: 0.7, amp: 0.15}}
+          - {type: glow, at: [215, 790], depth: 0.6, sigma: 55, color: [1, 0.65, 0.3], intensity: 0.2, pulse: {freq: 0.9, amp: 0.2}}
+          - {type: glow, at: [1100, 170], depth: 0.7, sigma: 110, color: [1, 0.7, 0.35], intensity: 0.22, pulse: {freq: 0.6, amp: 0.15}}
+          - {type: particles, mode: glints, center_x: 900, y_range: [1380, 1650], spread: 160, max_dx: 350, count: 50, size: [1.5, 3], color: [1, 0.85, 0.75], alpha: 0.9}
+          - {type: fog, color: [1, 0.78, 0.72], density: 0.1, curve: 2.0, scale: 2.6, vel: [6, 0], lift: 0.4, band: {rise: [1000, 1150], fall: [1250, 1400], floor: 0.1}}
+          - {type: particles, mode: fall_loop, shape: petal, count: 40, size: [7, 12], speed: [80, 150], sway: 50, drift: 20, color: [1.0, 0.78, 0.86], alpha: 0.9, soft: 0.8}
+        look: {bloom: [0.75, 0.35, [1, 0.85, 0.8]], grade: {exposure: 1.0, contrast: 0.08, sat: 1.08}}
+        ambience: [{sound: birds, gain: -17, density: 0.6}, {sound: water_calm, gain: -14}, {sound: chimes, gain: -15, base: 660}]
+    hud:
+      - {component: marker, at: "@rule3.vo_start-0.05", until: "@Какое-0.1", icon: "🍃", text: "**ПРАВИЛО №3** · ГЛОТОК", sfx: false}
+      - component: list
+        at: "@Какое-0.2"
+        title: "ЗАПОМНИ"
+        x: 90
+        y: 330
+        width: 900
+        items:
+          - {text: "Вода — около 80 °C, не кипяток", at: "@Какое"}
+          - {text: "Повернуть чашу лицом от себя", at: "@Какое+0.35"}
+          - {text: "Последний глоток — с лёгким звуком", at: "@Какое+0.7"}
+      - {component: cta, at: "@cue:cta-0.06", emoji: "💬", text: "ПИШИ В КОММЕНТАРИЯХ!", y: 1360}
+    sfx:
+      - {sound: chime, at: "@rule3.vo_start", gain: -16, freqs: [784, 1175]}
+      - {sound: gong, at: "@Какое", gain: -18, f: 98}

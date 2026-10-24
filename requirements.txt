@@ -1,0 +1,8 @@
+numpy>=1.26
+scipy>=1.11
+opencv-python-headless>=4.9
+pillow>=10
+pyyaml>=6
+soundfile>=0.12
+onnxruntime>=1.17
+edge-tts>=7.0

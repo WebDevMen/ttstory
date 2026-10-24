@@ -1,48 +1,49 @@
-# TTStory — «Мануал по выживанию: танкер»
+# TTStory — движок вертикальных роликов для TikTok / Shorts / Reels
 
-Пробный вертикальный ролик (9:16, 1080×1920, 30 fps, ~61 с) для TikTok / Shorts / Reels
-по сценарию «Post-Apocalyptic Survival Guide / Interactive Sci-Fi UI».
+Сценарий + несколько AI-кадров превращаются в готовый 60-секундный ролик 9:16 с движением камеры по глубине, живыми эффектами (туман, вода, частицы, свет, молнии), стеклянным интерфейсом с 3D-голограммами, субтитрами с подсветкой слов, звуковым дизайном и музыкой. Всё описывается в одном файле `projects/<id>/project.yaml`.
 
-**Готовое видео:** [`out/tanker_survival_9x16.mp4`](out/tanker_survival_9x16.mp4) — H.264 1080×1920, 30 fps, 8 Мбит/с, AAC 48 кГц, −14 LUFS
-
-![Кадры из ролика](out/preview.jpg)
-
-## Как сделано
-
-Ролик целиком собран кодом из этого репозитория. Видеогенераторы (Veo/Kling через Figma Weave)
-в сессии были недоступны, поэтому используется гибридный пайплайн «AI-кадр + 2.5D-анимация + моушн-дизайн»:
-
-| Этап | Инструмент | Файл |
-|---|---|---|
-| 9 ключевых кадров в стиле stylized 3D CGI | Figma AI (`gemini-3.1-flash-image`) | `assets/plates/*.png`, промпты — `assets/plates/PROMPTS.md` |
-| Апскейл ×4 и карты глубины | Real-ESRGAN x4 + Depth Anything V2 (ONNX Runtime) | `tools/prep_plates.py` |
-| Озвучка (RU, мужской голос) с пословными таймингами | Microsoft Edge Neural TTS (`ru-RU-DmitryNeural`) | `tools/voiceover.py` |
-| Мастер-таймлайн: сцены, шоты, события привязаны к словам диктора | Python | `tools/timeline.py` |
-| Сцена: камера с параллаксом по глубине, туман, вода, дождь, споры, молнии, фонарь, переходы, bloom, грейдинг, зерно | NumPy / OpenCV | `tools/render_scene.py` |
-| HUD: стеклянные голо-панели, маркеры разделов, 3D-схема дистиллятора и голокарта танкера (three.js), радар, кнопки выбора, субтитры с подсветкой слов | HTML/CSS/JS в headless Chromium (Playwright) | `tools/hud/*`, `tools/render_hud.cjs` |
-| Саунд-дизайн: океан, ветер, дождь, гул, шаги, скрежет, гром, существо, UI-клики, бас-райзеры, музыкальная подложка, дакинг, мастеринг −14 LUFS | Процедурный синтез (NumPy/SciPy) | `tools/audio.py` |
-
-## Раскадровка
-
-| Время | Сцена | Визуал | HUD |
+| Ролик | Стиль | Файл | Проект |
 |---|---|---|---|
-| 0:00–0:10 | 1. Вводная | POV на носу танкера: камера спускается от затопленных небоскрёбов к рукам на поручне, туман, рябь воды | Показатели ❤ 75% · ☢ 20% · 💧 1.5 л, плашка «ИНСТРУКЦИЯ: ВЫЖИВАНИЕ НА СУДНЕ» |
-| 0:10–0:22 | 2. Что делать | Тент под дождём и капли в колбу → проход по коридору с фонарём → запирание гермодвери (удар, тряска) | «✅ ДЕЙСТВИЯ: ЧТО ДЕЛАТЬ», 3D-схема дистиллятора, голокарта судна с «Безопасной зоной», «МОСТИК ЗАПЕРТ» |
-| 0:22–0:35 | 3. Что не делать | Ночь, ракетница (вспышка молнии) → взгляд в люк, поднимаются светящиеся споры | «❌ ОШИБКИ: КАТЕГОРИЧЕСКИ НЕЛЬЗЯ», анимированный запрет, «DANGER: BIOHAZARD», счётчик «3 вдоха» |
-| 0:35–0:49 | 4. Угрозы | Течь по шву (струи, рябь в луже) → фонарь гаснет, молния освещает гигантское существо за иллюминатором | Красная пульсирующая рамка, целостность корпуса, 3D-радар с контактом, «⚠ УГРОЗА ОБНАРУЖЕНА» |
-| 0:49–1:01 | 5. Финал | Неоновый компас, закат над затопленным мегаполисом, шторм справа | Топливо 7%, метки города и шторма, кнопки [A] / [B], «👇 НАПИШИ СВОЙ ВЫБОР В КОММЕНТАРИЯХ!» |
+| «Мануал по выживанию: танкер», 61 с | stylized 3D CGI, sci-fi HUD, мужской голос, тёмная электроника | [`out/tanker.mp4`](out/tanker.mp4) | [`projects/tanker`](projects/tanker/project.yaml) |
+| «3 правила чайной церемонии», 36 с | рисованная акварель, светлый минимализм, женский голос, пентатоника | [`out/tea.mp4`](out/tea.mp4) | [`projects/tea`](projects/tea/project.yaml) |
 
-## Пересборка
+![Кадры из «Танкера»](out/preview.jpg)
+
+## Быстрый старт
 
 ```bash
-pip install numpy scipy opencv-python-headless pillow edge-tts onnxruntime soundfile
-npm i -g playwright   # нужен Chromium
-mkdir -p build/models
-curl -L -o build/models/esrgan_x4.onnx https://huggingface.co/imgdesignart/realesrgan-x4-onnx/resolve/main/onnx/model.onnx
-curl -L -o build/models/depth.onnx https://huggingface.co/onnx-community/depth-anything-v2-small/resolve/main/onnx/model.onnx
-./build.sh
+./setup.sh && source .venv/bin/activate     # один раз: пакеты, Chromium, модели
+python3 vg.py new my_video                  # projects/my_video/ из шаблона
+#   → положить кадры 9:16 в projects/my_video/plates/, написать project.yaml
+python3 vg.py voice my_video && python3 vg.py compile my_video   # длительность и тайминги
+python3 vg.py prep my_video && python3 vg.py grid my_video       # апскейл, глубина, сетка координат
+python3 vg.py preview my_video --shots      # быстрые превью-кадры
+python3 vg.py all my_video                  # готовый out/my_video.mp4
 ```
 
-Тексты озвучки — в `tools/voiceover.py`, тайминги событий — в `tools/timeline.py` (`cues`),
-внешний вид HUD — `tools/hud/hud.css`, анимация HUD — `tools/hud/hud.js`, камера и эффекты каждого шота —
-`camera_for()` / `render_shot()` в `tools/render_scene.py`.
+Ещё проще — через Claude Code: откройте сессию с этим репозиторием и напишите «Сделай ролик по сценарию: …» (или `/make-video`). Claude пройдёт весь процесс по инструкции [`.claude/skills/make-video/SKILL.md`](.claude/skills/make-video/SKILL.md).
+
+## Документация
+
+- **[docs/MANUAL.md](docs/MANUAL.md)** — мануал от А до Я: как устроен конвейер, как писать сценарий и промпты для кадров, как оживлять кадры, делать графику и звук, рецепты разных стилей, чек-лист качества, разбор «Танкера», решение проблем.
+- **[docs/REFERENCE.md](docs/REFERENCE.md)** — справочник по всем параметрам: камера, маски, 20+ эффектов, 24 HUD-компонента, 4 темы, 5 стилей субтитров, 30+ звуков, 15 амбиенсов, 10 музыкальных стилей.
+- **[projects/_template/project.yaml](projects/_template/project.yaml)** — шаблон проекта с комментариями.
+
+## Устройство
+
+```
+vg.py                     команды по этапам: voice, compile, prep, grid, preview, scene, audio, hud, mux, qa, all
+engine/
+  tts.py                  озвучка (Microsoft Edge neural TTS) с таймингами слов
+  compile.py              таймлайн: сцены, шоты, ссылки на слова "@Слово" → секунды
+  prep.py                 Real-ESRGAN ×4 + Depth Anything V2 (ONNX Runtime)
+  scene.py                2.5D-камера с параллаксом, маски, библиотека эффектов, переходы, грейдинг
+  audio.py                библиотека звуков и амбиенсов, музыкальные стили, автозвуки, сведение
+  hud/                    HTML/CSS/three.js: runtime, компоненты, темы, 3D-модели, шрифты, эмодзи
+  render_hud.cjs          покадровый рендер HUD в headless Chromium (Playwright)
+  mux.py, qa.py           финальная сборка (−14 LUFS), контактные листы, сетки координат
+projects/<id>/            project.yaml + plates/ (ключевые кадры)
+out/                      готовые ролики
+```
+
+Инструменты: Figma AI (генерация кадров), ONNX Runtime, OpenCV, NumPy/SciPy, Microsoft Edge TTS, three.js, Playwright/Chromium, FFmpeg. Шрифты (Exo 2, JetBrains Mono, Montserrat, Playfair Display, Unbounded) — OFL. Эмодзи — Twemoji (CC-BY 4.0). three.js — MIT.

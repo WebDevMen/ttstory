@@ -1,0 +1,98 @@
+# ШАБЛОН ПРОЕКТА. Скопируйте: python3 vg.py new my_video   (создаст projects/my_video/ с этим файлом)
+# Полный справочник параметров: docs/REFERENCE.md. Пошаговый процесс: docs/MANUAL.md.
+#
+# Время везде задаётся ссылками на слова диктора:
+#   "@Слово"        начало слова в текущей сцене      "@Слово.end"   его конец      "@Слово#2"  второе вхождение
+#   "@intro.start"  начало сцены intro                "@end"         конец текущей сцены/шота
+#   "@cue:имя"      именованная метка (cues: ниже)    "@shot:id.start"
+#   + смещение:     "@Слово+0.3", "@end-0.25"         число = абсолютные секунды
+# Координаты эффектов/якорей — пиксели кадра-«плиты» 1296x2304 (сетка: python3 vg.py grid <id>).
+# Координаты HUD (x, y) — пиксели экрана 1080x1920.
+
+title: "Название ролика"
+
+voice:
+  voice: ru-RU-DmitryNeural        # ru-RU-SvetlanaNeural (жен.), ru-RU-DariyaNeural (жен.) и др.: edge-tts --list-voices
+  rate: "+18%"                     # темп: +10..+25% для TikTok
+  pitch: "+0Hz"
+  tail: 1.6                        # пауза в конце (держим финальный экран)
+
+theme:
+  preset: scifi                    # scifi | minimal | pop | documentary
+  accent: teal                     # цвет по умолчанию (имя, "#ff8800" или "255,136,0")
+  captions: {style: neon_word, top: 1250, size: 64}   # neon_word | box_word | minimal | karaoke | outline_pop
+
+audio:
+  music:
+    key: D
+    mode: minor
+    bpm: 100
+    gain: -13
+    sections:                      # стили: drone pulse tension dark sub epic calm lofi upbeat silence
+      - {at: 0, style: drone}
+      - {at: "@main.start", style: pulse, chords: [Dm, Bb, F, C]}
+      - {at: "@outro.start", style: epic, chords: [Bb, F, C, Dm]}
+
+hud:                               # элементы на всё видео
+  - {component: frame, topbar: {left: "ДЕНЬ {day} · {time}", right: "СВЯЗЬ: НЕТ ✕", right_color: red}}
+
+scenes:
+  - id: intro
+    accent: teal
+    clock: [1, 9, 0]               # для topbar: день, часы, минуты
+    text: >-
+      Первая фраза — крючок, который удержит зрителя. Вторая фраза объясняет, о чём ролик.
+    cues: {title: "@объясняет"}
+    shots:
+      - id: opening
+        plate: s1_opening            # файл projects/<id>/plates/s1_opening.png
+        camera:
+          keys: [{t: 0, z: 1.15, x: 648, y: 1000}, {t: end, z: 1.0, y: 1152}]
+          sway: {x: 8, y: 6, roll: 0.6, freq: 0.15}
+          parallax: {px: 14, py: 6, freq: 0.14, k: [0, 0.05]}
+        effects:
+          - {type: fog, color: [0.6, 0.8, 0.8], density: 0.25, curve: 2.0, vel: [14, 0]}
+          - {type: particles, mode: rise, count: 30, size: [1.5, 4], color: white, alpha: 0.1}
+        ambience: [{sound: wind, gain: -14}]
+    hud:
+      - {component: title, at: "@cue:title-0.1", kicker: "ПОДЗАГОЛОВОК", text: "БОЛЬШОЙ\nЗАГОЛОВОК"}
+
+  - id: main
+    accent: green
+    text: >-
+      Основная часть: факты, советы, история. Каждая мысль — отдельное короткое предложение.
+    shots:
+      - id: detail
+        plate: s2_detail
+        transition: {type: whip_x, dur: 0.36}
+        camera:
+          keys: [{t: 0, z: 1.0}, {t: end, z: 1.1}]
+          sway: {x: 6, y: 5, roll: 0.5, freq: 0.2}
+          parallax: {px: 18, py: 8, d0: 0.8}   # d0 ≈ глубина объекта в руках: он стоит, фон «плывёт»
+        effects:
+          - {type: glow, at: [648, 1100], sigma: 200, color: orange, intensity: 0.1, pulse: {freq: 0.5, amp: 0.3}}
+      - id: detail2
+        plate: s3_detail2
+        start: "@история-0.12"
+        transition: {type: zoom, dur: 0.3}
+        camera: {keys: [{t: 0, z: 1.05}, {t: end, z: 1.15}]}
+    hud:
+      - {component: marker, at: "@main.vo_start-0.05", icon: check, text: "**ГЛАВНОЕ:** ПУНКТ"}
+      - {component: chip, at: "@советы", icon: info, text: "КОРОТКАЯ ПОДСКАЗКА", x: 60, y: 1050}
+
+  - id: outro
+    accent: orange
+    text: >-
+      А что выбрал бы ты? Напиши в комментариях!
+    shots:
+      - id: final
+        plate: s4_final
+        transition: {type: flash, dur: 0.6}
+        camera: {keys: [{t: 0, z: 1.1}, {t: end, z: 1.0}], sway: {x: 5, y: 4, roll: 0.4, freq: 0.12}}
+    hud:
+      - component: choices
+        at: "@выбрал"
+        options:
+          - {key: A, text: Вариант первый, color: teal}
+          - {key: B, text: Вариант второй, color: pink}
+      - {component: cta, at: "@Напиши", emoji: "👇", text: "НАПИШИ В КОММЕНТАРИЯХ!"}

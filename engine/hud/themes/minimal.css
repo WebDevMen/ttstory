@@ -1,0 +1,38 @@
+/* Clean minimal: light frosted cards, dark ink, no neon, soft shadows. Good for lifestyle / education / food. */
+:root {
+  --font-display: "Montserrat", "Noto Color Emoji", sans-serif;
+  --font-body: "Montserrat", "Noto Color Emoji", sans-serif;
+  --font-mono: "Montserrat", sans-serif;
+  --font-caption: "Montserrat", sans-serif;
+  --ink: 28, 26, 32;
+  --panel-bg: linear-gradient(160deg, rgba(255, 255, 255, .86), rgba(255, 255, 255, .70));
+  --panel-border-w: 0px;
+  --panel-radius: 28px;
+  --panel-blur: 18px;
+  --panel-shadow: 0 18px 44px rgba(0, 0, 0, .22);
+  --glow: 0;
+  --scan: 0;
+  --title-weight: 800;
+  --label-transform: uppercase;
+  --text-shadow: none;
+}
+.ph { color: rgb(var(--accent)); font-weight: 700; letter-spacing: 2.5px; }
+.c-title .big { background: none; color: rgb(var(--ink)); filter: none; }
+.c-title .kicker { font-weight: 700; letter-spacing: 6px; }
+.c-marker { background: rgba(255, 255, 255, .9); border: 0; color: rgb(var(--ink)); }
+.c-marker .tx { color: rgb(var(--ink)); }
+.c-marker .ic { color: #fff; box-shadow: none; }
+.c-title { color: rgb(var(--ink)); }
+.c-chip { background: rgba(255, 255, 255, .9); border: 0; color: rgb(var(--ink)); }
+.c-alert { background: rgb(var(--accent)); border: 0; color: #fff; text-shadow: none; }
+.c-stamp { background: rgba(255,255,255,.92); }
+.c-choices .choice { background: rgba(255, 255, 255, .88); border: 0; color: rgb(var(--ink)); }
+.c-choices .key { color: #fff; }
+.c-text { color: #fff; text-shadow: 0 3px 14px rgba(0, 0, 0, .45); }
+.c-text.box, .c-list, .c-lower .bx { color: rgb(var(--ink)); }
+.c-list .it { color: rgb(var(--ink)); }
+.c-list .n { color: #fff; }
+.c-frame .bracket { border-color: rgba(255, 255, 255, .7); filter: none; }
+.c-frame .topbar { color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, .5); font-weight: 600; }
+.c-counter .num { color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,.35), 0 8px 30px rgba(0,0,0,.35); }
+.c-counter .lab { color: #fff; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.6), 0 2px 12px rgba(0,0,0,.5); }

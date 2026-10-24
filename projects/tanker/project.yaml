@@ -1,0 +1,452 @@
+# «Мануал по выживанию: танкер» — post-apocalyptic survival guide, sci-fi HUD, 9:16, ~61 s.
+# Every value here is explained in docs/REFERENCE.md. Times: "@Слово" = start of that word in the current scene,
+# "@scene.end", "@cue:name", "@shot:id.start", "@end-0.2" etc. Coordinates (x, y) are plate pixels (1296x2322) —
+# run `python3 vg.py grid tanker` to see them; HUD x/y are screen pixels (1080x1920).
+
+title: "Мануал по выживанию: танкер"
+
+voice:
+  voice: ru-RU-DmitryNeural
+  rate: "+22%"
+  pitch: "-4Hz"
+  lead_in: 0.25
+  tail: 1.6
+  keep_pauses: {Гости: 0.45, снаружи: 0.36}
+
+theme:
+  preset: scifi
+  accent: teal
+  captions: {style: neon_word, top: 1250, size: 64, hide: [{from: "@cue:choice-0.1"}]}
+
+post: {vignette: 0.42, chromatic: 0.0016, grain: 0.022}
+
+dim:                                  # HUD dims when the flashlight goes off
+  - {at: "@cue:light_off", until: "@threats.end", level: 0.38, dur: 0.12}
+
+hud:                                  # items that live for the whole video
+  - component: frame
+    topbar: {left: "ДЕНЬ {day} · {time}", right: "СВЯЗЬ: НЕТ ✕", right_color: "255,90,105"}
+    alerts: [{at: "@cue:not_alone", dur: 0.5, color: red}]
+
+audio:
+  music:
+    key: D
+    bpm: 100
+    gain: -13
+    sections:
+      - {at: 0, style: drone, chords: [Dm]}
+      - {at: "@do.start", style: pulse, chords: [Dm, Bb, F, C, Dm, Bb]}
+      - {at: "@dont.start", style: tension, chords: [Dm, Eb, Dm, A, Dm, Eb]}
+      - {at: "@threats.start", until: "@cue:light_off+0.05", style: dark, chords: [Dm]}
+      - {at: "@cue:light_off", until: "@threats.end", style: sub, chords: [Dm]}
+      - {at: "@finale.start", style: epic, chords: [Bb, F, C, Dm, Bb, F]}
+
+scenes:
+  # ------------------------------------------------------------------ 1. INTRO
+  - id: intro
+    accent: teal
+    caption_color: teal
+    clock: [47, 7, 12]
+    text: >-
+      Представь: миру конец, а ты оказался один на заброшенном танкере посреди океана.
+      Вода вокруг отравлена, связь мертва, а на борту ты не один. Вот твой мануал по выживанию.
+    cues: {stats: "@Вода", not_alone: "@не", title: "@Вот"}
+    shots:
+      - id: deck
+        plate: p1_deck
+        camera:
+          keys:
+            - {t: 0, z: 1.24, x: 705, y: 915}            # start on the drowned skyline …
+            - {t: 4.6, z: 1.02, x: 648, y: 1175}         # … tilt down and pull back to the hands on the railing
+            - {t: end, z: 1.07, y: 1150}
+          sway: {x: 10, y: 8, roll: 0.8, freq: 0.12}     # slow ship rocking
+          parallax: {px: 16, py: 8, freq: 0.12, k: [0, 0.05]}
+        effects:
+          - {type: water, horizon: 992, dmax: 0.12, amp: 2.6}
+          - {type: fog, color: [0.58, 0.83, 0.80], density: 0.30, curve: 2.0, scale: 2.6, vel: [16, -1], lift: 0.35, band: {space: screen, fall: [1300, 1700], floor: 0.3}}
+          - {type: god_rays, at: [705, 880], horizon: 985, intensity: 0.045, sigma: 600, color: [0.75, 1.0, 0.95]}
+          - {type: particles, mode: rise, count: 36, size: [1.5, 4.5], color: [0.8, 1.0, 0.95], alpha: 0.10}
+        look: {bloom: [0.86, 0.22, [0.85, 1.0, 0.95]], grade: {exposure: 0.98, contrast: 0.13, sat: 1.05, lift: [0, 0.01, 0.012]}}
+        ambience: [{sound: ocean, gain: -9}, {sound: wind, gain: -15, f0: 300, f1: 700}]
+    hud:
+      - {component: edge, at: "@cue:not_alone", until: "@cue:not_alone+0.8", decay: true, color: red, enter: none}
+      - component: stats
+        at: "@cue:stats-0.1"
+        until: "@end+0.05"
+        title: ЖИЗНЕОБЕСПЕЧЕНИЕ
+        rows:
+          - {icon: heart, label: Здоровье, value: 75, unit: "%", color: "255,92,120"}
+          - {icon: radiation, label: Радиация, value: 20, unit: "%", color: amber}
+          - {icon: drop, label: Пресная вода, value: 1.5, unit: " л", max: 3, color: "80,210,255"}
+      - {component: title, at: "@cue:title-0.08", until: "@end+0.03", kicker: "ИНСТРУКЦИЯ:", text: "ВЫЖИВАНИЕ\nНА СУДНЕ"}
+    sfx:
+      - {sound: heartbeat, at: "@cue:not_alone-0.05", gain: -6}
+      - {sound: boom, at: "@cue:not_alone-0.05", gain: -14, lowpass: 200, d: 1.5, f0: 70, f1: 40, noise: 0.2}
+
+  # ------------------------------------------------------------------ 2. WHAT TO DO
+  - id: do
+    accent: green
+    caption_color: green
+    clock: [47, 14, 38]
+    gap_after: 0.5
+    text: >-
+      Первое — вода. Никогда не пей за бортом. Собери дождевую воду с помощью тента или сооруди испаритель.
+      Второе — забаррикадируй капитанский мостик. Это твоя лучшая точка обзора и последняя крепость.
+    cues:
+      do_marker: "@do.vo_start-0.05"
+      never: "@Никогда"
+      schematic: "@Собери"
+      evaporator: "@сооруди"
+      map: "@забаррикадируй"
+      safezone: "@капитанский"
+      door_close: "@последняя"
+      door_slam: "@крепость.end+0.05"
+    shots:
+      - id: tarp
+        plate: p2_tarp
+        transition: {type: whip_x, dur: 0.36}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 648, y: 1161}, {t: end, z: 1.1, y: 1235}]
+          sway: {x: 7, y: 6, roll: 0.6, freq: 0.2}
+          parallax: {px: 10, py: 6, freq: 0.15, k: [0, 0.06], k_ease: inout}
+        masks:
+          glint: {lum: [0.55, 0.85], y_min: 700, y_max: 1380}
+        effects:
+          - {type: water, horizon: 565, dmax: 0.16, amp: 2.2}
+          - {type: fog, color: [0.55, 0.75, 0.74], density: 0.18, curve: 2.5, scale: 2.2, vel: [20, 0], lift: 0.4}
+          - {type: flow, mask: glint, texture: fine, scale: 1.6, stretch: [1, 3], speed: 40, threshold: 0.55, gain: 1.2, color: [0.85, 1, 1]}
+          - {type: particles, mode: path, path: [[648, 1310], [648, 1490]], count: 6, rate: 1.6, depth: 0.85, size: [3, 3], color: [0.85, 1, 1], alpha: 0.9}
+          - type: rain
+            layers:
+              - {count: 170, length: 46, angle: 0.1, speed: 1700, thickness: 1, alpha: 0.20}
+              - {count: 60, length: 110, angle: 0.12, speed: 2500, thickness: 2, alpha: 0.16}
+        look: {bloom: [0.7, 0.35, [0.85, 1, 1]], grade: {exposure: 1.0, contrast: 0.10, sat: 1.0, lift: [0, 0.01, 0.015]}}
+        ambience: [{sound: rain, gain: -12}, {sound: ocean, gain: -17, calm: 0.6}]
+      - id: corridor
+        plate: p3_corridor
+        start: "@Второе-0.12"
+        transition: {type: zoom, dur: 0.32}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 670, y: 1150}, {t: end, z: 1.15, ease: linear}]
+          bob: {freq: 1.9, x: 5, y: 7, roll: 0.6}          # walking
+          parallax: {k: [0, 0.24]}                         # strong dolly forward
+          push_end: {dur: 0.35, z: 0.25, k: 0.3}           # accelerate into the next shot
+        masks:
+          neon: {sat: [0.35, 0.7], val: [0.4, 0.8], y_max: 1000}
+          beam: {cone: {from: [1085, 1790], to: [690, 1180], spread: 0.38, width: 40}}
+        effects:
+          - {type: mask_flicker, mask: beam, amount: 0.028, freq: 3.0, base: 0.105, drop_prob: 0, spike_prob: 0.07, spike: 0.0875, seed: 40}
+          - {type: mask_flicker, mask: neon, amount: 0.15, freq: 2.0, drop_prob: 0.05, drop: 0.6, seed: 41}
+          - {type: fog, color: [0.25, 0.32, 0.36], density: 0.22, curve: 1.2, scale: 2.0, vel: [6, -4], lift: 0.4}
+          - {type: particles, mode: drift, region: [300, 900, 1200, 1900], depth: [0.2, 0.9], count: 70, size: [1.2, 3.7], color: [0.9, 0.97, 1.0], alpha: 0.04, boost_mask: beam, boost: 0.5}
+        look: {bloom: [0.65, 0.45, [0.9, 1, 1]], grade: {exposure: 1.05, contrast: 0.12, sat: 1.05, lift: [0, 0.008, 0.016]}}
+        ambience: [{sound: hum, gain: -14}, {sound: shimmer, gain: -32, seed: 5}]
+      - id: door
+        plate: p4_door
+        start: "@Это-0.10"
+        transition: {type: zoom, dur: 0.26}
+        camera:
+          keys:
+            - {t: 0, z: 1.03, x: 680, y: 1210, roll: 0}
+            - {t: "@cue:door_close+0.4", z: 1.07, roll: -2.6}  # twisting the wheel
+            - {t: end, z: 1.1}
+          intro: {dur: 0.35, z: 0.18}
+          sway: {x: 6, y: 6, roll: 0.4, freq: 0.3}
+          parallax: {px: 8, freq: 0.3, k: 0.04, d0: 0.6}
+          shakes: [{at: "@cue:door_slam", amp: 30, dur: 0.55}]
+        masks:
+          neon: {sat: [0.35, 0.7], val: [0.45, 0.8], hue: cyan, hue_range: [-0.02, 0.02]}
+        effects:
+          - {type: flash, events: [{at: "@cue:door_slam", amp: 0.5, decay: 9}]}
+          - {type: glow, at: [760, 735], depth: 0.6, sigma: 70, color: [0.2, 1.0, 0.75], intensity: 0.425, pulse: {freq: 0.955, amp: 0.41}, until: "@cue:door_slam", fade_out: 0.01}
+          - {type: glow, at: [760, 735], depth: 0.6, sigma: 70, color: [0.2, 1.0, 0.75], intensity: 0.6, from: "@cue:door_slam", fade_in: 0.01}
+          - {type: mask_pulse, mask: neon, amount: 0.3, freq: 0.955, until: "@cue:door_slam", fade_out: 0.01}
+          - {type: mask_gain, mask: neon, gain: 0.3, from: "@cue:door_slam", fade_in: 0.01}
+          - {type: fog, color: [0.22, 0.3, 0.33], density: 0.16, curve: 1.0, scale: 2.0, vel: [-8, -6], lift: 0.4}
+          - {type: particles, mode: burst, at: "@cue:door_slam", count: 60, size: [1, 3], color: [0.8, 0.9, 0.9], alpha: 0.35}
+          - {type: exposure, keys: [{at: "@cue:door_slam", value: 0.924, dur: 0.3}]}
+        look: {bloom: [0.68, 0.4, [0.9, 1, 1]], grade: {exposure: 1.05, contrast: 0.12, sat: 1.05, lift: [0, 0.006, 0.012]}}
+        ambience: [{sound: hum, gain: -14}]
+    hud:
+      - {component: marker, at: "@cue:do_marker", icon: check, text: "**ДЕЙСТВИЯ:** ЧТО ДЕЛАТЬ", color: green}
+      - {component: chip, at: "@cue:never-0.05", until: "@cue:schematic-0.05", icon: cross, text: "ЗАБОРТНАЯ ВОДА · ТОКСИЧНО", color: red, x: 540, y: 340, align: center top}
+      - component: holo3d
+        model: still
+        at: "@cue:schematic-0.1"
+        until: "@shot:corridor.start+0.02"
+        x: 50
+        y: 336
+        width: 560
+        height: 560
+        color: green
+        tilt: {y: 14, x: 4, sway: 3, freq: 0.19}
+        title: "3D-СХЕМА · ДИСТИЛЛЯТОР"
+        title_alt: [{at: "@cue:evaporator", text: "3D-СХЕМА · ИСПАРИТЕЛЬ"}]
+        params:
+          fill: {at: "@cue:schematic", dur: 3.2, from: 0.15, to: 0.75, ease: linear}
+          glow: {at: "@cue:evaporator-0.1", dur: 0.4, from: 0.6, to: 1.0}
+        labels:
+          - {key: sun, text: СОЛНЦЕ, color: "255,190,60"}
+          - {key: sheet, text: "ПЛЁНКА · КОНДЕНСАТ", color: "200,255,240"}
+          - {key: sea, text: МОРСКАЯ ВОДА, color: "60,200,255"}
+          - {key: cup, text: ПРЕСНАЯ ВОДА, color: "70,255,150"}
+        steps:
+          - {text: "**01** НАГРЕВ", at: "@cue:schematic+0.3"}
+          - {text: "**02** КОНДЕНСАТ", at: "@cue:schematic+1.2"}
+          - {text: "**03** ЧИСТАЯ ВОДА", at: "@cue:evaporator"}
+      - component: holo3d
+        model: tanker
+        at: "@cue:map-0.15"
+        until: "@end+0.02"
+        x: 70
+        y: 336
+        width: 940
+        height: 560
+        color: teal
+        enter: unfold
+        tilt: {x: 12, sway: 2, freq: 0.14}
+        title: "ГОЛОКАРТА СУДНА · ТАНКЕР"
+        right: "СКАН {scan}%"
+        params:
+          reveal: {at: "@cue:map-0.1", dur: 0.5, from: 0, to: 1, ease: outCubic}
+          scan: {at: "@cue:map", until: "@cue:safezone+0.25", from: 0, to: 1, ease: linear}
+          safe: {at: "@cue:safezone", dur: 0.4, from: 0, to: 1, ease: outCubic}
+          locked: {at: "@cue:door_slam", dur: 0.2, from: 0, to: 1}
+        flag: {key: bridge, title: БЕЗОПАСНАЯ ЗОНА, subtitle: КАПИТАНСКИЙ МОСТИК, at: "@cue:safezone", color: green, alt: [{at: "@cue:door_slam", title: ЗОНА ЗАБЛОКИРОВАНА}]}
+        moves: [{at: "@shot:door.start-0.05", dur: 0.45, x: 45, y: 351, scale: 0.5, tilt_y: 14}]   # minimise when the door shot starts
+      - {component: stamp, at: "@cue:door_slam", until: "@end+0.02", icon: lock, text: МОСТИК ЗАПЕРТ, color: green}
+    sfx:
+      - {sound: drip, at: "@start+0.4", gain: -24, repeat: {count: 8, every: 0.75, jitter: 0.2}, vary: {f: [900, 1700]}}
+      - {sound: footstep, at: "@shot:corridor.start+0.1", gain: -12, repeat: {count: 5, every: 0.526}}
+      - {sound: creak, at: "@shot:door.start", gain: -22, d: 2.7, reverb: metal}
+      - {sound: metal_ring, at: "@cue:door_close", gain: -18, d: 1.0, base: 520, seed: 4, reverb: metal}
+      - {sound: slam, at: "@cue:door_slam", gain: -5, reverb: metal, wet: 0.45}
+
+  # ------------------------------------------------------------------ 3. WHAT NOT TO DO
+  - id: dont
+    accent: red
+    caption_color: "255,70,90"
+    clock: [47, 23, 41]
+    text: >-
+      Чего делать НЕЛЬЗЯ ни в коем случае. Первое: не включай сигнальные ракеты ночью без крайней необходимости —
+      в море выжили не только люди. Второе: не спускайся в заплесневелые трюмы без респиратора —
+      био-споры убьют тебя за три вдоха.
+    cues:
+      dont_marker: "@dont.vo_start-0.05"
+      flare_block: "@включай"
+      not_only: "@выжили"
+      biohazard: "@спускайся"
+      breaths: "@убьют"
+    shots:
+      - id: flare
+        plate: p5_flare
+        transition: {type: slam, dur: 0.3}
+        anchors: {flare: [850, 1060]}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 690, y: 1150}, {t: end, z: 1.08, x: 730, y: 1110}]
+          intro: {dur: 0.6, z: 0.06}
+          sway: {x: 8, y: 7, roll: 0.9, freq: 0.22}
+          parallax: {px: 22, py: 10, freq: 0.18, d0: 0.82}    # hand stays, background swings
+        effects:
+          - {type: water, horizon: 1455, dmax: 0.2, amp: 2.4}
+          - {type: lightning, events: [{at: "@cue:not_only-0.05", amp: 0.9}, {at: "@cue:not_only+0.16", amp: 0.6}, {at: "@cue:not_only+0.55", amp: 0.35}], decay: 14, depth_max: 0.1, horizon: 1450}
+          - {type: fog, color: [0.16, 0.24, 0.3], density: 0.26, curve: 2.2, scale: 2.6, vel: [22, 0], lift: 0.35, band: {rise: [1250, 1500], fall: [1700, 1900], floor: 0.25}}
+          - {type: glow, at: [850, 1060], depth: 0.82, sigma: 330, color: [1, 0.15, 0.2], intensity: 0.08, pulse: {freq: 1.43, amp: 0.43}, from: "@cue:flare_block", until: "@end", fade_in: 0.2, fade_out: 0.3}
+        look: {bloom: [0.7, 0.35, [0.8, 0.9, 1.0]], grade: {exposure: 1.05, contrast: 0.12, sat: 1.05, lift: [0, 0.006, 0.02]}}
+        ambience: [{sound: ocean, gain: -11, calm: 0.7}, {sound: wind, gain: -13, f0: 250, f1: 600}]
+      - id: hatch
+        plate: p6_hatch
+        start: "@Второе-0.12"
+        transition: {type: whip_y, dur: 0.36}
+        anchors: {hatch: [690, 900]}
+        captions_top: 1300
+        camera:
+          keys: [{t: 0, z: 1.0, x: 650, y: 1161, roll: 0}, {t: end, z: 1.17, x: 665, y: 1235, roll: 3}]
+          sway: {x: 5, y: 5, roll: 0.4, freq: 0.25}
+          parallax: {px: 6, freq: 0.2, k: [0, 0.09], k_ease: inout}
+          shakes: [{at: "@cue:breaths", amp: 6, dur: 0.5}]
+        masks:
+          green: {hue: green, hue_range: [0.05, 0.25], lum: [0.15, 0.5]}
+        effects:
+          - {type: mask_pulse, mask: green, amount: 0.25, freq: 0.414}
+          - {type: glow, at: [660, 1250], depth: 0.15, sigma: 300, color: [0.15, 1, 0.45], intensity: 0.13, pulse: {freq: 0.414, amp: 0.23}}
+          - {type: haze, at: [660, 1250], depth: 0.15, offset_y: -120, sigma: 420, color: [0.2, 1, 0.5], intensity: 0.10, vel: [0, 25]}
+          - type: particles
+            mode: emanate
+            center: [660, 1260]
+            radius: [250, 230]
+            count: 170
+            life: [2.2, 3.6]
+            size: [1.2, 9]
+            color: [0.75, 1, 0.8]
+            alpha: 0.85
+            glow: {size: 2.6, alpha: 0.25, color: [0.2, 1, 0.45]}
+            boosts: [{at: "@cue:breaths", mul: 1.6, dur: 0.5}]
+          - {type: tint_pulse, at: "@cue:breaths", decay: 3, gain: [1.25, 1, 1], lift: [0.03, 0.01, 0.01]}
+        look: {bloom: [0.6, 0.5, [0.5, 1, 0.6]], grade: {exposure: 1.05, contrast: 0.12, sat: 1.05, lift: [0, 0.01, 0.01]}}
+        ambience: [{sound: rumble, gain: -12}, {sound: shimmer, gain: -19, seed: 7}]
+    hud:
+      - {component: marker, at: "@cue:dont_marker", icon: x, text: "**ОШИБКИ:** КАТЕГОРИЧЕСКИ НЕЛЬЗЯ", color: red}
+      - {component: prohibit, at: "@cue:flare_block-0.06", until: "@shot:hatch.start+0.02", anchor: flare, label: ЗАПРЕЩЕНО, sublabel: "РАКЕТА НОЧЬЮ = ТВОЯ ПОЗИЦИЯ", color: red}
+      - {component: chip, at: "@cue:not_only-0.05", until: "@shot:hatch.start+0.02", icon: sonar, text: "СОНАР: ДВИЖЕНИЕ В ВОДЕ", color: red, x: 60, y: 990, blink: 2}
+      - {component: hazard, at: "@cue:biohazard-0.06", until: "@end+0.02", anchor: hatch, symbol: "☣", title: DANGER, subtitle: BIOHAZARD, color: toxic}
+      - {component: pips, at: "@cue:breaths-0.08", until: "@end+0.02", anchor: hatch, offset: [0, 40], label: "БЕЗ РЕСПИРАТОРА:", offs: ["@три", "@вдоха", "@вдоха.end"], symbol: "☠", color: red}
+    sfx:
+      - {sound: thunder, at: "@cue:not_only-0.05", gain: -9, lowpass: 1200, crack: 0.6, seed: 1}
+      - {sound: creature, at: "@cue:not_only+0.35", gain: -14, lowpass: 700, d: 2.6, f0: 75, f1: 45, reverb: hall, wet: 0.5}
+
+  # ------------------------------------------------------------------ 4. THREATS
+  - id: threats
+    accent: red
+    caption_color: "255,190,60"
+    clock: [48, 2, 17]
+    gap_after: 1.05                   # room for the lightning reveal
+    text: >-
+      Твои главные враги. Первый — коррозия и протечки. Если дно прогниёт — ты корм для мутантов.
+      Второй — «Ночные Гости». Если слышишь скрежет по металлу снаружи… запрись, выключи свет и не дыши.
+    cues:
+      threats_marker: "@threats.vo_start-0.05"
+      leak: "@коррозия"
+      rot: "@прогниёт"
+      guests: "@Ночные"
+      scrape: "@скрежет"
+      lock: "@запрись"
+      light_off: "@выключи"
+      lightning: "@дыши-0.05"
+    shots:
+      - id: leak
+        plate: p7_leak
+        transition: {type: glitch, dur: 0.24}
+        camera:
+          keys: [{t: 0, z: 1.04, x: 700, y: 1150}, {t: end, z: 1.12, x: 610, y: 1205}]
+          sway: {x: 5, y: 5, roll: 0.5, freq: 0.15}
+          parallax: {px: 10, freq: 0.13, k: [0, 0.05], k_ease: inout, d0: 0.5}
+          shakes: [{at: "@cue:rot", amp: 10, dur: 0.5}]
+        masks:
+          streams: {hue: cyan, hue_range: [0.08, 0.3], lum: [0.3, 0.65]}
+          redlight: {hue: red, hue_range: [0.08, 0.25], y_max: 1100}
+          puddle: {hue: cyan, hue_range: [0.08, 0.3], y_min: 1700}
+        effects:
+          - {type: ripples, points: [[360, 1830], [480, 1850], [560, 1815]], y_min: 1730, amp: 3.5}
+          - {type: flow, mask: streams, exclude: puddle, speed: 280, stretch: [4, 1], threshold: 0.45, gain: 1.6, color: [0.4, 1, 0.95], boosts: [{at: "@cue:rot", mul: 1.6, dur: 0.4}]}
+          - {type: caustics, mask: puddle, gain: 0.9, color: [0.4, 1, 0.95]}
+          - {type: mask_pulse, mask: redlight, base: -0.32, amount: 0.64, freq: 0.8}
+          - {type: particles, mode: path, path: [[705, 1200], [705, 1760]], jitter_x: 65, count: 14, rate: 0.95, depth: 0.55, size: [2.6, 2.6], color: [0.5, 1, 1], alpha: 0.8}
+          - {type: fog, color: [0.2, 0.08, 0.08], density: 0.12, curve: 1.0, scale: 2.0, vel: [5, -3], lift: 0.4}
+        look: {bloom: [0.62, 0.5, [0.6, 1, 1]], grade: {exposure: 1.03, contrast: 0.12, sat: 1.05}}
+        ambience: [{sound: stream, gain: -13}, {sound: hum, gain: -20}]
+      - id: porthole
+        plate: p8_porthole
+        start: "@Второй-0.12"
+        transition: {type: dip, dur: 0.34}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 645, y: 1165}, {t: end, z: 1.1, y: 1150}]
+          sway: {x: 4, y: 4, roll: 0.4, freq: 0.12}
+          parallax: {px: 6, freq: 0.12, k: 0.03, d0: 0.3}
+          shakes: [{at: "@cue:scrape", amp: 5, dur: 0.8, freq: 24}, {at: "@cue:lightning", amp: 9, dur: 0.5}]
+        masks:
+          glass: {circle: [645, 1160, 445], soft: 7}
+          bio: {sat: [0.35, 0.7], val: [0.3, 0.7], mul: glass}
+        effects:
+          - type: window                     # dark sea outside, lightning reveals the creature which swims past
+            circle: [645, 1160, 445]
+            glow_mask: bio
+            base: 0.10
+            glow_keep: 0.2
+            flashes:
+              - {at: "@cue:guests+0.15", amp: 0.26, decay: 10}
+              - {at: "@cue:guests+0.27", amp: 0.16, decay: 12}
+              - {at: "@cue:lightning", amp: 1.3, decay: 10}
+              - {at: "@cue:lightning+0.14", amp: 0.9, decay: 9}
+            sustain: {at: "@cue:lightning+0.05", level: 0.55, ramp: 0.6}
+            slide: {at: "@cue:lightning-0.4", dx: 70, dur: 2.2, drift: 10}
+            bob: 6
+            interior: {pool: [470, 1560, 520], gain: 0.5, off_at: "@cue:light_off", off_level: 0.42, flash_gain: 0.45}
+            rain: {count: 90, length: 60, angle: 0.25, speed: 900, alpha: 0.25}
+        look: {bloom: [0.74, 0.35, [0.75, 0.85, 1]], grade: {exposure: 1.0, contrast: 0.12, sat: 1.05, lift: [0, 0.004, 0.014]}}
+        ambience: [{sound: storm, gain: -11}]
+    hud:
+      - {component: edge, color: red, freq: 1.15}
+      - {component: marker, at: "@cue:threats_marker", until: "@cue:scrape-0.05", icon: warning, text: "**ОПАСНОСТИ** И УГРОЗЫ", color: amber}
+      - component: meter
+        at: "@cue:leak-0.1"
+        until: "@shot:porthole.start+0.02"
+        title: ЦЕЛОСТНОСТЬ КОРПУСА
+        color: red
+        value:
+          - {at: "@cue:leak", v: 64, dur: 0}
+          - {at: "@cue:leak", until: "@cue:rot", v: 52, ease: linear}
+          - {at: "@cue:rot", v: 41, dur: 0.6, ease: outCubic}
+        warn:
+          - {at: 0, text: "ПРОТЕЧКА · ОТСЕК 4"}
+          - {at: "@cue:rot", text: "ДНО: КРИТИЧЕСКИЙ УРОВЕНЬ", blink: true}
+      - {component: radar, at: "@shot:porthole.start+0.25", until: "@end+0.02", color: red, blip: {at: "@cue:guests+0.35", until: "@cue:lock", from: [150, -38], to: [58, -13]}, dist: [120, 35]}
+      - {component: alert, at: "@cue:scrape-0.05", until: "@end+0.02", text: УГРОЗА ОБНАРУЖЕНА, color: red}
+    sfx:
+      - {sound: drip, at: "@start+0.2", gain: -22, reverb: metal, wet: 0.4, repeat: {count: 12, every: 0.5, jitter: 0.2}, vary: {f: [700, 1500]}}
+      - {sound: groan, at: "@cue:rot-0.05", gain: -10, reverb: metal, wet: 0.5}
+      - {sound: thunder, at: "@cue:guests+0.12", gain: -11, lowpass: 800, d: 3.0, crack: 0.4, seed: 2}
+      - {sound: scrape, at: "@cue:scrape-0.1", gain: -11, lowpass: 5000, pan: 0.3, d: 1.8, seed: 3}
+      - {sound: click, at: "@cue:light_off", gain: -8}
+      - {sound: heartbeat, at: "@cue:light_off+0.25", gain: -5, repeat: {count: 3, every: 0.78}}
+      - {sound: thunder, at: "@cue:lightning", gain: -4, d: 4.5, crack: 1.2, seed: 4}
+      - {sound: creature, at: "@cue:lightning+0.25", gain: -9, d: 3.0, f0: 95, f1: 48, reverb: hall, wet: 0.55}
+
+  # ------------------------------------------------------------------ 5. FINALE / CALL TO ACTION
+  - id: finale
+    accent: orange
+    caption_color: "255,190,90"
+    clock: [48, 19, 26]
+    captions_top: 1210
+    text: >-
+      Топливо на исходе. На горизонте виден затопленный мегаполис, но шторм усиливается.
+      Твоё решение: останешься на судне или рискнёшь плыть к руинам?
+      Напиши в комментариях — проверим, выжил бы ты!
+    cues:
+      fuel: "@Топливо"
+      city: "@мегаполис"
+      storm: "@шторм"
+      choice: "@решение"
+      choice_a: "@останешься"
+      choice_b: "@рискнёшь"
+      comment: "@Напиши"
+    shots:
+      - id: compass
+        plate: p9_compass
+        transition: {type: flash, dur: 0.6}
+        anchors: {city: [370, 925], storm: [1010, 640]}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 648, y: 1170}, {t: end, z: 1.1, x: 640, y: 1115}]
+          sway: {x: 7, y: 6, roll: 0.6, freq: 0.15}
+          parallax: {px: 14, py: 7, freq: 0.14, d0: 0.9}
+        masks:
+          compass: {sat: [0.4, 0.7], val: [0.45, 0.8], circle: [680, 1660, 240], soft: 2, hue: cool, hue_range: [-0.25, -0.1]}
+          storm_sky: {y_max: [880, 990], x_min: [806, 1102], depth_max: [0.15, 0.4]}
+        effects:
+          - {type: water, horizon: 995, dmax: 0.3, amp: 2.4}
+          - {type: sky_drift, y_max: [600, 980], speed: 1.4, wobble: 3}
+          - {type: glow, at: [630, 870], sigma: 190, color: [1, 0.7, 0.35], intensity: 0.15, pulse: {freq: 0.207, amp: 0.2}}
+          - {type: mask_pulse, mask: compass, amount: 0.35, freq: 0.668}
+          - {type: particles, mode: glints, center_x: 630, y_range: [1000, 1250], spread: 120, max_dx: 260, count: 80, size: [1.5, 3.2], color: [1, 0.85, 0.6], alpha: 1.2, depth: 0.1}
+          - {type: lightning, mask: storm_sky, gain: 1.2, color: [0.8, 0.85, 1], decay: 12, events: [{at: "@cue:storm+0.1", amp: 0.8}, {at: "@cue:storm+0.28", amp: 0.5}, {at: "@end-5.1", amp: 0.6}, {at: "@end-2.0", amp: 0.7}, {at: "@end-1.84", amp: 0.4}]}
+          - {type: fog, color: [0.95, 0.62, 0.45], density: 0.16, curve: 3.0, scale: 2.8, vel: [10, 0], lift: 0.35, band: {rise: [800, 990], fall: [1050, 1250], floor: 0.15}}
+        look: {bloom: [0.7, 0.4, [1, 0.85, 0.7]], grade: {exposure: 1.0, contrast: 0.10, sat: 1.08}}
+        ambience: [{sound: ocean, gain: -13, calm: 0.8}, {sound: wind, gain: -15, f0: 300, f1: 800}]
+    hud:
+      - {component: meter, at: "@cue:fuel-0.1", x: 52, y: 300, align: left top, width: 400, enter: swing_left, tilt: {y: 14, sway: 2, freq: 0.17}, title: ТОПЛИВО, icon: fuel, value: 7, segments: 12, min_segments: 1, blink: 1.5, color: red}
+      - {component: target, at: "@cue:city-0.1", anchor: city, w: 380, h: 230, label: "**◎** ЗАТОПЛЕННЫЙ МЕГАПОЛИС · 4.6 КМ", color: "255,200,120"}
+      - {component: target, at: "@cue:storm-0.05", anchor: storm, w: 230, h: 190, label: "**ϟ** ШТОРМ **↑ 9** БАЛЛОВ", label_align: right, color: amber, pulse: true}
+      - component: choices
+        at: "@cue:choice-0.06"
+        x: 70
+        y: 930
+        alternate_from: "@cue:comment"
+        options:
+          - {key: A, text: Остаться и укреплять корабль, color: teal, highlight_at: "@cue:choice_a"}
+          - {key: B, text: Плыть к затопленному городу, color: pink, highlight_at: "@cue:choice_b"}
+      - {component: cta, at: "@cue:comment-0.06", emoji: "👇", text: "НАПИШИ СВОЙ ВЫБОР В КОММЕНТАРИЯХ!"}
+    sfx:
+      - {sound: alarm, at: "@cue:fuel", gain: -18, f1: 600, f2: 600, d: 0.12, n: 2}
+      - {sound: thunder, at: "@cue:storm+0.1", gain: -12, lowpass: 900, d: 3.5, crack: 0.5, seed: 6}
+      - {sound: thunder, at: "@end-5.1", gain: -16, lowpass: 700, d: 3.0, crack: 0.4, seed: 7}
+      - {sound: thunder, at: "@end-2.0", gain: -16, lowpass: 700, d: 2.5, crack: 0.4, seed: 8}

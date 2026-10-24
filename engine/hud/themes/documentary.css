@@ -1,0 +1,31 @@
+/* Documentary: elegant serif titles, thin rules, dark translucent cards, warm gold accent. Good for history / nature / culture. */
+:root {
+  --font-display: "Playfair", "Noto Color Emoji", serif;
+  --font-body: "Montserrat", "Noto Color Emoji", sans-serif;
+  --font-mono: "Montserrat", sans-serif;
+  --font-caption: "Montserrat", sans-serif;
+  --ink: 250, 246, 238;
+  --panel-bg: linear-gradient(180deg, rgba(14, 12, 10, .62), rgba(14, 12, 10, .48));
+  --panel-border-w: 1px;
+  --panel-border-a: .7;
+  --panel-radius: 6px;
+  --panel-blur: 10px;
+  --panel-shadow: 0 14px 40px rgba(0, 0, 0, .35);
+  --glow: 0.25;
+  --scan: 0;
+  --title-weight: 800;
+  --label-transform: uppercase;
+  --text-shadow: 0 2px 12px rgba(0, 0, 0, .6);
+}
+.ph { font-weight: 600; letter-spacing: 5px; font-size: 17px; }
+.c-title .big { background: none; color: rgb(var(--ink)); filter: drop-shadow(0 4px 18px rgba(0,0,0,.5)); font-style: normal; }
+.c-title .kicker { letter-spacing: 8px; font-weight: 600; font-size: 24px; }
+.c-title .rule { height: 1px; }
+.c-marker { border-width: 1px; background: rgba(14, 12, 10, .6); border-radius: 6px; padding: 12px 28px 12px 14px; }
+.c-marker .ic { width: 48px; height: 48px; border-radius: 4px; font-size: 28px; }
+.c-marker .tx { font-size: 36px; font-weight: 600; font-style: italic; }
+.c-chip { border-width: 1px; border-radius: 4px; color: rgb(var(--ink)); }
+.c-text { font-style: italic; font-weight: 600; }
+.c-list .n { border-radius: 50%; font-family: var(--font-display); }
+.c-frame .bracket { border-width: 0 !important; }
+.c-frame .topbar { color: rgba(var(--ink), .9); font-weight: 600; letter-spacing: 4px; }
