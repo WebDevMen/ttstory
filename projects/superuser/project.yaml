@@ -1,0 +1,584 @@
+# «Он видел карты всех игроков» — афера №2 серии (после projects/slots). 100% code-drawn video from
+# projects/superuser/script.yaml (skill write-script → vg.py script project → this file).
+# Actors: library cards.js (playing_card, chips, poker_table) + casino.js (slot_machine, buzz, coins, digits) and the
+# project's actors/poker.js (monitor, spreadsheet, bell_curve, waveform). Coordinates: screen px 1080x1920. Times: "@word".
+
+title: "Он видел карты всех игроков"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz", tail: 1.6}
+
+theme:
+  preset: minimal
+  accent: "77,225,255"
+  captions:
+    style: clean
+    top: 1250
+    size: 64
+    max_chars: 18
+    hide:
+      - {from: "@hook/видел-0.1", until: "@hook/соперников.end+0.1"}
+      - {from: "@payoff/Да-0.1", until: "@payoff.end"}
+      - {from: "@cta/хакер-0.1", until: "@cta/изнутри.end+0.2"}
+
+post: {vignette: 0.3, chromatic: 0.0008, grain: 0.02}
+
+draw:
+  palette: {god: "#4de1ff", alarm: "#ff3b4e", gold: "#ffd34d", felt: "#0e5a3a", ink: "#ffffff", neon: "#ff2bd6"}
+
+# shared pieces (YAML anchors)
+x-bg: &green_bg {type: radial, at: "50% 40%", stops: [[0, "#0f3b2c"], [0.6, "#06150f"], [1, "#020806"]]}
+x-dark: &dark_bg {type: radial, at: "50% 40%", stops: [[0, "#101a2c"], [1, "#03060c"]]}
+x-seats: &seats
+  - {name: "ОН", stack: "$12 400", avatar: "🕶️", color: "#3a2a10"}
+  - {name: "lucky_lena", stack: "$8 150", avatar: "🦊", color: "#3a1f2c"}
+  - {name: "Ace_Hunter", stack: "$15 900", avatar: "🐺", color: "#1f2c3a"}
+  - {name: "Marco_K", stack: "$21 300", avatar: "🦁", color: "#2c2a1f"}
+  - {name: "riverRat", stack: "$6 700", avatar: "🐀", color: "#1f3a2c"}
+  - {name: "NIGHTOWL", stack: "$9 450", avatar: "🦉", color: "#2a1f3a"}
+
+audio:
+  music:
+    key: D
+    mode: minor
+    bpm: 100
+    gain: -15
+    sections:
+      - {at: 0, style: pulse, chords: [Dm, Bb, F, C]}
+      - {at: "@problem.start", style: tension}
+      - {at: "@file.start", style: pulse, chords: [Dm, Bb, Gm, A]}
+      - {at: "@observer.start", style: tension}
+      - {at: "@champion.start", style: sub}
+      - {at: "@payoff.start", style: epic, chords: [Bb, C, Dm, Dm]}
+      - {at: "@cta.start", style: pulse, chords: [Dm, Bb, F, C]}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK — видел карты всех
+  - id: hook
+    accent: "77,225,255"
+    caption_marks: {"карты всех соперников": "77,225,255"}
+    text: В онлайн-покере он видел карты всех соперников. И это был свой человек — внутри самого сайта.
+    shots:
+      - id: h_table
+        effects:
+          - {type: glow, at: [540, 800], sigma: 420, color: [0.3, 0.9, 1.0], intensity: 0.08, from: "@видел", fade_in: 0.3}
+        look: {bloom: [0.72, 0.3], grade: {contrast: 0.08, sat: 1.1}}
+        ambience: [{sound: hum, gain: -24}]
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960, roll: -1.5}, {t: end, z: 1.08, y: 930, roll: 0.5}], shakes: [{at: "@соперников", amp: 8, dur: 0.3}]}
+          layers:
+            - actor: group
+              x: 540
+              y: 840
+              scale: 0.74
+              children:
+                - {actor: poker_table, seats: *seats, logo: "ONLINE POKER", active: 0}
+                - {actor: playing_card, rank: "A", suit: s, w: 95, x: -45, y: 490, face: 1, at: 0.05, enter: pop, highlight: 0.6, glow: gold}
+                - {actor: playing_card, rank: "J", suit: s, w: 95, x: 45, y: 490, face: 1, at: 0.1, enter: pop, highlight: 0.6, glow: gold}
+                - {actor: playing_card, rank: "K", suit: h, w: 95, x: -313, y: 245, at: 0.15, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.42", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "K", suit: c, w: 95, x: -223, y: 245, at: 0.2, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.42", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "7", suit: d, w: 95, x: -313, y: -245, at: 0.25, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.18", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.05", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "2", suit: c, w: 95, x: -223, y: -245, at: 0.3, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.18", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.05", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "Q", suit: h, w: 95, x: -45, y: -490, at: 0.35, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.05", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.1", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "Q", suit: d, w: 95, x: 45, y: -490, at: 0.4, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.05", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.1", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "9", suit: s, w: 95, x: 223, y: -245, at: 0.45, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.18", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.15", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "8", suit: s, w: 95, x: 313, y: -245, at: 0.5, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.18", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.15", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "4", suit: h, w: 95, x: 223, y: 245, at: 0.55, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.42", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.2", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "4", suit: c, w: 95, x: 313, y: 245, at: 0.6, enter: pop, xray: [{at: 0, v: 0}, {at: "@видел+0.42", v: 1, dur: 0.2}], highlight: [{at: 0, v: 0}, {at: "@соперников+0.2", v: 1, dur: 0.2}]}
+            - {actor: shape, kind: rect, x: 540, y: 300, w: 1200, h: 70, fill: {linear: ["rgba(77,225,255,0)", "rgba(77,225,255,.85)", "rgba(77,225,255,0)"], angle: 180}, glow: {color: "#4de1ff", r: 30, a: 1}, at: "@видел-0.05", until: "@видел+0.7", anim: [{at: "@видел-0.05", dur: 0.7, y: 1400, ease: linear}]}
+            - {actor: image, emoji: "👁️", x: 540, y: 760, size: 170, at: "@соперников-0.05", enter: pop, glow: {color: "#4de1ff", r: 30, a: 1}, pulse: {freq: 1.2, amp: 0.05}}
+            - {actor: timetag, text: "АФЕРА №2", x: 540, y: 190, size: 36, color: god, space: screen, at: 0.1, enter: fade}
+            - actor: text
+              text: "ВИДЕЛ КАРТЫ ВСЕХ"
+              x: 540
+              y: 960
+              size: 96
+              width: 1000
+              color: "#ffffff"
+              stroke: {w: 10, color: "#031410"}
+              shadow: "0 0 30px rgba(77,225,255,.8)"
+              space: screen
+              at: "@видел-0.05"
+              reveal: {by: word, mode: slam, stagger: 0.28}
+      - id: h_insider
+        start: "@свой-0.12"
+        transition: {type: glitch, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 720], sigma: 380, color: [0.3, 0.85, 1.0], intensity: 0.12}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.12, y: 1000}]}
+          layers:
+            - {actor: shape, kind: rect, x: 0, y: 1300, w: 1080, h: 700, fill: "#080b12", origin: top-left}
+            - actor: monitor
+              x: 540
+              y: 810
+              w: 940
+              h: 640
+              title: "ADMIN · ТУРНИР #4821"
+              color: god
+              children:
+                - {actor: poker_table, seats: *seats, logo: "", w: 360, x: 470, y: 300}
+                - {actor: text, text: "РЕЖИМ НАБЛЮДАТЕЛЯ", x: 470, y: 40, size: 28, font: mono, color: god, blink: {freq: 1.2, min: 0.5}}
+                - {actor: playing_card, rank: "K", suit: h, w: 46, x: 355, y: 350, xray: 1}
+                - {actor: playing_card, rank: "Q", suit: h, w: 46, x: 470, y: 175, xray: 1}
+                - {actor: playing_card, rank: "9", suit: s, w: 46, x: 590, y: 245, xray: 1}
+            - {actor: person, x: 540, y: 1820, scale: 1.8, look: {age: adult, outfit: suit, hair: short, silhouette: "#04060b"}}
+            - {actor: badge, x: 610, y: 1450, title: "ПЕРСОНАЛ", style: solid, color: alarm, size: 40, rot: 4, at: "@свой", enter: pop, glow_k: 1, glow: {color: "#ff3b4e", r: 20, a: 1}, blink: {freq: 2, min: 0.6}}
+            - {actor: text, text: "СВОЙ ЧЕЛОВЕК", x: 540, y: 270, size: 104, weight: 900, color: alarm, stroke: {w: 10, color: "#05020b"}, rot: -5, space: screen, at: "@сайта-0.05", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
+    sfx:
+      - {sound: click, at: 0.05, gain: -18}
+      - {sound: click, at: 0.3, gain: -19}
+      - {sound: click, at: 0.55, gain: -19}
+      - {sound: noise_sweep, at: "@видел", gain: -15}
+      - {sound: kick, at: "@соперников", gain: -12}
+      - {sound: glitch, at: "@свой", gain: -15}
+      - {sound: slam, at: "@сайта", gain: -12}
+
+  # ------------------------------------------------------------------ 2. CONTEXT — афера №1 → афера №2
+  - id: context
+    accent: "77,225,255"
+    text: В прошлой серии хакеры обыгрывали казино. Теперь игроков обманывали изнутри.
+    shots:
+      - id: c_prev
+        transition: {type: whip_x, flash: 0.08}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.12}}
+        draw:
+          bg: {type: radial, at: "50% 36%", stops: [[0, "#33105c"], [0.55, "#150727"], [1, "#05020b"]]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - actor: group
+              x: 0
+              y: 0
+              anim: [{at: "@казино", dur: 0.45, scale: 0.35, dx: -620, dy: 300, ease: in}]
+              children:
+                - {actor: slot_machine, x: 620, y: 1560, scale: 0.95, start: [bar, cherry, star], spins: [{at: "@start", dur: 0.6, result: [seven, seven, seven]}], wins: ["@прошлой+0.4"]}
+                - {actor: phone, x: 300, y: 1060, rot: -9, scale: 0.48, screen: lock, time: "03:41", glow: "#ffd34d", shakes: [{at: "@прошлой", amp: 9, dur: 0.4}]}
+                - {actor: buzz, x: 300, y: 1060, w: 290, h: 250, color: gold, times: ["@прошлой"]}
+                - {actor: text, text: "АФЕРА №1 · КАЗИНО", x: 540, y: 280, size: 64, weight: 900, color: gold, stroke: {w: 8, color: "#05020b"}, at: "@прошлой-0.1", enter: pop}
+      - id: c_now
+        start: "@Теперь-0.12"
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 560], sigma: 360, color: [0.3, 0.9, 1.0], intensity: 0.12, pulse: {freq: 0.9, amp: 0.3}}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.08, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - actor: group
+              x: 540
+              y: 1000
+              scale: 0.7
+              children:
+                - {actor: poker_table, seats: *seats, logo: "ONLINE POKER", pot: [{at: 0, v: 0}, {at: "@изнутри", v: 74000, dur: 0.8}]}
+                - {actor: chips, x: -300, y: 330, w: 110, count: 12, color: "#d3122f", anim: [{at: "@изнутри", dur: 0.6, x: -40, y: -60, ease: inOut}]}
+                - {actor: chips, x: -300, y: -150, w: 110, count: 9, color: "#1f6fd6", anim: [{at: "@изнутри+0.05", dur: 0.6, x: -40, y: -60, ease: inOut}]}
+                - {actor: chips, x: 0, y: -380, w: 110, count: 14, color: "#2fa84f", anim: [{at: "@изнутри+0.1", dur: 0.6, x: 0, y: -60, ease: inOut}]}
+                - {actor: chips, x: 300, y: -150, w: 110, count: 8, color: "#d3122f", anim: [{at: "@изнутри+0.15", dur: 0.6, x: 40, y: -60, ease: inOut}]}
+                - {actor: chips, x: 300, y: 330, w: 110, count: 11, color: "#1f6fd6", anim: [{at: "@изнутри+0.2", dur: 0.6, x: 40, y: -60, ease: inOut}]}
+            - {actor: image, emoji: "👁️", x: 540, y: 560, size: 280, at: "@Теперь-0.05", enter: grow, glow: {color: "#4de1ff", r: 40, a: 1}, pulse: {freq: 1, amp: 0.05}}
+            - {actor: text, text: "АФЕРА №2", x: 540, y: 260, size: 130, weight: 900, color: god, stroke: {w: 10, color: "#031410"}, rot: -4, space: screen, at: "@игроков-0.05", enter: stamp, shadow: "0 0 34px rgba(77,225,255,.8)"}
+    sfx:
+      - {sound: buzz, at: "@прошлой", gain: -15, f: 120, d: 0.08, n: 3}
+      - {sound: whoosh, at: "@казино", gain: -15}
+      - {sound: kick, at: "@игроков", gain: -12}
+      - {sound: riser, at: "@изнутри", gain: -17, d: 0.8}
+
+  # ------------------------------------------------------------------ 3. PROBLEM — идеальная игра и колл с пустой рукой
+  - id: problem
+    accent: "255,211,77"
+    caption_marks: {"пустой рукой": "255,59,78", "тридцать тысяч": "255,211,77"}
+    text: Две тысячи седьмой. Турнир на тысячу долларов. Почти новичок играет без единой ошибки. А в финале отвечает на олл-ин с пустой рукой — и забирает тридцать тысяч.
+    shots:
+      - id: p_lobby
+        transition: {type: whip_y, flash: 0.06}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.08}}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.08, y: 900}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - actor: monitor
+              x: 540
+              y: 900
+              w: 940
+              h: 860
+              title: "ЛОББИ · ТУРНИРЫ"
+              color: gold
+              children:
+                - {actor: shape, kind: rect, x: 40, y: 40, w: 860, h: 120, radius: 16, fill: "#141b29", origin: top-left}
+                - {actor: text, text: "Freeroll · ночной", x: 280, y: 100, size: 32, color: "#aab4c8", weight: 700}
+                - {actor: text, text: "$0", x: 760, y: 100, size: 34, color: "#aab4c8", weight: 800}
+                - {actor: shape, kind: rect, x: 40, y: 190, w: 860, h: 120, radius: 16, fill: "#141b29", origin: top-left}
+                - {actor: text, text: "Turbo · 6-max", x: 280, y: 250, size: 32, color: "#aab4c8", weight: 700}
+                - {actor: text, text: "$55", x: 760, y: 250, size: 34, color: "#aab4c8", weight: 800}
+                - {actor: shape, kind: rect, x: 40, y: 340, w: 860, h: 170, radius: 16, fill: "#2a2410", stroke: gold, sw: 4, origin: top-left, at: "@тысячу-0.05", enter: fade, glow: {color: "#ffd34d", r: 20, a: 0.8}, pulse: {freq: 1.3, amp: 0.015}}
+                - {actor: text, text: "ГАРАНТИЯ $100 000", x: 300, y: 395, size: 36, color: "#ffffff", weight: 900}
+                - {actor: text, text: "$1 000", x: 760, y: 425, size: 60, color: gold, weight: 900, at: "@тысячу-0.05", enter: pop}
+                - {actor: text, text: "сентябрь 2007", x: 300, y: 455, size: 28, color: "#c9b98a", weight: 700}
+                - {actor: shape, kind: rect, x: 40, y: 540, w: 860, h: 120, radius: 16, fill: "#141b29", origin: top-left}
+                - {actor: text, text: "Sunday Million", x: 280, y: 600, size: 32, color: "#aab4c8", weight: 700}
+                - {actor: text, text: "$215", x: 760, y: 600, size: 34, color: "#aab4c8", weight: 800}
+            - {actor: timetag, text: "СЕНТЯБРЬ 2007 · ОНЛАЙН-ПОКЕР", x: 540, y: 250, size: 38, color: gold, space: screen, at: "@Две-0.05", enter: wipe_right, enter_dur: 0.6}
+            - {actor: badge, x: 540, y: 1430, title: "БАЙ-ИН $1 000", style: solid, color: gold, size: 50, at: "@тысячу", enter: stamp}
+      - id: p_rookie
+        start: "@Почти-0.12"
+        transition: {type: zoom, dur: 0.3}
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.08}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.06, y: 990}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 470, w: 940, h: 320, radius: 26, fill: "rgba(8,12,18,.9)", stroke: gold, sw: 4}
+            - {actor: shape, kind: circle, x: 230, y: 470, r: 100, fill: "#3a2a10", stroke: gold, sw: 6}
+            - {actor: image, emoji: "🕶️", x: 230, y: 470, size: 120}
+            - {actor: text, text: "POTRIPPER", x: 610, y: 410, size: 74, weight: 900, color: "#ffffff"}
+            - {actor: text, text: "ТУРНИРОВ СЫГРАНО: {n}", x: 610, y: 510, size: 40, font: mono, color: gold, count: {from: 0, to: 3, at: "@новичок", dur: 0.5}}
+            - actor: checklist
+              x: 80
+              y: 720
+              width: 940
+              size: 46
+              color: "#3cff8a"
+              ink: "#ffffff"
+              show_at: "@играет"
+              items:
+                - {text: "ФОЛД — у соперника короли", at: "@играет"}
+                - {text: "БЛЕФ — соперник слабый", at: "@без"}
+                - {text: "КОЛЛ — соперник блефует", at: "@единой"}
+                - {text: "ФОЛД — у соперника сет", at: "@ошибки"}
+            - {actor: text, text: "0 ОШИБОК", x: 540, y: 1120, size: 90, weight: 900, color: god, stroke: {w: 8, color: "#031410"}, rot: -4, at: "@ошибки+0.1", enter: stamp, shadow: "0 0 26px rgba(77,225,255,.7)"}
+      - id: p_allin
+        start: "@финале-0.12"
+        captions_top: 1330
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: flash, events: [{at: "@пустой", amp: 0.25, decay: 0.4}]}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: "@пустой", z: 1.06, y: 1010}, {t: end, z: 1.1, y: 1000}], shakes: [{at: "@рукой", amp: 12, dur: 0.35}]}
+          layers:
+            - actor: group
+              x: 540
+              y: 860
+              scale: 0.7
+              children:
+                - {actor: poker_table, seats: [{name: "POTRIPPER", stack: "$41 200", avatar: "🕶️", color: "#3a2a10"}, {name: "CrazyMarco", stack: "$38 800", avatar: "🦁", color: "#2c2a1f"}], logo: "ФИНАЛ", active: [{at: 0, v: 1}, {at: "@на#2", v: 0}], pot: [{at: 0, v: 22500}, {at: "@отвечает", v: 222810, dur: 0.6}, {at: "@тридцать", v: 0, dur: 0.4}]}
+                - {actor: playing_card, rank: "K", suit: d, w: 105, x: -224, y: -40, at: "@финале", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "K", suit: h, w: 105, x: -112, y: -40, at: "@финале+0.12", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "4", suit: h, w: 105, x: 0, y: -40, at: "@финале+0.24", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "7", suit: s, w: 105, x: 112, y: -40, at: "@финале+0.36", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "9", suit: c, w: 110, x: -55, y: -490, face: [{at: 0, v: 0}, {at: "@пустой", v: 1, dur: 0.3}]}
+                - {actor: playing_card, rank: "2", suit: h, w: 110, x: 55, y: -490, face: [{at: 0, v: 0}, {at: "@пустой+0.08", v: 1, dur: 0.3}]}
+                - {actor: playing_card, rank: "10", suit: c, w: 110, x: -55, y: 490, face: [{at: 0, v: 0}, {at: "@пустой", v: 1, dur: 0.3}], highlight: [{at: 0, v: 0}, {at: "@пустой+0.3", v: 1, dur: 0.2}], glow: alarm}
+                - {actor: playing_card, rank: "9", suit: d, w: 110, x: 55, y: 490, face: [{at: 0, v: 0}, {at: "@пустой+0.08", v: 1, dur: 0.3}], highlight: [{at: 0, v: 0}, {at: "@пустой+0.3", v: 1, dur: 0.2}], glow: alarm}
+                - {actor: chips, x: 0, y: -330, w: 120, count: 16, color: "#2fa84f", at: 0, until: "@отвечает+0.6", anim: [{at: "@отвечает", dur: 0.55, y: -120, ease: in}]}
+            - {actor: badge, x: 210, y: 520, title: "ОЛЛ-ИН", style: solid, color: alarm, size: 46, rot: -6, at: "@отвечает-0.05", enter: stamp}
+            - {actor: badge, x: 860, y: 1200, title: "КОЛЛ", style: solid, color: god, size: 46, rot: 6, at: "@на#2-0.05", enter: stamp}
+            - {actor: text, text: "ПУСТАЯ РУКА", x: 540, y: 1015, size: 82, weight: 900, color: alarm, stroke: {w: 10, color: "#05020b"}, rot: -6, at: "@пустой", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
+            - {actor: text, text: "+${n}", x: 540, y: 650, size: 100, weight: 900, color: gold, stroke: {w: 10, color: "#031410"}, shadow: "0 0 30px rgba(255,211,77,.7)", count: {from: 0, to: 30000, at: "@тридцать", dur: 0.8, sep: " "}, at: "@тридцать-0.05", enter: pop}
+    sfx:
+      - {sound: typing, at: "@Две", gain: -18}
+      - {sound: pop, at: "@тысячу", gain: -14}
+      - {sound: blip, at: "@без", gain: -16}
+      - {sound: blip, at: "@единой", gain: -16, f: 1800}
+      - {sound: blip, at: "@ошибки", gain: -16, f: 2000}
+      - {sound: click, at: "@финале", gain: -16}
+      - {sound: whoosh, at: "@отвечает", gain: -15}
+      - {sound: kick, at: "@рукой", gain: -11}
+      - {sound: sparkle, at: "@тридцать", gain: -15}
+
+  # ------------------------------------------------------------------ 4. FILE — улику прислали жертве
+  - id: file
+    accent: "77,225,255"
+    caption_marks: {"всеми картами всех игроков": "77,225,255"}
+    text: Проигравший попросил историю раздач. А сайт по ошибке прислал файл со всеми картами всех игроков. Даже с теми, что лежали рубашкой вверх.
+    shots:
+      - id: f_mail
+        transition: {type: whip_x, flash: 0.06}
+        look: {bloom: [0.7, 0.3]}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - actor: monitor
+              x: 540
+              y: 880
+              w: 960
+              h: 740
+              title: "ПОЧТА · support@poker"
+              color: god
+              children:
+                - {actor: bubble, x: 860, y: 230, text: "Пришлите историю раздач финала", side: right, size: 36, color: "#2f7cf6", ink: "#ffffff", width: 560, at: "@попросил-0.05", enter: slide_left}
+                - {actor: bubble, x: 100, y: 430, text: "Re: история раздач", side: left, size: 36, color: "#2a3042", ink: "#ffffff", width: 460, at: "@прислал-0.05", enter: slide_right}
+                - {actor: badge, x: 400, y: 560, icon: "📎", title: "hand_history.xls", sub: "9 МБ · ВСЕ СТОЛЫ", style: dark, color: god, size: 40, at: "@прислал+0.15", enter: pop, blink: {freq: 1.6, min: 0.6}}
+            - {actor: text, text: "ЗАПРОС ПРОИГРАВШЕГО", x: 540, y: 260, size: 56, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#03060c"}, space: screen, at: "@попросил-0.05", enter: rise}
+      - id: f_sheet
+        start: "@файл-0.12"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [700, 900], sigma: 360, color: [0.3, 0.9, 1.0], intensity: 0.06, from: "@всеми"}
+        look: {bloom: [0.75, 0.25]}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 980}, {t: end, z: 1.05, y: 960}]}
+          layers:
+            - actor: spreadsheet
+              x: 540
+              y: 980
+              w: 1000
+              h: 1240
+              size: 28
+              columns: [{name: "РАЗДАЧА", w: 0.8}, {name: "ИГРОК", w: 1.2}, {name: "КАРТЫ", w: 1}, {name: "IP", w: 1.2}]
+              gen: {count: 90, seed: 7}
+              scroll: [{at: 0, v: 0}, {at: "@файл", v: 46, dur: 1.4, ease: outCubic}]
+              mark_col: {col: 2, at: "@всеми", color: god}
+            - {actor: text, text: "ВСЕ КАРТЫ ВСЕХ ИГРОКОВ", x: 540, y: 250, size: 76, weight: 900, color: god, stroke: {w: 10, color: "#03060c"}, space: screen, at: "@всеми-0.05", reveal: {by: word, mode: slam, stagger: 0.12}, shadow: "0 0 30px rgba(77,225,255,.8)"}
+            - {actor: playing_card, rank: "A", suit: h, w: 170, x: 760, y: 1000, rot: -8, at: "@Даже-0.1", enter: slide_left, xray: [{at: 0, v: 0}, {at: "@теми", v: 1, dur: 0.35}], highlight: [{at: 0, v: 0}, {at: "@теми", v: 1, dur: 0.3}], shadow: true}
+            - {actor: playing_card, rank: "A", suit: s, w: 170, x: 920, y: 1020, rot: 7, at: "@Даже", enter: slide_left, xray: [{at: 0, v: 0}, {at: "@теми+0.1", v: 1, dur: 0.35}], highlight: [{at: 0, v: 0}, {at: "@теми+0.1", v: 1, dur: 0.3}], shadow: true}
+            - {actor: badge, x: 820, y: 1210, title: "ДАЖЕ ЗАКРЫТЫЕ", style: solid, color: god, size: 40, at: "@рубашкой-0.05", enter: stamp}
+    sfx:
+      - {sound: whoosh, at: "@попросил", gain: -15}
+      - {sound: ping, at: "@прислал", gain: -14}
+      - {sound: typing, at: "@файл", gain: -16}
+      - {sound: kick, at: "@игроков", gain: -12}
+      - {sound: noise_sweep, at: "@теми", gain: -17}
+
+  # ------------------------------------------------------------------ 5. OBSERVER — след вёл в офис
+  - id: observer
+    accent: "255,59,78"
+    caption_marks: {"наблюдателя": "255,59,78"}
+    text: В файле нашли наблюдателя, который видел чужие карты. Его след вёл в офис самого покер-рума.
+    shots:
+      - id: o_row
+        transition: {type: zoom, dur: 0.3}
+        look: {bloom: [0.75, 0.25]}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: "@наблюдателя", z: 1.0, y: 960}, {t: "@наблюдателя+0.6", z: 1.15, y: 760, ease: "expo.out"}, {t: end, z: 1.18, y: 760}]}
+          layers:
+            - actor: spreadsheet
+              x: 540
+              y: 960
+              w: 1000
+              h: 1240
+              size: 28
+              columns: [{name: "РАЗДАЧА", w: 0.8}, {name: "ИГРОК", w: 1.2}, {name: "КАРТЫ", w: 1}, {name: "IP", w: 1.2}]
+              rows:
+                - ["#48211", "POTRIPPER", "10♣ 9♦", "201.**.**.14"]
+                - ["#48211", "Marco_K", "9♣ 2♥", "74.**.**.203"]
+                - ["#48212", "lucky_lena", "Q♥ Q♦", "88.**.**.9"]
+                - ["👁", "НАБЛЮДАТЕЛЬ", "ВИДИТ ВСЁ", "IP САЙТА"]
+                - ["#48213", "Ace_Hunter", "A♠ 7♠", "93.**.**.51"]
+              gen: {count: 30, seed: 3}
+              marks: [{row: 3, at: "@наблюдателя", color: alarm, solid: true}]
+            - {actor: image, emoji: "👁️", x: 930, y: 500, size: 120, at: "@чужие-0.05", enter: pop, glow: {color: "#ff3b4e", r: 26, a: 1}}
+            - {actor: text, text: "НАБЛЮДАТЕЛЬ", x: 540, y: 300, size: 92, weight: 900, color: alarm, stroke: {w: 10, color: "#03060c"}, space: screen, at: "@наблюдателя-0.05", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
+      - id: o_trace
+        start: "@след-0.12"
+        transition: {type: whip_x, flash: 0.06}
+        effects:
+          - {type: glow, at: [640, 1000], sigma: 300, color: [1.0, 0.3, 0.35], intensity: 0.1, from: "@офис", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35]}
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#0d1530"], [1, "#03050c"]]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.12, y: 1000}]}
+          layers:
+            - {actor: stars, region: [0, 0, 1080, 1920], count: 90, size: 2}
+            - actor: map
+              x: 540
+              y: 900
+              w: 1040
+              h: 1200
+              focus: ["Costa Rica", "Nicaragua", "Panama", "Honduras", "Cuba", "Guatemala", "Mexico"]
+              highlight: ["Costa Rica"]
+              hi: alarm
+              land: "#1d2c52"
+              stroke: "#2b3f73"
+              ocean: "#0a1226"
+              pin_color: alarm
+              pins: [{lon: -84.09, lat: 9.93, label: "ОФИС", at: "@офис-0.05", size: 44}]
+              routes:
+                - {src: [-80.19, 25.76], dst: [-84.09, 9.93], at: "@след-0.05", dur: 0.9, color: alarm, width: 7, packets: 3, period: 0.9}
+            - {actor: timetag, text: "ТРАССИРОВКА IP", x: 540, y: 250, size: 40, color: alarm, space: screen, at: "@след-0.05", enter: wipe_right, enter_dur: 0.5}
+            - {actor: badge, x: 540, y: 1460, title: "ОФИС САМОГО ПОКЕР-РУМА", sub: "КОСТА-РИКА", style: solid, color: alarm, size: 46, at: "@офис", enter: stamp}
+    sfx:
+      - {sound: blip, at: "@наблюдателя", gain: -14}
+      - {sound: hiss, at: "@чужие", gain: -16}
+      - {sound: noise_sweep, at: "@след", gain: -15}
+      - {sound: slam, at: "@офис", gain: -11}
+
+  # ------------------------------------------------------------------ 6. NETWORK — статистика отказывалась верить
+  - id: network
+    accent: "255,59,78"
+    text: Дальше — больше. На соседнем сайте той же сети аккаунты выигрывали так, что статистика отказывалась верить.
+    shots:
+      - id: n_sites
+        transition: {type: whip_y, flash: 0.06}
+        look: {bloom: [0.7, 0.35]}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.0, x: 480}, {t: end, z: 1.04, x: 600}]}
+          layers:
+            - {actor: text, text: "ДАЛЬШЕ — БОЛЬШЕ", x: 540, y: 300, size: 92, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#03060c"}, space: screen, at: "@Дальше-0.05", reveal: {by: word, mode: slam, stagger: 0.25}}
+            - {actor: shape, kind: line, points: [[300, 900], [780, 900]], stroke: "#ffd34d", sw: 8, dash: "18 14", at: "@больше", enter: draw, enter_dur: 0.5, glow: {color: "#ffd34d", r: 16, a: 0.8}}
+            - {actor: monitor, x: 270, y: 900, w: 470, h: 360, title: "САЙТ №1", color: god, children: [{actor: text, text: "ABSOLUTE\nPOKER", x: 235, y: 130, size: 48, weight: 900, color: "#ffffff"}, {actor: text, text: "ВСКРЫТ", x: 235, y: 245, size: 30, font: mono, color: alarm}]}
+            - {actor: monitor, x: 810, y: 900, w: 470, h: 360, title: "САЙТ №2", color: alarm, at: "@больше-0.05", enter: pop, children: [{actor: text, text: "ULTIMATE\nBET", x: 235, y: 150, size: 52, weight: 900, color: "#ffffff"}]}
+            - {actor: badge, x: 540, y: 640, title: "ОДНА СЕТЬ", style: dark, color: gold, size: 44, at: "@сети-0.05", enter: pop}
+            - {actor: shape, kind: rect, x: 810, y: 900, w: 510, h: 400, radius: 22, fill: "rgba(255,59,78,.0)", stroke: alarm, sw: 8, at: "@сети", enter: zoom, blink: {freq: 2, min: 0.4}, glow: {color: "#ff3b4e", r: 26, a: 1}}
+      - id: n_curve
+        start: "@аккаунты-0.12"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [1150, 860], sigma: 240, color: [1.0, 0.3, 0.35], intensity: 0.1, from: "@статистика", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35]}
+        draw:
+          bg: *dark_bg
+          world: [1700, 1920]
+          camera: {keys: [{t: 0, x: 540, y: 960, z: 1.0}, {t: "@выигрывали", x: 540, y: 960, z: 1.0}, {t: "@статистика", x: 800, y: 960, z: 0.75, ease: inOut}]}
+          layers:
+            - {actor: bell_curve, x: 540, y: 960, w: 980, h: 900, dots: 180, label: "NioNio", axis: "ВЫИГРЫШ ИГРОКОВ →", draw: [{at: 0, v: 0}, {at: "@аккаунты", v: 1, dur: 0.8}], outlier: [{at: 0, v: 2}, {at: "@выигрывали", v: 7.3, dur: 1.0, ease: inOut}], outlier_at: "@выигрывали-0.05"}
+            - {actor: text, text: "ОБЫЧНЫЕ ИГРОКИ", x: 470, y: 470, size: 44, weight: 800, color: "#aab4c8", at: "@аккаунты+0.3", enter: fade}
+            - {actor: text, text: "НЕВОЗМОЖНО", x: 1000, y: 560, size: 96, weight: 900, color: alarm, stroke: {w: 10, color: "#03060c"}, rot: -6, at: "@статистика-0.05", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
+    sfx:
+      - {sound: whoosh, at: "@больше", gain: -15}
+      - {sound: buzz, at: "@сети", gain: -15}
+      - {sound: riser, at: "@выигрывали", gain: -16, d: 1.0}
+      - {sound: kick, at: "@статистика", gain: -12}
+
+  # ------------------------------------------------------------------ 7. CHAMPION — главный виновник
+  - id: champion
+    accent: "255,211,77"
+    caption_marks: {"чемпион мира": "255,211,77"}
+    text: А главным оказался чемпион мира по покеру девяносто четвёртого года.
+    shots:
+      - id: t_champ
+        transition: {type: flash, dur: 0.25}
+        effects:
+          - {type: tint_pulse, at: "@года", decay: 2.0, gain: [1.35, 0.8, 0.85], lift: [0.05, 0.0, 0.0]}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.12}}
+        draw:
+          bg: {type: radial, at: "50% 30%", stops: [[0, "#1a1408"], [1, "#030202"]]}
+          camera: {keys: [{t: 0, z: 1.12, y: 1080}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {actor: shape, kind: polygon, points: [[440, -40], [640, -40], [980, 1700], [100, 1700]], fill: {linear: ["rgba(255,230,160,.55)", "rgba(255,230,160,0)"], angle: 180}, at: "@главным-0.05", enter: fade, enter_dur: 0.2}
+            - {actor: shape, kind: polygon, points: [[440, -40], [640, -40], [980, 1700], [100, 1700]], fill: {linear: ["rgba(255,40,60,.6)", "rgba(255,40,60,0)"], angle: 180}, at: "@года", enter: fade, enter_dur: 0.3}
+            - {actor: shape, kind: ellipse, x: 540, y: 1610, w: 760, h: 120, fill: "rgba(255,220,150,.25)"}
+            - {actor: person, x: 540, y: 1620, scale: 2.0, look: {age: adult, outfit: suit, hair: short, silhouette: "#070503"}, pose: [{at: 0, v: stand}, {at: "@чемпион", v: arms_up, dur: 0.35}]}
+            - {actor: image, emoji: "🏆", x: 540, y: 690, size: 170, at: "@чемпион", enter: pop, glow: {color: "#ffd34d", r: 30, a: 1}}
+            - {actor: particles, kind: confetti, region: [0, 0, 1080, 1300], count: 70, at: "@чемпион"}
+            - {actor: text, text: "ЧЕМПИОН МИРА 1994", x: 540, y: 300, size: 96, weight: 900, color: gold, stroke: {w: 10, color: "#030202"}, space: screen, at: "@чемпион-0.05", reveal: {by: word, mode: rise, stagger: 0.12}, shadow: "0 0 30px rgba(255,211,77,.7)"}
+            - {actor: text, text: "ГЛАВНЫЙ ВИНОВНИК", x: 540, y: 1120, size: 96, weight: 900, color: "#ffffff", stroke: {w: 12, color: "#c2001f"}, rot: -6, space: screen, at: "@года-0.05", enter: stamp, shadow: "0 0 34px rgba(255,40,60,.8)"}
+    sfx:
+      - {sound: impact, at: "@главным", gain: -13}
+      - {sound: sparkle, at: "@чемпион", gain: -16}
+      - {sound: slam, at: "@года", gain: -11}
+
+  # ------------------------------------------------------------------ 8. PAYOFF — возврат и признание
+  - id: payoff
+    accent: "255,211,77"
+    caption_marks: {"двадцать два миллиона долларов": "255,211,77"}
+    text: "Игрокам вернули двадцать два миллиона долларов. А на записи он сам признался: «Да, я взял эти деньги»."
+    shots:
+      - id: pay_refund
+        transition: {type: whip_y, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 520], sigma: 380, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.1}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: text, text: "ВОЗВРАТ ИГРОКАМ", x: 540, y: 360, size: 54, font: mono, color: "#ffffff", at: "@вернули-0.1", enter: rise}
+            - {actor: text, text: "${n}", x: 540, y: 520, size: 140, weight: 900, color: gold, stroke: {w: 10, color: "#031410"}, shadow: "0 0 34px rgba(255,211,77,.7)", count: {from: 0, to: 22100000, at: "@двадцать", dur: 1.2, sep: " "}, at: "@двадцать-0.05", enter: pop}
+            - {actor: coins, kind: bill, bursts: [{at: "@долларов", x: 540, y: 620, count: 30, power: 1300, spread: 150, up: 90}]}
+            - {actor: text, text: "🦊   🐺   🦁   🐀   🦉", x: 540, y: 1100, size: 110, at: "@Игрокам", enter: rise}
+      - id: pay_tape
+        start: "@записи-0.12"
+        transition: {type: zoom, dur: 0.3}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1}}
+        draw:
+          bg: *dark_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.07}]}
+          layers:
+            - {actor: waveform, x: 540, y: 820, w: 940, h: 660, label: "2013 · ЗАПИСЬ", color: gold, play: [{at: 0, v: 0}, {at: "@записи", v: 1, dur: 0.3}]}
+            - {actor: timetag, text: "ТАЙНАЯ ЗАПИСЬ · 2013", x: 540, y: 250, size: 40, color: gold, space: screen, at: "@записи-0.05", enter: wipe_right, enter_dur: 0.5}
+            - {actor: text, text: "«ДА, Я ВЗЯЛ ЭТИ ДЕНЬГИ»", x: 540, y: 1300, size: 74, weight: 900, color: "#ffffff", width: 980, stroke: {w: 8, color: "#03060c"}, at: "@Да-0.05", reveal: {by: word, mode: rise, sync: true}}
+            - {actor: text, text: "I did take this money", x: 540, y: 1420, size: 40, font: mono, color: "#aab4c8", at: "@деньги+0.2", enter: fade}
+    sfx:
+      - {sound: typing, at: "@двадцать", gain: -17}
+      - {sound: sparkle, at: "@долларов", gain: -14}
+      - {sound: click, at: "@записи", gain: -14}
+      - {sound: boom, at: "@деньги", gain: -14}
+
+  # ------------------------------------------------------------------ 9. CTA — хакер или казино + петля к началу
+  - id: cta
+    accent: "77,225,255"
+    text: "Что наглее: хакер снаружи или казино изнутри? Пиши одним словом. Третья афера — уже на очереди."
+    shots:
+      - id: z_choice
+        transition: {type: whip_x, flash: 0.08}
+        look: {bloom: [0.65, 0.4], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: digits, color: god, size: 28, speed: 1.6, density: 0.3, opacity: 0.15}
+            - actor: group
+              x: 540
+              y: 600
+              at: "@хакер-0.05"
+              enter: stamp
+              pulse: {freq: 1.6, amp: 0.03}
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 900, h: 220, radius: 110, origin: center, fill: {linear: ["#ff5a6e", "#b3001b"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#ff3b4e", r: 30, a: 0.9}}
+                - {actor: text, text: "ХАКЕР СНАРУЖИ", x: 0, y: 4, size: 88, weight: 900, color: "#ffffff"}
+            - {actor: text, text: "ИЛИ", x: 540, y: 800, size: 70, font: mono, color: "#ffffff", at: "@или", enter: pop, blink: {freq: 1.5, min: 0.4}}
+            - actor: group
+              x: 540
+              y: 1000
+              at: "@казино-0.05"
+              enter: stamp
+              pulse: {freq: 1.6, amp: 0.03, phase: 3.14}
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 900, h: 220, radius: 110, origin: center, fill: {linear: ["#5ee8ff", "#0a7fa6"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#4de1ff", r: 30, a: 0.9}}
+                - {actor: text, text: "КАЗИНО ИЗНУТРИ", x: 0, y: 4, size: 88, weight: 900, color: "#ffffff"}
+            - {actor: badge, x: 540, y: 330, icon: "🔔", title: "АФЕРА №3 — СКОРО", style: solid, color: gold, size: 50, at: "@Третья", enter: drop}
+      - id: z_loop
+        start: "@очереди-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 800], sigma: 420, color: [0.3, 0.9, 1.0], intensity: 0.08, from: "@очереди+0.2", fade_in: 0.3}
+        look: {bloom: [0.72, 0.3], grade: {contrast: 0.08, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.06, y: 940}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - actor: group
+              x: 540
+              y: 840
+              scale: 0.74
+              children:
+                - {actor: poker_table, seats: *seats, logo: "ONLINE POKER", active: 0}
+                - {actor: playing_card, rank: "A", suit: s, w: 95, x: -45, y: 490, face: 1, highlight: 0.6, glow: gold}
+                - {actor: playing_card, rank: "J", suit: s, w: 95, x: 45, y: 490, face: 1, highlight: 0.6, glow: gold}
+                - {actor: playing_card, rank: "K", suit: h, w: 95, x: -313, y: 245, xray: [{at: 0, v: 0}, {at: "@очереди+0.5", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "K", suit: c, w: 95, x: -223, y: 245, xray: [{at: 0, v: 0}, {at: "@очереди+0.5", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "7", suit: d, w: 95, x: -313, y: -245, xray: [{at: 0, v: 0}, {at: "@очереди+0.3", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "2", suit: c, w: 95, x: -223, y: -245, xray: [{at: 0, v: 0}, {at: "@очереди+0.3", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "Q", suit: h, w: 95, x: -45, y: -490, xray: [{at: 0, v: 0}, {at: "@очереди+0.15", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "Q", suit: d, w: 95, x: 45, y: -490, xray: [{at: 0, v: 0}, {at: "@очереди+0.15", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "9", suit: s, w: 95, x: 223, y: -245, xray: [{at: 0, v: 0}, {at: "@очереди+0.3", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "8", suit: s, w: 95, x: 313, y: -245, xray: [{at: 0, v: 0}, {at: "@очереди+0.3", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "4", suit: h, w: 95, x: 223, y: 245, xray: [{at: 0, v: 0}, {at: "@очереди+0.5", v: 1, dur: 0.2}]}
+                - {actor: playing_card, rank: "4", suit: c, w: 95, x: 313, y: 245, xray: [{at: 0, v: 0}, {at: "@очереди+0.5", v: 1, dur: 0.2}]}
+            - {actor: shape, kind: rect, x: 540, y: 300, w: 1200, h: 70, fill: {linear: ["rgba(77,225,255,0)", "rgba(77,225,255,.85)", "rgba(77,225,255,0)"], angle: 180}, glow: {color: "#4de1ff", r: 30, a: 1}, at: "@очереди+0.05", until: "@очереди+0.8", anim: [{at: "@очереди+0.05", dur: 0.7, y: 1400, ease: linear}]}
+            - {actor: timetag, text: "АФЕРА №2", x: 540, y: 190, size: 36, color: god, space: screen}
+    sfx:
+      - {sound: blip, at: "@хакер", gain: -14}
+      - {sound: blip, at: "@казино", gain: -14, f: 1900}
+      - {sound: pop, at: "@Третья", gain: -14}
+      - {sound: noise_sweep, at: "@очереди", gain: -16}

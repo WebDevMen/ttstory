@@ -246,6 +246,21 @@ anim:
 | `holo` | 3D-модель (three.js) | `model: globe still tanker` (или своя из `engine/hud/models`), `params` (дорожки), `opts`, `color w h` |
 | `particles` | частицы внутри сцены | `kind: petals snow confetti leaves bubbles dust embers steam sparkles stars burst hearts`, `region count size speed sway wind colors alpha seed from rise drift` |
 
+### 7.7 Казино и карты
+
+| Актёр | Что это | Параметры |
+|---|---|---|
+| `slot_machine` | игровой автомат: 3 барабана, огни, счётчик, кнопка SPIN | `start: [sym×3]`, `spins: [{at, dur, result: [sym×3], stagger, loops}]` (символы `seven cherry bar bell star diamond`), `wins: [t]` (вспышка, WIN!), `press: [t]` (кнопка), `button_glow`, `credits` (дорожка, $), `digits` (дорожка 0..1: барабаны становятся цифрами), `lights`, `title color trim neon w`. Якоря: `screen button credits top reel:i` |
+| `playing_card` | игральная карта | `rank suit` (`s h d c`), `w`, `face` (дорожка 0 — рубашка, 1 — лицо; плавный переворот), `xray` (дорожка 0..1: рубашка становится прозрачной — «режим бога»), `highlight`, `glow`, `back` |
+| `chips` | стопка фишек | `count` (дорожка, до 24), `color color2 w label` |
+| `poker_table` | онлайн-стол сверху | `seats: [{name, stack, avatar, color}]` (по часовой с низа), `active` (дорожка: подсвеченное место), `pot` (дорожка, «БАНК $…»), `logo felt rail w`. Якоря: `seat:i cards:i board:k pot center` |
+| `cctv` | оверлей камеры наблюдения (`space: screen`) | `cam date clock label`, `box` (дорожка `[x, y, w, h]` — рамка захвата), `box_at`, `grain gray` |
+| `hand` | рука | `pose: point` (палец; x/y — кончик пальца) или `hold_back`/`hold_front` (держит телефон `pw×ph`: ладонь сзади, пальцы спереди), `skin sleeve cuff` |
+| `neon_sign` | неоновая вывеска | `text color size frame off_at stagger flicker` |
+| `buzz` | дуги вибрации телефона | `times: [t]`, `w h color dur` |
+| `coins` | монеты/купюры (canvas) | `kind: coin bill`, `bursts: [{at, x, y, count, power, spread, up}]`, `rain: {from, until, count}`, `gravity` |
+| `digits` | «цифровой дождь» (canvas) | `w h color size speed density seed` |
+
 ## 8. Библиотеки
 
 Все библиотеки лежат в `engine/hud/vendor/` (работают офлайн, версии зафиксированы):
@@ -285,7 +300,7 @@ export const sunburst = {
 };
 ```
 
-Пример побольше — [`projects/slots/actors/casino.js`](../projects/slots/actors/casino.js): игровой автомат с крутящимися барабанами (`spins`, `wins`, `press`, `credits`, режим «цифры»), оверлей камеры наблюдения `cctv` (зерно, таймкод, рамка захвата), рука `hand`, неоновая вывеска `neon_sign`, вибрация `buzz`, монеты и купюры `coins` (canvas), «цифровой дождь» `digits`.
+Пример побольше — [`projects/superuser/actors/poker.js`](../projects/superuser/actors/poker.js): окно приложения `monitor` (с вложенными актёрами), таблица `spreadsheet` с бегущими строками и подсветкой, колокол распределения `bell_curve` с выбросом, кассета со звуковой волной `waveform`. Актёры, которые пригодились больше чем одному ролику, переезжают в библиотеку — так автомат и камера наблюдения из «Как обыграть казино телефоном» стали `engine/hud/draw/actors/casino.js` (§7.7). Имена актёров в библиотеке уникальны: повтор имени в двух файлах — ошибка при загрузке.
 
 Внутри доступно всё из `H`: цвета (`H.col`, `H.rgba`, `H.shade`), `H.svg/H.div/H.el`, `H.child(spec, container)` — вложить любой другой актёр со всеми общими свойствами, `H.track`, `H.ease`, `H.noise`, `H.rng(seed)`, `H.asset("file.png")`, `H.json(url)`, `H.anchorOf("id.name")`, `H.TL` (таймлайн, слова диктора). Свои стили — `projects/<id>/draw.css`.
 

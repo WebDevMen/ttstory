@@ -85,7 +85,7 @@ export const chips = {
 
 // ------------------------------------------------------------------ poker_table: online table seen from above (portrait)
 // seats: [{name, stack, avatar (emoji), color}] clockwise from the bottom (hero) — up to 8; active (track: seat index that
-// glows), pot (track number, shown "$…" in the middle; null hides it), logo (text on the felt), felt, rail, w (default 980).
+// glows), pot (track number, shown "$…" in the middle; null or 0 hides it), logo (text on the felt), felt, rail, w (default 980).
 // Anchors: seat:i (avatar), cards:i (where that seat's hole cards lie), board:k (k = 0..4 community cards), pot, center
 export const poker_table = {
   origin: "center",
@@ -133,7 +133,7 @@ export const poker_table = {
           d.querySelector(".pl").style.boxShadow = on ? `0 0 ${24 * k}px rgba(255,211,77,.8)` : "none";
         });
         const pot = it.v("pot", null);
-        potEl.textContent = pot == null ? "" : `БАНК $${Math.round(pot).toLocaleString("ru-RU").replace(/ /g, " ")}`;
+        potEl.textContent = pot == null || pot <= 0 ? "" : `БАНК $${Math.round(pot).toLocaleString("ru-RU").replace(/ /g, " ")}`;
       },
       anchor(name, args) {
         const i = Number(args?.[0] ?? 0);
