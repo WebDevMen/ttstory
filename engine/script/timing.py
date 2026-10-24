@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import time
 
 from ..common import DEFAULTS, build_dir, norm_word
 
@@ -79,9 +80,17 @@ def tts_speech(pid, beat_id, text, v):
             words = m["words"]
     if words is None:
         _patch_certifi(pid)
-        words = asyncio.run(_tts(text, v["voice"], v["rate"], v["pitch"], os.path.join(d, f"{beat_id}.mp3")))
+        err = None
+        for attempt in range(3):              # the TTS service fails now and then: retry before giving up
+            try:
+                words = asyncio.run(_tts(text, v["voice"], v["rate"], v["pitch"], os.path.join(d, f"{beat_id}.mp3")))
+                if words:
+                    break
+            except Exception as e:            # network / service errors (edge_tts raises its own types)
+                err = e
+            time.sleep(2 * (attempt + 1))
         if not words:
-            raise RuntimeError(f"TTS returned no words for beat {beat_id}")
+            raise RuntimeError(f"TTS failed for beat {beat_id}: {err or 'no words'}")
         json.dump({"key": key, "words": words}, open(f, "w", encoding="utf-8"), ensure_ascii=False)
     out, shift, t0 = [], 0.0, words[0]["start"]
     for i, w in enumerate(words):

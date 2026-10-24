@@ -268,7 +268,7 @@ def run(s, pid=None, tts=False):
         iss.error("retention", "beats", "нет развязки/раскрытия/поворота/сводки во второй половине — нечем наградить за досмотр")
     loops = s.get("loops") or []
     M["loops"] = len(loops)
-    opened_early = False
+    opened_early, late_close = False, False
     for lp in loops:
         if not isinstance(lp, dict) or lp.get("open") not in by_id or lp.get("close") not in by_id:
             continue
@@ -277,8 +277,10 @@ def run(s, pid=None, tts=False):
             iss.error("loops", f"loops.{lp.get('id')}", "петля закрывается раньше, чем открывается")
         if o <= 8 or (draft and lp["open"] == (beats[0].get("id") if beats else None)):
             opened_early = True
-        if c < total * 0.5 and not draft:
-            iss.warn("loops", f"loops.{lp.get('id')}", "петля закрывается в первой половине — держите интригу дольше")
+        if c >= total * 0.5:
+            late_close = True
+    if loops and not late_close and not draft:
+        iss.warn("loops", "loops", "все петли закрываются в первой половине — оставьте хотя бы один вопрос открытым до второй половины")
     if not opened_early:
         iss.warn("loops", "loops", "нет открытой петли в первые 8 с (вопрос/обещание, ответ на которое будет позже)")
     used = {d for b in beats for d in (b.get("devices") or [])}
