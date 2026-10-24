@@ -11,6 +11,41 @@ export const group = {
   },
 };
 
+// stack: children laid out in a column (dir: v) or a row (dir: h) with equal gaps on one axis.
+//   children / items: [...] (any actors; their x/y are set by the stack), gap (px, default 24),
+//   align: center | start | end (cross axis), the stack's x/y is the centre of the whole block.
+//   Sizes are measured every frame (after fonts load, while counters grow), so the block stays even.
+export const stack = {
+  origin: "center",
+  async create(p, H, item) {
+    const el = H.div("width:0;height:0");
+    const kids = [];
+    for (const c of p.children || p.items || []) kids.push(await H.child({ ...c, x: 0, y: 0 }, el));
+    const dir = p.dir ?? "v", gap = p.gap ?? 24, align = p.align ?? "center";
+    const size = (k) => {
+      const s = Math.abs(k.v("scale", 1)) * (k.fitK ?? 1);
+      return [(k.w || 0) * s, (k.h || 0) * s];
+    };
+    return {
+      el, w: 0, h: 0,
+      update(t) {
+        const sz = kids.map(size), main = dir === "v" ? 1 : 0, cross = 1 - main;
+        const total = sz.reduce((a, b) => a + b[main], 0) + gap * Math.max(0, kids.length - 1);
+        const maxC = Math.max(0, ...sz.map((s) => s[cross]));
+        let pos = -total / 2;
+        kids.forEach((k, i) => {
+          const along = pos + sz[i][main] / 2;
+          pos += sz[i][main] + gap;
+          const off = align === "start" ? -(maxC - sz[i][cross]) / 2 : align === "end" ? (maxC - sz[i][cross]) / 2 : 0;
+          k.over[main ? "y" : "x"] = along;
+          k.over[main ? "x" : "y"] = off;
+          k.prepare(t);                    // re-place this frame (children render right after this update)
+        });
+      },
+    };
+  },
+};
+
 // shape: rect | circle | ellipse | line | polyline | polygon | path | star | ring | arc | arrow | triangle
 //   w, h, r, radius, points, d, fill (color | {linear|radial: [c...], angle}), stroke, sw, dash, cap, join,
 //   animated: fill, stroke, sw, w, h, r, start/end (arc, degrees), draw (0..1 stroke reveal), morph: [{at, d, dur, ease}]
@@ -182,6 +217,16 @@ export const text = {
     const txt0 = p.count ? [countText(p.count, p.count.from ?? 0), countText(p.count, p.count.to ?? 100)].sort((a, b) => b.length - a.length)[0] : String(p.text ?? "");
     fill(txt0);
     shown = txt0;
+    // lines: N — the font shrinks (down to min_size) until the text takes at most N lines in its width
+    let fitted = null;
+    const fitLines = () => {
+      if (!p.lines || !el.isConnected || fitted === shown) return;
+      let fs = size;
+      const lh = p.line ?? 1.08, min = p.min_size ?? 26;
+      el.style.fontSize = `${fs}px`;
+      while (fs > min && el.scrollHeight > p.lines * fs * lh * 1.15) { fs = Math.max(min, fs * 0.94); el.style.fontSize = `${fs}px`; }
+      fitted = shown;
+    };
     return {
       el,
       update(t, it) {
@@ -191,6 +236,7 @@ export const text = {
           txt = countText(c, (c.from ?? 0) + ((c.to ?? 100) - (c.from ?? 0)) * k);
         }
         if (txt !== shown) { fill(txt); shown = txt; }
+        fitLines();
         if (rv) {
           const at0 = rv.at ?? it.at, st = rv.stagger ?? (by === "char" ? 0.035 : 0.12), dur = rv.dur ?? (rv.mode === "type" ? 0.001 : 0.35);
           const mode = rv.mode ?? "rise";

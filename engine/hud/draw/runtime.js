@@ -2,7 +2,7 @@
 // Open /engine/hud/draw.html?project=<id>; window.drawShotFrame(shotId, frame) draws one frame of one shot and returns
 // {cam, anchors} for the scene layer / HUD. Actors: engine/hud/draw/actors/* + projects/<id>/actors/*.js.
 import * as lib from "../lib.js";
-import { Item, ease, track, mix, noise, rng, hex, smoothPath, isTrack } from "./core.js";
+import { Item, ease, track, mix, noise, rng, hex, smoothPath, isTrack, TEXTY, SLOTS } from "./core.js";
 import BUILTIN from "./actors/index.js";
 import rough from "../vendor/rough.esm.js";
 
@@ -38,6 +38,7 @@ const SVGNS = "http://www.w3.org/2000/svg";
 let uidN = 0;
 const jsonCache = new Map();
 const H = {
+  frameW: TL.width || 1080,
   ...lib, ease, track, mix, noise, rng, hex, smoothPath, isTrack, rough,
   TL, PID, W, H: HH, fps: FPS, actors: ACTORS, palette: PALETTE,
   gsap: window.gsap, d3: window.d3, topojson: window.topojson, lottie: window.lottie,
@@ -189,7 +190,10 @@ async function buildStage(shot) {
   H.nextSeed = 0;
   el.style.background = background(d.bg);
   let layer = null;
-  for (const spec of d.layers || []) {
+  for (const spec0 of d.layers || []) {
+    // slot: tag | title | subtitle | main | lower | footer — a named place on the vertical axis (screen space)
+    const spec = spec0.slot ? { x: 540, y: SLOTS[spec0.slot] ?? Number(spec0.slot), space: "screen", ...spec0 } : spec0;
+    if (spec0.slot && !(spec0.slot in SLOTS) && Number.isNaN(Number(spec0.slot))) throw new Error(`shot ${shot.id}: unknown slot '${spec0.slot}' (${Object.keys(SLOTS).join(", ")})`);
     const space = spec.space === "screen" ? "screen" : "world";
     const par = space === "screen" ? null : Number(spec.par ?? 1);
     if (!layer || layer.space !== space || layer.par !== par) {
@@ -253,7 +257,6 @@ window.drawShotFrame = async (shotId, frame) => {
 };
 // layout audit (vg.py layout): the on-screen box of every visible item of one frame — text lines measured tightly
 // (Range client rects), the rest by the item box; entering/exiting items are flagged so the checker can skip them.
-const TEXTY = new Set(["text", "badge", "timetag", "callout", "bubble", "card", "checklist", "meter", "neon_sign", "mail"]);
 function layoutOf(it, out, parentPath, parentMoving) {
   if (!it.visible) return;
   const path = `${parentPath}${parentPath ? "/" : ""}${it.id || it.spec.actor}#${it.index ?? 0}`;

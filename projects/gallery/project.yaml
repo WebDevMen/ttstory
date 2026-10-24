@@ -121,3 +121,29 @@ scenes:
             - {actor: sunburst, x: 540, y: 800, r: 620, at: 0, speed: 18}
             - {actor: text, text: "СВОЙ\n**АКТЁР**", x: 540, y: 800, size: 130, color: "#1d2347", accent: "#d7263d", at: 0, reveal: {by: word, mode: slam, stagger: 0.2}}
             - {actor: text, text: "projects/<id>/actors/sunburst.js", x: 540, y: 1250, size: 40, font: mono, weight: 700, color: "#5d3d28", bg: {color: "#ffffff", pad: "10px 24px", radius: 12}}
+  - id: layout
+    text: Вёрстка.
+    shots:
+      - id: layout
+        draw:
+          bg: "#10141f"
+          layers:
+            - {actor: timetag, slot: tag, text: "SLOT: TAG"}
+            - {actor: text, slot: title, text: "ОЧЕНЬ ДЛИННЫЙ ЗАГОЛОВОК В ДВЕ СТРОКИ", size: 120, lines: 2, width: 980, color: "#ffd34d"}
+            - {actor: text, slot: subtitle, text: "lines: 2 — шрифт ужался до двух строк", size: 34, font: mono, color: "#aab4c8"}
+            - actor: stack
+              slot: main
+              gap: 26
+              children:
+                - {actor: badge, icon: "🚶", title: "САМ ПРИШЁЛ", style: solid, color: "#ffd34d", size: 50}
+                - {actor: badge, icon: "🪙", title: "КУПИЛ", style: solid, color: "#ffd34d", size: 50}
+                - {actor: badge, icon: "🎯", title: "САМ ПОСТАВИЛ СТАВКУ", style: solid, color: "#ffd34d", size: 50}
+            - actor: stack
+              slot: lower
+              dir: h
+              gap: 30
+              children:
+                - {actor: card, emoji: "🎲", title: "ОДИН", w: 280, style: dark, color: "#ffd34d"}
+                - {actor: card, emoji: "🌦️", title: "ДВА", w: 280, style: dark, color: "#4de1ff"}
+                - {actor: card, emoji: "🎭", title: "ТРИ", w: 280, style: dark, color: "#ff8a3c"}
+            - {actor: text, slot: footer, text: "НЕВЕРОЯТНОСТЬ", size: 160, rot: -6, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}}

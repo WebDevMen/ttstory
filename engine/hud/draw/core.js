@@ -155,11 +155,18 @@ export function exitFx(type, k, spec) {
   return o;
 }
 
+// ------------------------------------------------------------------ layout rules (docs/DRAW.md §10.1)
+// text-bearing actors: auto-fit to the frame width (fit), measured by the layout audit
+export const TEXTY = new Set(["text", "badge", "timetag", "callout", "bubble", "card", "checklist", "meter", "neon_sign", "mail"]);
+export const FIT_MARGIN = 48;            // auto-fit keeps a text at least this far from both frame edges
+// named places for the main kinds of on-screen text (screen space, centred on the vertical axis)
+export const SLOTS = { tag: 200, title: 400, subtitle: 540, main: 880, lower: 1200, footer: 1420 };
+
 // ------------------------------------------------------------------ items
 const UNIVERSAL = new Set(["actor", "id", "x", "y", "scale", "sx", "sy", "rot", "opacity", "flip", "par", "space", "at", "until",
   "enter", "enter_dur", "enter_ease", "exit", "exit_dur", "anim", "float", "bob", "wiggle", "sway", "pulse", "spin", "blink",
   "flicker", "shakes", "glow", "glow_k", "shadow", "blur", "brightness", "saturate", "contrast", "hue", "grayscale", "blend",
-  "origin", "sfx", "sfx_gain", "z", "visible", "note", "persp", "tilt_x", "tilt_y", "clip"]);
+  "origin", "sfx", "sfx_gain", "z", "visible", "note", "persp", "tilt_x", "tilt_y", "clip", "fit", "slot"]);
 const TRACKABLE = ["x", "y", "scale", "sx", "sy", "rot", "opacity", "blur", "brightness", "saturate", "contrast", "hue", "grayscale",
   "glow_k", "tilt_x", "tilt_y", "visible"];
 const TIMING = new Set(["at", "dur", "until", "ease", "path", "orient", "from"]);
@@ -274,11 +281,15 @@ export class Item {
       if (this.inst.el instanceof HTMLElement) this.autoSize = [this.w == null, this.h == null];
       // children of a group / phone screen are built before their parent is in the document: measure on first show
       if (!this.inst.el.isConnected) this.remeasure = [this.w == null, this.h == null];
-      const r = this.inst.el.getBoundingClientRect();
-      this.w ??= r.width; this.h ??= r.height;
+      const r = this.inst.el.getBoundingClientRect(), el = this.inst.el;
+      // content wider than its box (a long word in a fixed-width text) counts, so the origin stays on the real centre
+      this.w ??= Math.max(r.width, el.scrollWidth || 0); this.h ??= Math.max(r.height, el.scrollHeight || 0);
     }
     if (this.w != null) { this.fx.style.width = `${this.w}px`; this.fx.style.height = `${this.h}px`; }
     this.origin = resolveOrigin(this.spec.origin ?? this.inst.origin ?? def.origin, this.w, this.h);
+    this.fitK = 1;
+    this.fitOn = this.spec.fit !== false && (this.spec.fit != null || (!this.parent && TEXTY.has(this.spec.actor)));
+    if (this.fitOn) this.updateFit();
     if (this.spec.blend) this.wrap.style.mixBlendMode = this.spec.blend;
     if (this.spec.clip) this.fx.style.clipPath = this.spec.clip;
     return this;
@@ -309,7 +320,7 @@ export class Item {
     this.eo = ext ? P(t, this.until - xd, xd) : 0;
     const a = ent ? enterFx(ent, this.ei, sp.enter) : null, b = ext ? exitFx(ext, this.eo, sp.exit) : null;
     let x = this.v("x", 0), y = this.v("y", 0), rot = this.v("rot", 0);
-    const s = this.v("scale", 1);
+    const s = this.v("scale", 1) * (this.fitK ?? 1);
     let sx = s * this.v("sx", 1) * (this.v("flip", false) ? -1 : 1), sy = s * this.v("sy", 1);
     for (const p of this.paths) {
       if (t < p.at) continue;
@@ -386,13 +397,29 @@ export class Item {
     if (drawK != null || this._drawn) this.applyDraw(drawK ?? 1);
     if (this.inst.update) this.inst.update(t, this);
     if (this.autoSize && !this.remeasure) this.refit(tilt);
+    else if (this.fitOn) this.updateFit();
     for (const c of this.children) c.render(t);
+  }
+
+  // fit: shrink the item (never enlarge) so its rotated box fits the frame width minus margins, or fit.w / fit.h.
+  // Default for top-level text-bearing actors; `fit: false` turns it off, `fit: 700` / `fit: {w, h}` sets the box.
+  updateFit(bw = this.w, bh = this.h) {
+    const f = this.spec.fit, el = this.inst.el;
+    const nw = Math.max(bw || 0, el?.scrollWidth || 0), nh = Math.max(bh || 0, el?.scrollHeight || 0);
+    if (!nw || !nh) return;
+    const W = this.H.frameW ?? 1080;
+    const maxW = typeof f === "number" ? f : f?.w ?? W - 2 * FIT_MARGIN, maxH = (typeof f === "object" && f?.h) || Infinity;
+    const sc = Math.abs(this.v("scale", 1)), sx = sc * Math.abs(this.v("sx", 1)), sy = sc * Math.abs(this.v("sy", 1));
+    const r = (Math.abs(this.v("rot", 0)) % 180) * Math.PI / 180, c = Math.abs(Math.cos(r)), sn = Math.abs(Math.sin(r));
+    const aw = nw * sx * c + nh * sy * sn, ah = nw * sx * sn + nh * sy * c;
+    this.fitK = Math.min(1, maxW / Math.max(1, aw), maxH / Math.max(1, ah));
   }
 
   // auto-sized item: if its content changed size, update the box and shift by the origin difference (same frame)
   refit(tilt) {
     const el = this.inst.el, [mw, mh] = this.autoSize;
-    const bw = mw ? el.offsetWidth : this.w, bh = mh ? el.offsetHeight : this.h;
+    const bw = mw ? Math.max(el.offsetWidth, el.scrollWidth || 0) : this.w, bh = mh ? Math.max(el.offsetHeight, el.scrollHeight || 0) : this.h;
+    if (this.fitOn) this.updateFit(bw, bh);
     if (!bw || !bh || (Math.abs(bw - this.w) < 0.5 && Math.abs(bh - this.h) < 0.5)) return;
     this.w = bw; this.h = bh;
     this.fx.style.width = `${bw}px`; this.fx.style.height = `${bh}px`;
