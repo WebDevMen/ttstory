@@ -165,7 +165,7 @@ scenes:
         start: "@отдали-0.12"
         transition: {type: zoom, dur: 0.3}
         effects:
-          - {type: tint_pulse, at: "@приняли", decay: 0.6, gain: [0.25, 0.0, 0.0], lift: [0.06, 0.0, 0.0]}
+          - {type: tint_pulse, at: "@приняли", decay: 2.5, gain: [1.35, 0.85, 0.85], lift: [0.04, 0.0, 0.0]}
         look: {bloom: [0.75, 0.25]}
         draw:
           bg: {type: radial, at: "50% 40%", stops: [[0, "#1d0b2e"], [1, "#05020b"]]}
@@ -240,16 +240,16 @@ scenes:
           layers:
             - <<: *machine
               x: 540
-              y: 2060
+              y: 2140
               scale: 1.62
               start: [seven, seven, seven]
               wins: ["@тысячу"]
               credits: [{at: 0, v: 1300}, {at: "@выиграл", v: 21000, dur: 1.15, ease: inOut}]
-            - {actor: coins, bursts: [{at: "@тысячу", x: 540, y: 1150, count: 40, power: 1900, spread: 110}]}
+            - {actor: coins, bursts: [{at: "@тысячу", x: 540, y: 1230, count: 40, power: 1900, spread: 110}]}
             - actor: text
               text: "${n}"
               x: 540
-              y: 300
+              y: 270
               size: 150
               weight: 900
               color: gold
@@ -258,7 +258,7 @@ scenes:
               count: {from: 0, to: 21000, at: "@двадцать", dur: 1.0, sep: " "}
               at: "@двадцать-0.05"
               enter: pop
-            - {actor: text, text: "ЗА 2 ДНЯ", x: 540, y: 430, size: 56, font: mono, color: "#ffffff", at: "@долларов", enter: rise}
+            - {actor: text, text: "ЗА 2 ДНЯ", x: 540, y: 395, size: 54, font: mono, color: "#ffffff", at: "@долларов", enter: rise}
     sfx:
       - {sound: blip, at: "@нашли", gain: -14}
       - {sound: click, at: "@телефон", gain: -14}
@@ -463,7 +463,7 @@ scenes:
         transition: {type: flash, dur: 0.25}
         effects:
           - {type: glow, at: [540, 720], sigma: 380, color: [1.0, 0.2, 0.8], intensity: 0.14, until: "@запретила+0.6", fade_out: 0.5}
-          - {type: tint_pulse, at: "@запретила", decay: 0.7, gain: [0.3, 0.0, 0.02], lift: [0.06, 0.0, 0.0]}
+          - {type: tint_pulse, at: "@запретила", decay: 2.0, gain: [1.4, 0.8, 0.85], lift: [0.05, 0.0, 0.0]}
         look: {bloom: [0.65, 0.4], grade: {contrast: 0.1}}
         ambience: [{sound: wind, gain: -22}, {sound: city, gain: -24}]
         draw:
@@ -475,8 +475,8 @@ scenes:
             - {actor: shape, kind: rect, x: 340, y: 1060, w: 400, h: 500, radius: 10, fill: "#07040d", stroke: "#3a2a5c", sw: 6, origin: top-left}
             - {actor: neon_sign, text: "КАЗИНО", x: 540, y: 780, size: 150, color: neon, off_at: "@запретила", stagger: 0.09}
             - {actor: timetag, text: "РОССИЯ · 1 ИЮЛЯ 2009", x: 540, y: 250, size: 38, color: alarm, space: screen, at: "@две-0.05", enter: wipe_right, enter_dur: 0.5}
-            - {actor: text, text: "ЗАПРЕТ", x: 540, y: 1220, size: 150, weight: 900, color: alarm, stroke: {w: 10, color: "#05020b"}, rot: -8, space: screen, at: "@запретила", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
-            - {actor: prop, kind: question, x: 900, y: 470, scale: 2.2, color: gold, at: "@Откуда", until: "@две", enter: pop, exit: shrink, wiggle: {rot: 8, freq: 1.2}, glow: {color: "#ffd34d", r: 14, a: 0.9}}
+            - {actor: text, text: "ЗАПРЕТ", x: 540, y: 1000, size: 150, weight: 900, color: alarm, stroke: {w: 10, color: "#05020b"}, rot: -8, space: screen, at: "@запретила", enter: stamp, shadow: "0 0 30px rgba(255,59,78,.7)"}
+            - {actor: prop, kind: question, x: 830, y: 560, scale: 2.2, color: gold, at: "@Откуда", until: "@две", enter: pop, exit: shrink, wiggle: {rot: 8, freq: 1.2}, glow: {color: "#ffd34d", r: 14, a: 0.9}}
       - id: b_sale
         start: "@машины-0.12"
         transition: {type: whip_x, flash: 0.06}
@@ -492,6 +492,7 @@ scenes:
             - {actor: badge, x: 160, y: 900, title: "УЦЕНКА", style: solid, color: alarm, size: 44, rot: -10, at: "@машины", enter: stamp, anim: [{at: "@бесценок", dur: 0.7, dx: 1500, ease: in}]}
             - {actor: badge, x: 540, y: 900, title: "УЦЕНКА", style: solid, color: alarm, size: 44, rot: 6, at: "@машины+0.12", enter: stamp, anim: [{at: "@бесценок+0.08", dur: 0.7, dx: 1500, ease: in}]}
             - {actor: badge, x: 920, y: 900, title: "УЦЕНКА", style: solid, color: alarm, size: 44, rot: -6, at: "@машины+0.24", enter: stamp, anim: [{at: "@бесценок+0.16", dur: 0.7, dx: 1500, ease: in}]}
+            - {actor: text, text: "НА ИЗУЧЕНИЕ →", x: 540, y: 600, size: 76, weight: 900, color: code, stroke: {w: 8, color: "#05020b"}, space: screen, at: "@бесценок+0.3", enter: slide_left, shadow: "0 0 26px rgba(77,225,255,.7)"}
             - {actor: text, text: "РАСПРОДАЖА", x: 540, y: 330, size: 110, weight: 900, color: gold, stroke: {w: 8, color: "#05020b"}, space: screen, at: "@машины", enter: stamp, shadow: "0 0 30px rgba(255,211,77,.6)"}
     sfx:
       - {sound: glitch, at: "@Откуда", gain: -15}

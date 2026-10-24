@@ -284,9 +284,11 @@ export class Item {
   // phase 1: visibility + local matrix (recursive)
   prepare(t) {
     this.t = t;
-    if (this.remeasure && this.inst.el.isConnected) {
+    // (only once the element is laid out: inside a hidden parent it still measures 0 x 0)
+    const rm = this.remeasure && this.inst.el.isConnected ? this.inst.el.getBoundingClientRect() : null;
+    if (rm && rm.width > 0 && rm.height > 0) {
       const el = this.inst.el, [mw, mh] = this.remeasure;
-      const bw = el.offsetWidth ?? el.getBoundingClientRect().width, bh = el.offsetHeight ?? el.getBoundingClientRect().height;
+      const bw = el.offsetWidth ?? rm.width, bh = el.offsetHeight ?? rm.height;
       if (mw) this.w = bw;
       if (mh) this.h = bh;
       this.fx.style.width = `${this.w}px`; this.fx.style.height = `${this.h}px`;
