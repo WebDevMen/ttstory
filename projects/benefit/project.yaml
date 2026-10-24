@@ -83,7 +83,7 @@ scenes:
             - {actor: slot_machine, x: 880, y: 1980, scale: 0.55, par: 0.6, brightness: 0.5, blur: 3, title: "FORTUNE", neon: "#4de1ff"}
             - {actor: neon_sign, text: "АЗАРТНЫЕ ИГРЫ", x: 540, y: 560, size: 76, color: neon}
             - {actor: text, text: "=", x: 540, y: 760, size: 120, weight: 900, color: "#ffffff", shadow: "0 0 24px rgba(255,43,214,.9)"}
-            - {actor: neon_sign, text: "ВРЕД", x: 540, y: 980, size: 190, color: alarm, frame: false, off_at: "@есть", stagger: 0.07}
+            - {actor: neon_sign, text: "ВРЕД", x: 540, y: 980, size: 190, color: alarm, frame: false, off_at: "@есть", stagger: 0.07, until: "@польза-0.1", exit: {type: fade, dur: 0.1}}
             - {actor: neon_sign, text: "ПОЛЬЗА", x: 540, y: 980, size: 180, color: gold, frame: false, flicker: 0.1, at: "@польза-0.12", enter: {type: fade, dur: 0.15}}
             - {actor: particles, kind: embers, region: [0, 300, 1080, 1500], count: 26, colors: ["#ffd34d", "#ff8a3c"], alpha: 0.8, at: "@польза-0.1"}
             - {actor: timetag, text: "АФЕРЫ · СПЕЦВЫПУСК", x: 540, y: 200, size: 34, color: gold, space: screen, at: 0.1, enter: fade}
@@ -502,10 +502,13 @@ scenes:
           camera: {keys: [{t: 0, z: 1.08, y: 930}, {t: end, z: 1.0, y: 960}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.3}}
           layers:
             - *bricks
-            - {actor: neon_sign, text: "ГЛАВНАЯ ПОЛЬЗА =", x: 540, y: 520, size: 64, color: gold, at: "@главная-0.1", enter: {type: fade, dur: 0.15}}
+            - {actor: slot_machine, x: 200, y: 2010, scale: 0.55, par: 0.6, brightness: 0.45, blur: 3, title: "BONUS", neon: "#7a2cff"}
+            - {actor: slot_machine, x: 540, y: 2040, scale: 0.55, par: 0.6, brightness: 0.45, blur: 3}
+            - {actor: slot_machine, x: 880, y: 2010, scale: 0.55, par: 0.6, brightness: 0.45, blur: 3, title: "FORTUNE", neon: "#4de1ff"}
+            - {actor: neon_sign, text: "ГЛАВНАЯ ПОЛЬЗА =", x: 540, y: 520, size: 64, color: gold, at: 0.1, enter: {type: fade, dur: 0.2}}
             - {actor: neon_sign, text: "ПОНЯТЬ", x: 540, y: 780, size: 170, color: gold, frame: false, at: "@понять-0.1", enter: {type: fade, dur: 0.15}}
             - {actor: neon_sign, text: "ИГРАТЬ", x: 540, y: 1040, size: 150, color: alarm, frame: false, off_at: "@невыгодно+0.25", stagger: 0.06, at: "@играть-0.1", enter: {type: fade, dur: 0.12}}
-            - {actor: text, text: "НЕВЫГОДНО", x: 540, y: 1060, size: 120, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -7, at: "@невыгодно-0.05", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.8)"}
+            - {actor: text, text: "НЕВЫГОДНО", x: 540, y: 1250, size: 120, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -7, at: "@невыгодно-0.05", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.8)"}
             - {actor: particles, kind: embers, region: [0, 300, 1080, 1500], count: 20, colors: ["#ffd34d", "#ff8a3c"], alpha: 0.7}
             - {actor: timetag, text: "АФЕРЫ · СПЕЦВЫПУСК", x: 540, y: 200, size: 34, color: gold, space: screen}
       - id: z_choice
