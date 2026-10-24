@@ -7,7 +7,13 @@ of docs/DRAW.md §10 («Аккуратность»):
   ✗ text cut by the frame edge · text that does not fit its own box (overflow)
   ! text closer than MARGIN to the frame edge · two texts overlapping · captions over a text or over a key object ·
     text in a platform UI zone (top bar, bottom caption/nick zone, right button column) · «almost centred» texts
-    (a few px off the vertical axis) · text too small to read on a phone
+    (a few px off the vertical axis) · text too small to read on a phone · objects out of proportion (real sizes) ·
+    an object not standing on the floor · a pose outside natural joint ranges · a cluttered frame · an element that
+    pops in without an entrance · low text contrast · a frame too dark or blown out
+  motion pass (every 2nd frame): jumps (teleports), jitter, flicker
+
+Caption bands: shots with `captions_top: auto` get the free band with the least overlap (build/<id>/layout/captions.json,
+applied by compile).
 
 Report: one line per issue (shot, time range, what, where), counts and a 0–100 score; annotated frames with the boxes
 in build/<id>/layout/issues/ and a contact sheet build/<id>/layout/sheet.jpg.
@@ -24,6 +30,12 @@ SAFE_BOTTOM = 1570                # platform caption, nickname, music line
 RIGHT_COL = (940, 800, 1550)      # x > 940 between y 800 and 1550: like / comment / share buttons
 CENTER_TOL = (6, 40)              # 6..40 px off the axis = «almost centred» (deliberate offsets are bigger)
 MIN_LINE = 27                     # px: a text line lower than this is hard to read on a phone
+PROPORTION = 1.3                  # px-per-metre of two real-sized objects in one plane may differ at most this much
+FLOOR_TOL = 8                     # px: a grounded object farther than this from the floor line floats / sinks
+MAX_TEXTS = 5                     # more simultaneous prominent texts (besides captions) = cluttered frame
+PROMINENT = 50                    # px line height: smaller lines (a receipt, a list) are one composition, not clutter
+MIN_CONTRAST = 0.28               # luminance spread (p95 − p5) inside a text line box
+CAPTION_BANDS = [1250, 1150, 1350, 1060, 1450, 1520]
 # actors that are backdrops or decoration: captions may run over them
 BACKDROP = {"shape", "svg", "sky", "stars", "cloud", "skyline", "ground", "street", "particles", "coins", "digits", "group",
             "room", "building", "image", "lottie", "silhouette", "sketch", "buzz", "cctv", "house", "tree", "streetlight",
@@ -75,8 +87,15 @@ def _check_frame(fr, prev=None):
     texts = [it for it in items if (it["texty"] or it["actor"] == "text") and not it["moving"] and (it["lines"] or it["actor"] != "text")]
     for it in texts:
         lines = it["lines"] or [it["box"]]
-        # plain text is measured by its glyph lines; boxed items (badge, card, bubble…) by their whole box incl. icons
-        box = _union(lines) if it["lines"] and it["actor"] == "text" else it["box"]
+        # plain text is measured by its glyph lines; boxed items (badge, card, bubble…) by their whole box incl. icons;
+        # a callout's item box also spans its leader line, so its label is the text lines plus the card padding
+        if it["lines"] and it["actor"] == "text":
+            box = _union(lines)
+        elif it["lines"] and it["actor"] == "callout":
+            u = _union(lines)
+            box = [u[0] - 30, u[1] - 18, u[2] + 30, u[3] + 18]
+        else:
+            box = it["box"]
         it["_box"], it["_lines"] = box, lines
         lab = _label(it)
         if it.get("overflow"):
@@ -123,6 +142,32 @@ def _check_frame(fr, prev=None):
             if hit:
                 key = " + ".join(sorted([a["path"], b["path"]]))
                 out.append(("warn", "overlap", key, f"надписи наезжают друг на друга: {_label(a)} и {_label(b)}", [a["_box"], b["_box"]]))
+    # proportions: real-sized objects in the same plane share one px-per-metre (depth declares deliberate distance)
+    # (only in realistic scenes — draw.px_per_m — where sizes are meant to be real; illustrations scale freely)
+    reals = [it for it in items if it.get("real") and not it["moving"] and it["real"]["px"] > 8] if fr.get("real_scene") else []
+    for i, a in enumerate(reals):
+        for b in reals[i + 1:]:
+            ra, rb = a["real"], b["real"]
+            if ra["par"] != rb["par"] or _related(a, b):
+                continue
+            ka, kb = ra["px"] / (ra["m"] * ra["depth"]), rb["px"] / (rb["m"] * rb["depth"])
+            if max(ka, kb) / min(ka, kb) > PROPORTION:
+                big, small = (a, b) if ka > kb else (b, a)
+                key = " + ".join(sorted([a["path"], b["path"]]))
+                out.append(("warn", "proportion", key, f"непропорционально: {_label(big)} крупнее {_label(small)} в {max(ka, kb) / min(ka, kb):.1f} раза "
+                            f"относительно реальных размеров ({ra['m']} м и {rb['m']} м) — выровняйте масштаб или задайте depth", [a["box"], b["box"]]))
+    for it in items:
+        g = it.get("ground")
+        if g and not g["air"] and not it["moving"] and abs(g["y"] - g["floor"]) > FLOOR_TOL:
+            how = "висит над полом" if g["y"] < g["floor"] else "провалился под пол"
+            out.append(("warn", "floor", it["path"], f"{_label(it)} {how} на {abs(g['y'] - g['floor'])} px (пол y = {g['floor']}; y: floor или air: true)", [it["box"]]))
+        if it.get("pose_clamped"):
+            out.append(("warn", "pose", it["path"], f"поза вне естественного диапазона ({it['pose_clamped']}) — исправлена движком, проверьте задумку: {_label(it)}", [it["box"]]))
+        if it.get("pop") and not it["moving"]:
+            out.append(("warn", "pop", it["path"], f"появляется рывком, без анимации входа (enter): {_label(it)}", [it["box"]]))
+    tops = [it for it in texts if "/" not in it["path"] and max((l[3] - l[1] for l in it["_lines"]), default=0) >= PROMINENT]
+    if len(tops) > MAX_TEXTS:
+        out.append(("warn", "clutter", "frame", f"перегруженный кадр: {len(tops)} надписей одновременно (> {MAX_TEXTS})", [it["_box"] for it in tops]))
     cap = fr.get("caption")
     if cap:
         cb = cap["box"]
@@ -140,17 +185,141 @@ def _check_frame(fr, prev=None):
     return out
 
 
+def _pixels(d, fr, out):
+    """Pixel checks on the drawn frame: exposure, and the contrast inside every plain text line."""
+    import numpy as np
+    from PIL import Image
+    im = np.asarray(Image.open(os.path.join(d, fr["image"])).convert("L"), dtype=np.float32) / 255
+    mean = float(im.mean())
+    if mean < 0.03:
+        out.append(("warn", "exposure", "frame", f"кадр почти чёрный (средняя яркость {mean:.2f})", []))
+    elif mean > 0.92:
+        out.append(("warn", "exposure", "frame", f"кадр пересвечен (средняя яркость {mean:.2f})", []))
+    for it in fr["items"]:
+        if it["actor"] != "text" or it["moving"] or it["op"] < 0.6 or not it["lines"]:
+            continue
+        for l in it["lines"]:
+            x0, y0, x1, y1 = [int(v) for v in _ink(l)]
+            x0, y0, x1, y1 = max(0, x0), max(0, y0), min(W, x1), min(H, y1)
+            if x1 - x0 < 12 or y1 - y0 < 8:
+                continue
+            crop = im[y0:y1, x0:x1]
+            spread = float(np.percentile(crop, 95) - np.percentile(crop, 5))
+            if spread < MIN_CONTRAST:
+                out.append(("warn", "contrast", it["path"], f"низкий контраст текста с фоном ({spread:.2f} < {MIN_CONTRAST}): {_label(it)}", [l]))
+                break
+
+
+def _motion(d):
+    """Motion pass (motion.json): teleports, jitter and flicker of items that should move smoothly."""
+    f = os.path.join(d, "motion.json")
+    if not os.path.exists(f):
+        return []
+    m = json.load(open(f, encoding="utf-8"))
+    fps, step = m["fps"], m["step"]
+    tracks = {}
+    for fr in m["frames"]:
+        for it in fr["items"]:
+            tracks.setdefault((fr["shot"], it["path"]), []).append((fr["frame"], it, fr["cam"]))
+    out = []
+    for (shot, path), seq in tracks.items():
+        if len(seq) < 6:
+            continue
+        it0 = seq[0][1]
+        lab = _label(it0)
+        cs = [((it["box"][0] + it["box"][2]) / 2, (it["box"][1] + it["box"][3]) / 2) for _, it, _ in seq]
+        steps = [((cs[i][0] - cs[i - 1][0]) ** 2 + (cs[i][1] - cs[i - 1][1]) ** 2) ** 0.5 if seq[i][0] - seq[i - 1][0] <= step else 0
+                 for i in range(1, len(cs))]
+        # teleport: one step far bigger than its neighbours (not entering/exiting, visible both times)
+        for i in range(1, len(steps) - 1):
+            a, b = seq[i][1], seq[i + 1][1]
+            if a["moving"] or b["moving"] or a["op"] < 0.3 or b["op"] < 0.3:
+                continue
+            ca, cb = seq[i][2], seq[i + 1][2]
+            if ca and cb and (abs(ca["x"] - cb["x"]) > 60 or abs(ca["y"] - cb["y"]) > 60 or abs(ca["z"] - cb["z"]) > 0.08):
+                continue                   # the camera itself jumped (a cut inside the shot)
+            nb = max(steps[i - 1], steps[i + 1])
+            if steps[i] > 90 and steps[i] > 4 * nb + 30:
+                t = round(seq[i + 1][0] / fps, 2)
+                out.append(("warn", "jump", shot, path, t, t, f"рывок: {lab} перескочил на {steps[i]:.0f} px за {step} кадра"))
+        # jitter: tiny back-and-forth wobble without a declared loop (float/wiggle/shakes…)
+        if not it0.get("loops"):
+            for i in range(0, len(cs) - 8, 4):
+                win = cs[i:i + 9]
+                if any(seq[i + k][1]["moving"] for k in range(len(win))):
+                    continue
+                dx = [win[k + 1][0] - win[k][0] for k in range(8)] + [win[k + 1][1] - win[k][1] for k in range(8)]
+                flips = sum(1 for k in range(1, 8) if dx[k] * dx[k - 1] < 0 and 0.6 < abs(dx[k]) < 7) + \
+                        sum(1 for k in range(9, 16) if dx[k] * dx[k - 1] < 0 and 0.6 < abs(dx[k]) < 7)
+                if flips >= 6:
+                    t0, t1 = round(seq[i][0] / fps, 2), round(seq[i + 8][0] / fps, 2)
+                    out.append(("warn", "jitter", shot, path, t0, t1, f"дрожит: {lab} мелко дёргается туда-обратно"))
+                    break
+            # flicker: opacity jumping up and down
+            ops = [it["op"] for _, it, _ in seq]
+            for i in range(0, len(ops) - 6, 3):
+                w = ops[i:i + 7]
+                if any(seq[i + k][1]["moving"] for k in range(7)):
+                    continue
+                jumps = sum(1 for k in range(1, 7) if abs(w[k] - w[k - 1]) > 0.45)
+                if jumps >= 3:
+                    t = round(seq[i][0] / fps, 2)
+                    out.append(("warn", "flicker", shot, path, t, round(seq[i + 6][0] / fps, 2), f"мерцает: {lab} то пропадает, то появляется"))
+                    break
+    return out
+
+
+def _captions_auto(pid, d, data):
+    """For shots with captions_top: auto choose the band with the least overlap; returns True when the map changed."""
+    tl = json.load(open(os.path.join(build_dir(pid), "timeline.json"), encoding="utf-8"))
+    auto = [s["id"] for s in tl["shots"] if s.get("captions_auto")]
+    f = os.path.join(d, "captions.json")
+    old = json.load(open(f, encoding="utf-8")) if os.path.exists(f) else {}
+    if not auto:
+        return False
+    caps = [fr["caption"]["box"] for fr in data["frames"] if fr.get("caption")]
+    ch = sorted(b[3] - b[1] for b in caps)[len(caps) // 2] if caps else 80
+    cw = sorted(b[2] - b[0] for b in caps)[len(caps) // 2] if caps else 700
+    res = {}
+    for sid in auto:
+        frames = [fr for fr in data["frames"] if fr["shot"] == sid]
+        best, best_cost = None, None
+        for top in CAPTION_BANDS:
+            band = [W / 2 - cw / 2, top - 10, W / 2 + cw / 2, top + ch + 10]
+            cost = abs(top - 1250) * cw * 0.02
+            for fr in frames:
+                for it in fr["items"]:
+                    if it["op"] < 0.35 or it["moving"]:
+                        continue
+                    texty = it["texty"] or it["actor"] == "text"
+                    if not texty and (it["actor"] in BACKDROP or _area(it["box"]) > 0.6 * W * H or it.get("blur", 0) >= 1):
+                        continue
+                    boxes = it["lines"] if texty and it["lines"] else [it["box"]]
+                    cost += sum(_overlap(band, b) for b in boxes) * (3 if texty else 1)
+            if best_cost is None or cost < best_cost:
+                best, best_cost = top, cost
+        res[sid] = best
+    merged = {**old, **res}
+    json.dump(merged, open(f, "w", encoding="utf-8"), indent=1)
+    changed = any(old.get(k) != v for k, v in res.items())
+    print("  субтитры (auto): " + ", ".join(f"{k} → {v}" for k, v in res.items()))
+    return changed
+
+
 def run(pid, step=12):
-    """Analyse build/<pid>/layout/frames.json (written by render_hud.cjs layout). Returns (errors, warnings)."""
+    """Analyse build/<pid>/layout/frames.json (written by render_hud.cjs layout). Returns (errors, warnings, captions_changed)."""
     d = build_dir(pid, "layout")
     data = json.load(open(os.path.join(d, "frames.json"), encoding="utf-8"))
+    caps_changed = _captions_auto(pid, d, data)
     found = {}                     # (level, kind, shot, key) -> issue with a time range
     per_frame = {}
     prev = None
     for fr in data["frames"]:
         same = prev if prev and prev["shot"] == fr["shot"] else None
         prev = fr
-        for lvl, kind, key, msg, boxes in _check_frame(fr, same):
+        found_frame = _check_frame(fr, same)
+        _pixels(d, fr, found_frame)
+        for lvl, kind, key, msg, boxes in found_frame:
             k = (lvl, kind, fr["shot"], key)
             g = found.get(k)
             if g:
@@ -160,6 +329,8 @@ def run(pid, step=12):
                 found[k] = {"level": lvl, "kind": kind, "shot": fr["shot"], "t0": fr["t"], "t1": fr["t"], "msg": msg, "n": 1,
                             "frame": fr, "boxes": boxes}
             per_frame.setdefault(fr["image"], []).append((lvl, boxes))
+    for lvl, kind, shot, key, t0, t1, msg in _motion(d):
+        found[(lvl, kind, shot, key)] = {"level": lvl, "kind": kind, "shot": shot, "t0": t0, "t1": t1, "msg": msg, "n": 1, "boxes": []}
     issues = sorted(found.values(), key=lambda g: (g["t0"], g["level"] != "err"))
     errs = [g for g in issues if g["level"] == "err"]
     warns = [g for g in issues if g["level"] == "warn"]
@@ -178,7 +349,7 @@ def run(pid, step=12):
     print(f"\n  ВЁРСТКА: {score}/100 — {'аккуратно ✓' if ok else 'нужна доработка (0 ошибок и ≤ 3 предупреждений)'}")
     if issues:
         print(f"  кадры с разметкой: {os.path.join(d, 'issues')} · лист: {os.path.join(d, 'sheet.jpg')}")
-    return len(errs), len(warns)
+    return len(errs), len(warns), caps_changed
 
 
 def _sheet(pid, d, data, per_frame, issues):

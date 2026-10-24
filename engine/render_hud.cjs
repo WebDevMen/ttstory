@@ -4,7 +4,7 @@
 //   node engine/render_hud.cjs draw   <project> [workers] [frame...] [--force]
 //        code-drawn shots -> build/<project>/drawn/<shot>/<frame>.jpg + meta.json (camera + anchors per frame);
 //        unchanged shots are skipped (hash of the shot spec + actor code), explicit frames are always rendered.
-//   node engine/render_hud.cjs layout <project> [step]             layout audit: item boxes + captions of sampled frames
+//   node engine/render_hud.cjs layout <project> [step] [mstep]     layout audit: item boxes + captions of sampled frames
 //        of every draw shot -> build/<project>/layout/frames.json + f_XXXXX.jpg (analysed by engine/layout.py)
 // Needs an http server serving the repository root on $PORT (vg.py starts one automatically).
 const { chromium } = require("playwright");
@@ -134,7 +134,7 @@ async function drawMode(browser, pid, tl, workers, frames, force) {
 }
 
 // ------------------------------------------------------------------ layout audit
-async function layoutMode(browser, pid, tl, step) {
+async function layoutMode(browser, pid, tl, step, mstep) {
   const out = path.join(ROOT, "build", pid, "layout");
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(out, { recursive: true });
@@ -152,15 +152,30 @@ async function layoutMode(browser, pid, tl, step) {
     for (let f = f0; f < f1; f += step) fr.push(f);
     if (f1 > f0 && fr[fr.length - 1] !== f1) fr.push(f1);
     for (const f of fr) {
-      const { cam, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
+      const { cam, realScene, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
       const hud = await hpage.evaluate((x) => window.hudLayout(x), f);
       const shotFile = `f_${String(f).padStart(5, "0")}.jpg`;
       fs.writeFileSync(path.join(out, shotFile), await dpage.screenshot({ type: "jpeg", quality: 80 }));
-      res.push({ frame: f, t: Math.round((f / tl.fps) * 100) / 100, shot: s.id, scene: s.scene, image: shotFile, cam, items, caption: hud.caption });
+      res.push({ frame: f, t: Math.round((f / tl.fps) * 100) / 100, shot: s.id, scene: s.scene, image: shotFile, cam, real_scene: realScene, items, caption: hud.caption });
     }
   }
   fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ width: tl.width, height: tl.height, frames: res }));
   console.log(`  measured ${res.length} frames`);
+  // motion pass: positions of every item on every `mstep`-th frame (no screenshots) — jumps, jitter, flicker
+  if (mstep > 0) {
+    const mot = [];
+    for (const s of tl.shots) {
+      if (!s.draw) continue;
+      const f0 = Math.ceil(s.start * tl.fps) + 1, f1 = Math.floor(s.end * tl.fps) - 1;
+      for (let f = f0; f <= f1; f += mstep) {
+        const { cam, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
+        mot.push({ frame: f, shot: s.id, cam, items: items.map((it) => ({ path: it.path, actor: it.actor, id: it.id, text: it.text, box: it.box, op: it.op,
+          moving: it.moving, loops: !!it.loops, space: it.space })) });
+      }
+    }
+    fs.writeFileSync(path.join(out, "motion.json"), JSON.stringify({ fps: tl.fps, step: mstep, frames: mot }));
+    console.log(`  motion: ${mot.length} frames`);
+  }
 }
 
 (async () => {
@@ -173,7 +188,7 @@ async function layoutMode(browser, pid, tl, step) {
     const frames = args.length > 1 ? args.slice(1).map(Number) : null;
     await drawMode(browser, pid, tl, Number(args[0] || 3), frames, force);
   } else if (mode === "layout") {
-    await layoutMode(browser, pid, tl, Number(rest[0] || 12));
+    await layoutMode(browser, pid, tl, Number(rest[0] || 12), Number(rest[1] ?? 2));
   } else if (mode === "stills") {
     const dir = path.join(ROOT, "build", pid, "stills");
     fs.mkdirSync(dir, { recursive: true });

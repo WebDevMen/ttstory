@@ -294,7 +294,9 @@ export class Item {
       if (!this.inst.el.isConnected) this.remeasure = [this.w == null, this.h == null];
       const r = this.inst.el.getBoundingClientRect(), el = this.inst.el;
       // content wider than its box (a long word in a fixed-width text) counts, so the origin stays on the real centre
-      this.w ??= Math.max(r.width, el.scrollWidth || 0); this.h ??= Math.max(r.height, el.scrollHeight || 0);
+      // (plain text only: containers and boxed actors have parts placed outside their box on purpose)
+      const sc = this.spec.actor === "text";
+      this.w ??= sc ? Math.max(r.width, el.scrollWidth || 0) : r.width; this.h ??= sc ? Math.max(r.height, el.scrollHeight || 0) : r.height;
     }
     if (this.w != null) { this.fx.style.width = `${this.w}px`; this.fx.style.height = `${this.h}px`; }
     this.origin = resolveOrigin(this.spec.origin ?? this.inst.origin ?? def.origin, this.w, this.h);
@@ -424,8 +426,8 @@ export class Item {
   // fit: shrink the item (never enlarge) so its rotated box fits the frame width minus margins, or fit.w / fit.h.
   // Default for top-level text-bearing actors; `fit: false` turns it off, `fit: 700` / `fit: {w, h}` sets the box.
   updateFit(bw = this.w, bh = this.h) {
-    const f = this.spec.fit, el = this.inst.el;
-    const nw = Math.max(bw || 0, el?.scrollWidth || 0), nh = Math.max(bh || 0, el?.scrollHeight || 0);
+    const f = this.spec.fit, el = this.inst.el, tx = this.spec.actor === "text";
+    const nw = Math.max(bw || 0, tx ? el?.scrollWidth || 0 : 0), nh = Math.max(bh || 0, tx ? el?.scrollHeight || 0 : 0);
     if (!nw || !nh) return;
     const W = this.H.frameW ?? 1080;
     const maxW = typeof f === "number" ? f : f?.w ?? W - 2 * FIT_MARGIN, maxH = (typeof f === "object" && f?.h) || Infinity;
@@ -438,7 +440,9 @@ export class Item {
   // auto-sized item: if its content changed size, update the box and shift by the origin difference (same frame)
   refit(tilt) {
     const el = this.inst.el, [mw, mh] = this.autoSize;
-    const bw = mw ? Math.max(el.offsetWidth, el.scrollWidth || 0) : this.w, bh = mh ? Math.max(el.offsetHeight, el.scrollHeight || 0) : this.h;
+    const sc = this.spec.actor === "text";
+    const bw = mw ? (sc ? Math.max(el.offsetWidth, el.scrollWidth || 0) : el.offsetWidth) : this.w;
+    const bh = mh ? (sc ? Math.max(el.offsetHeight, el.scrollHeight || 0) : el.offsetHeight) : this.h;
     if (this.fitOn) this.updateFit(bw, bh);
     if (!bw || !bh || (Math.abs(bw - this.w) < 0.5 && Math.abs(bh - this.h) < 0.5)) return;
     this.w = bw; this.h = bh;

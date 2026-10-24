@@ -40,6 +40,15 @@ def _punct(text, words):
     return out
 
 
+def _auto_captions(pid):
+    """Caption bands picked by the layout audit (build/<id>/layout/captions.json): {shot id: top px}."""
+    f = os.path.join(build_dir(pid), "layout", "captions.json")
+    if not os.path.exists(f):
+        return {}
+    import json
+    return json.load(open(f, encoding="utf-8"))
+
+
 def run(pid):
     p = load_project(pid)
     v = p["voice"]
@@ -149,6 +158,7 @@ def run(pid):
         return cam
 
     draw_defaults = p.get("draw") or {}
+    auto_caps = _auto_captions(pid)
     for x in shots:
         sh, ctx = x.pop("raw"), (x["start"], x["end"])
         if sh.get("draw") is not None:                             # code-drawn shot (engine/hud/draw)
@@ -167,6 +177,11 @@ def run(pid):
             "anchors": sh.get("anchors") or {},
             "captions_top": sh.get("captions_top"),
         })
+        # captions_top: auto (or theme captions.top: auto) — the free band chosen by `vg.py layout` for this shot
+        cap_top = sh.get("captions_top", "auto" if (p["theme"].get("captions") or {}).get("top") == "auto" else None)
+        if cap_top == "auto":
+            x["captions_auto"] = True
+            x["captions_top"] = auto_caps.get(x["id"])
 
     # HUD instances
     hud = []
@@ -206,6 +221,8 @@ def run(pid):
             ambience[x["id"]] = amb
 
     theme = refs.deep(p["theme"], None, (0.0, duration))
+    if (theme.get("captions") or {}).get("top") == "auto":
+        theme["captions"]["top"] = 1250            # default band until the layout audit picks one per shot
     for sc, s in zip(p["scenes"], scenes):
         s["accent"] = css_rgb(sc.get("accent", theme["accent"]))
         s["clock"] = sc.get("clock")

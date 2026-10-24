@@ -301,8 +301,13 @@ function layoutOf(it, out, parentPath, parentMoving) {
     rec.ground = { y: Math.round(it.v("y", 0)), floor, air: !!it.spec.air };
   }
   if (it.poseClamped) rec.pose_clamped = it.poseClamped;
+  // appears with a hard cut (no enter, no reveal/count/opacity animation) after the shot has started
+  const sp = it.spec, shotStart = H.shot ? H.shot.start : 0;
+  if (!it.parent && it.at > shotStart + 0.08 && !sp.enter && !sp.reveal && !sp.count && !(sp.anim || []).some((a) => "opacity" in a)) rec.pop = true;
+  // deliberate motion loops: their wobble is not jitter
+  if (sp.shakes || sp.wiggle || sp.float || sp.sway || sp.bob || sp.pulse || sp.spin || sp.blink || sp.flicker || it.spec.actor === "particles") rec.loops = true;
   out.push(rec);
-  for (const c of it.children) layoutOf(c, out, path, moving);
+  it.children.forEach((c, j) => { c.index = j; layoutOf(c, out, path, moving); });
 }
 window.drawLayout = async (shotId, frame) => {
   const st = await stageFor(shotId);
@@ -312,7 +317,7 @@ window.drawLayout = async (shotId, frame) => {
   const out = [];
   st.items.forEach((it, i) => { it.index = i; layoutOf(it, out, "", false); });
   const cam = camState(st.shot, frame / FPS);
-  return { cam: { x: cam.x, y: cam.y, z: cam.z }, items: out };
+  return { cam: { x: cam.x, y: cam.y, z: cam.z }, realScene: !!(st.shot.draw && st.shot.draw.px_per_m), items: out };
 };
 window.drawInfo = { shots: TL.shots.filter((s) => s.draw).map((s) => s.id), fps: FPS, actors: Object.keys(ACTORS).sort() };
 window.drawReady = true;
