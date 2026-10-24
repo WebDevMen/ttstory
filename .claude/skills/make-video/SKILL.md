@@ -63,14 +63,27 @@ python3 vg.py preview <id> --at <times of HUD entrances, impacts, transitions>
 ```
 Read `build/<id>/preview/preview.jpg` and check: composition, plate edges never visible, anchors on their objects, no overlapping HUD, captions readable, colors consistent. Fix the YAML and re-run. Don't start the full render before the preview is clean.
 
-## 5b. Layout audit — the design-quality gate (mandatory for draw shots)
+## 5a. Compose with the layout layer and real sizes (docs/DRAW.md §10.2–10.3)
+
+Prefer rules to hand-tuned numbers: `slot:` for titles/tags/labels, `stack:` for any column or row of badges/cards,
+text `lines: N` (+ `width`) for long titles, auto-`fit` (on by default for text-bearing actors), `captions_top: auto`
+where captions compete with graphics. For scenes with people and objects set `draw.px_per_m` and `draw.floor` and
+place actors with `y: floor` — sizes and floor contact become automatic; declare `size_m` on new project actors.
+
+## 5b. Graphics audit — the design-quality gate (mandatory for draw shots)
 
 The user explicitly requires neat, consistent graphics: no text touching or cut by the frame, no «almost centred» items, no overlaps with other texts or captions, one type scale, equal spacing, nothing drifting or coming apart during animation. The standard is `docs/DRAW.md` §10.1 — follow it while composing, not only when fixing.
 
 ```bash
 python3 vg.py layout <id>        # after compile; build/<id>/layout/sheet.jpg shows every issue boxed
 ```
-Fix until **0 errors and ≤ 3 warnings**, and keep a warning only when it is deliberate (say which and why in the final note). Then look at the start, middle and end of every shot (`preview --at`) for what automation cannot judge: uneven gaps, ragged stacks, mismatched styles, parts of a composite drawing out of place. Never start the full render with known sloppy placement.
+Fix until **0 errors and ≤ 3 warnings**, and keep a warning only when it is deliberate (say which and why in the final note). Besides layout it reports proportions, floor contact, clamped poses, clutter, pop-ins, contrast, exposure and motion (jumps, jitter, flicker). Then look at the start, middle and end of every shot (`preview --at`) for what automation cannot judge: uneven gaps, ragged stacks, mismatched styles, parts of a composite drawing out of place. Never start the full render with known sloppy placement.
+
+## 5c. Storyboard approval
+
+`python3 vg.py storyboard <id>` → `build/<id>/storyboard/storyboard.html` (start/middle/end frame of every shot, voice text, audit notes). Publish it as an Artifact (load the artifact-design skill first) and ask the user to approve or comment before the full render; skip only when the user asked to go straight to the final video.
+
+If you changed the engine or library actors while making the video, run `python3 vg.py bench` and fix or knowingly accept (`--update`) every reported change. The AI art director is planned but deferred: do not build or run one unless the user asks.
 
 ## 6. Full render & QA
 

@@ -343,6 +343,8 @@ def run(pid, step=12):
         for g in group:
             when = f"{g['t0']:.2f}" if g["t0"] == g["t1"] else f"{g['t0']:.2f}–{g['t1']:.2f}"
             print(f"    [{g['kind']}] {g['shot']} @ {when} с: {g['msg']}")
+    json.dump([{k: g[k] for k in ("level", "kind", "shot", "t0", "t1", "msg")} for g in issues],
+              open(os.path.join(d, "report.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     _sheet(pid, d, data, per_frame, issues)
     score = max(0, 100 - 10 * len(errs) - 2 * len(warns))
     ok = not errs and len(warns) <= 3

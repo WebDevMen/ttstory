@@ -16,6 +16,7 @@
   python3 vg.py mux <id>                  final mp4 -> out/<id>.mp4 (loudness -14 LUFS)
   python3 vg.py layout <id> [--step 12]   graphics audit of draw shots: layout, proportions, floor, poses, contrast,
                                           motion (jumps, jitter, flicker); picks caption bands for captions_top: auto
+  python3 vg.py storyboard <id>           review page: start/middle/end frame of every shot + audit notes (HTML)
   python3 vg.py bench [--update]          actor test bench: gallery shots vs reference images (tests/bench/)
   python3 vg.py qa <id>                   contact sheets (1 frame per second) + loudness report
   python3 vg.py all <id>                  voice → compile → prep → draw → scene → audio → hud → mux → qa
@@ -254,6 +255,19 @@ def cmd_bench(a):
         sys.exit(1)
 
 
+def cmd_storyboard(a):
+    from engine import scene, storyboard
+    from engine.common import load_timeline
+    tl = load_timeline(a.id)
+    frames = sorted({f for fs in storyboard.frames(a.id).values() for f in fs})
+    step(f"storyboard: {len(frames)} frames (start, middle, end of every shot)")
+    if has_draw(tl):
+        run_draw(a.id, frames, workers=3)
+    scene.run(a.id, frames, workers=4)
+    run_node(["stills", a.id] + [str(f) for f in frames])
+    print(f"  page -> {storyboard.build(a.id)}")
+
+
 def cmd_all(a):
     t0 = time.time()
     cmd_voice(a)
@@ -284,6 +298,7 @@ def main():
     p = sub.add_parser("hud"); p.add_argument("id"); p.add_argument("--workers", type=int, default=3); p.set_defaults(fn=cmd_hud)
     p = sub.add_parser("mux"); p.add_argument("id"); p.add_argument("--maxrate", default="8M"); p.set_defaults(fn=cmd_mux)
     p = sub.add_parser("qa"); p.add_argument("id"); p.set_defaults(fn=cmd_qa)
+    p = sub.add_parser("storyboard"); p.add_argument("id"); p.set_defaults(fn=cmd_storyboard)
     p = sub.add_parser("bench"); p.add_argument("--update", action="store_true"); p.set_defaults(fn=cmd_bench)
     p = sub.add_parser("layout"); p.add_argument("id"); p.add_argument("--step", type=int, default=12); p.add_argument("--mstep", type=int, default=2, help="motion pass: every N-th frame (0 = off)"); p.set_defaults(fn=cmd_layout)
     from engine.script import cli as script_cli
