@@ -1,5 +1,5 @@
 build/
-models/
+/models/
 .venv/
 node_modules/
 __pycache__/

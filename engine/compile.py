@@ -4,6 +4,7 @@
 - recovers punctuation for captions
 - resolves every time reference ("@word", "@scene.end", "@cue:name", ...) to absolute seconds
 """
+import glob
 import json
 import os
 import subprocess
@@ -11,7 +12,7 @@ import subprocess
 import numpy as np
 import soundfile as sf
 
-from .common import Refs, build_dir, css_rgb, load_project, norm_word, project_dir, save_json
+from .common import Refs, build_dir, css_rgb, deep_merge, load_project, norm_word, project_dir, save_json
 
 SR = 48000
 
@@ -94,6 +95,19 @@ def run(pid):
     for i, s in enumerate(scenes):
         s["end"] = scenes[i + 1]["start"] if i + 1 < len(scenes) else duration
 
+    for sc in p["scenes"]:
+        for phrase, color in (sc.get("caption_marks") or {}).items():
+            seq = [norm_word(w) for w in str(phrase).split()]
+            ws = [w for w in words_out if w["scene"] == sc["id"]]
+            hit = False
+            for i in range(len(ws) - len(seq) + 1):
+                if [norm_word(w["text"]) for w in ws[i:i + len(seq)]] == seq:
+                    for w in ws[i:i + len(seq)]:
+                        w["mark"] = css_rgb(color)
+                    hit = True
+            if not hit:
+                print(f"  ! caption_marks: '{phrase}' not found in scene {sc['id']}")
+
     refs = Refs(words_out, scenes, duration=duration)
     # cues: scene-level first (scene context), then project-level
     for sc, s in zip(p["scenes"], scenes):
@@ -112,13 +126,13 @@ def run(pid):
         for i, sh in enumerate(lst):
             starts.append(s["start"] if i == 0 else refs.resolve(sh.get("start"), sc["id"], (s["start"], s["end"])))
         for i, sh in enumerate(lst):
-            shots.append({"raw": sh, "scene": sc["id"], "id": sh["id"], "plate": sh.get("plate", sh["id"]),
+            shots.append({"raw": sh, "scene": sc["id"], "id": sh["id"], "plate": None if sh.get("draw") is not None else sh.get("plate", sh["id"]),
                           "start": round(starts[i], 3), "end": round(starts[i + 1] if i + 1 < len(lst) else s["end"], 3)})
     refs.shots = {x["id"]: x for x in shots}
-    for x in shots:
-        sh, ctx = x.pop("raw"), (x["start"], x["end"])
-        dur = x["end"] - x["start"]
-        raw_cam = dict(sh.get("camera") or {})
+
+    def camera(raw, x, ctx):
+        """Camera spec with keys whose `t` is shot-relative ("end", "end-0.5" and "@refs" allowed)."""
+        raw_cam = dict(raw or {})
         raw_keys = raw_cam.pop("keys", None) or [{"t": 0}]
         cam = refs.deep(raw_cam, x["scene"], ctx)
         keys = []
@@ -126,14 +140,26 @@ def run(pid):
             k = dict(k)
             t = k.get("t", 0)
             if isinstance(t, str) and t.startswith("end"):          # "end", "end-0.5" (relative to shot end)
-                t = dur + float(t[3:] or 0)
+                t = ctx[1] - ctx[0] + float(t[3:] or 0)
             elif isinstance(t, str) and t.startswith("@"):          # absolute reference -> shot-relative
                 t = refs.resolve(t, x["scene"], ctx) - x["start"]
             k["t"] = float(t)
             keys.append(k)
         cam["keys"] = sorted(keys, key=lambda k: k["t"])
+        return cam
+
+    draw_defaults = p.get("draw") or {}
+    for x in shots:
+        sh, ctx = x.pop("raw"), (x["start"], x["end"])
+        if sh.get("draw") is not None:                             # code-drawn shot (engine/hud/draw)
+            d = deep_merge(draw_defaults, sh["draw"])
+            raw_cam = d.pop("camera", None)
+            d = refs.deep(d, x["scene"], ctx)
+            d["camera"] = camera(raw_cam, x, ctx)
+            x["draw"] = d
+            x["plate"] = None
         x.update({
-            "camera": cam,
+            "camera": camera(sh.get("camera"), x, ctx),
             "masks": sh.get("masks") or {},
             "effects": refs.deep(sh.get("effects") or [], x["scene"], ctx),
             "look": sh.get("look") or {},
@@ -193,6 +219,7 @@ def run(pid):
         "duration": duration, "frames": int(round(duration * fmt["fps"])),
         "scenes": scenes, "shots": shots, "cues": refs.cues, "words": words_out,
         "theme": theme, "post": p["post"], "hud": hud,
+        "draw_actors": sorted(f"/projects/{pid}/actors/{os.path.basename(f)}" for f in glob.glob(os.path.join(project_dir(pid), "actors", "*.js"))),
         "dim": refs.deep(p.get("dim") or [], None, (0.0, duration)),
         "audio": {"music": music, "sfx": sfx, "ambience": ambience, "auto": au.get("auto", {}), "duck": au.get("duck", 0.6),
                   "vo_gain": au.get("vo_gain", 0.0), "loudness": au.get("loudness", -14), "master": au.get("master", {})},
@@ -203,7 +230,8 @@ def run(pid):
     for s in scenes:
         print(f"  scene {s['id']:12s} {s['start']:6.2f} → {s['end']:6.2f}  (voice {s['vo_start']:.2f}–{s['vo_end']:.2f})")
     for x in shots:
-        print(f"    shot {x['id']:14s} {x['start']:6.2f} → {x['end']:6.2f}  ({x['end'] - x['start']:.2f}s, plate {x['plate']})")
+        src = f"plate {x['plate']}" if x["plate"] else f"draw: {len(x['draw'].get('layers') or [])} layers"
+        print(f"    shot {x['id']:14s} {x['start']:6.2f} → {x['end']:6.2f}  ({x['end'] - x['start']:.2f}s, {src})")
     if refs.cues:
         print("  cues: " + ", ".join(f"{k}={v:.2f}" for k, v in refs.cues.items()))
     return tl

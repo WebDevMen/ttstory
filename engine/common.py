@@ -38,6 +38,7 @@ DEFAULTS = {
               "ambience": {}, "sfx": [], "auto": {"hud": True, "transitions": True, "boot": True},
               "duck": 0.6, "vo_gain": 0.0, "loudness": -14},
     "hud": [],
+    "draw": {},                   # defaults merged into every code-drawn shot (palette, bg, ...)
     "cues": {},
     "scenes": [],
 }
@@ -106,6 +107,8 @@ def rgb255(c):
     s = NAMED.get(s, s)
     if s.startswith("#"):
         s = s[1:]
+        if len(s) <= 4:
+            s = "".join(ch * 2 for ch in s[:3])
         return tuple(int(s[i:i + 2], 16) for i in (0, 2, 4))
     return tuple(int(float(x)) for x in s.split(","))
 

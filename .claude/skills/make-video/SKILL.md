@@ -1,11 +1,13 @@
 ---
 name: make-video
-description: Create a vertical (9:16) social video — TikTok / Shorts / Reels — from a script with this repo's engine (AI keyframes + 2.5D depth-parallax animation + HTML/three.js HUD + procedural sound). Use whenever the user asks for a new video/ролик, a different style or story, changes to an existing project in projects/, or "сделай как танкер".
+description: Create a vertical (9:16) social video — TikTok / Shorts / Reels — from a script with this repo's engine (AI keyframes + 2.5D depth-parallax animation, or code-drawn scenes from the draw actor library; HTML/three.js HUD + procedural sound). Use whenever the user asks for a new video/ролик, own/controllable graphics ("своя графика", "без нейросетей", motion design, explainer), a different style or story, changes to an existing project in projects/, or "сделай как танкер/школа".
 ---
 
 # make-video — production workflow
 
 The repo turns `projects/<id>/project.yaml` + keyframe images into a finished MP4. Read `docs/MANUAL.md` (process, style recipes, quality checklist) and `docs/REFERENCE.md` (every key) before writing a project. Use `projects/tanker/project.yaml` (dynamic sci-fi, 61 s) and `projects/tea/project.yaml` (calm painted look, 36 s) as templates: copy their patterns, not their content.
+
+A shot's picture is either an AI keyframe (`plate:`) or a **code-drawn scene** (`draw:` — actors from `engine/hud/draw/actors`, see `docs/DRAW.md`; template: `projects/school/project.yaml`, 59 s, no AI images at all; visual catalog: `projects/gallery`). Use `draw:` when the user wants controllable/own graphics, motion design, explainers, infographics, characters that act on words, UI/phone/map/chart scenes, or when no image generator is available. Mixing both kinds in one video is fine.
 
 The quality bar is the tanker video: every shot moves (camera + parallax + at least one living layer), every HUD item and sound is tied to a spoken word, captions are readable, and the audio is layered and normalized.
 
@@ -30,6 +32,14 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 - Generate with Figma AI when available: `create_new_file` (plan from `whoami`) once → `create_session` → `generate_image` with `model: gemini-3.1-flash-image`, `width: 1152`, `height: 2048`. Download `image.url` immediately with curl into `projects/<id>/plates/<name>.png`. These calls spend the user's Figma AI credits: generate only what the plan needs (typically 5–10 frames) and report the count. Without Figma, ask the user for images from any generator (9:16) or use their photos.
 - Look at all frames together (contact sheet). Regenerate any frame with broken hands, gibberish text in a visible place, or a mismatched palette.
 - Save every prompt in the shot's `prompt:` field or in `plates/PROMPTS.md`.
+
+## 2b. Code-drawn shots (`draw:`) instead of keyframes
+
+1. After `voice` + `compile`, dump the word timings (`build/<id>/timeline.json` → `words`) and plan one composition per shot: background (`sky` with `hour`, `room`, `bg` gradient), 2–3 depth planes (`par: 0` sky, `0.3–0.6` far, `1` main, `1.1–1.2` foreground), the main subject (characters `person`/`classroom`, objects, `phone`, `map`, `chart`…), and 1–3 word-timed accents (`badge`, `callout`, `text` with `reveal`, `prop`, pose/face changes). Every element that appears gets `at: "@word"`, an `enter`, and usually `sfx`.
+2. Camera always moves (`camera.keys` push-in, panorama in a wider `world`, `follow`). Keep scene effects for life: falling petals, steam, glow, sparkles.
+3. Layout: marker y≈214, main art y 300–1150, captions over a floor/road band (`captions_top`), decor only below y 1550; hide captions when a big kinetic title says the same (`theme.captions.hide`). Labels over a panning world: `space: screen`.
+4. Missing object → write an actor in `projects/<id>/actors/<name>.js` (or the library); `vg.py actors` lists what exists. Check new actors on a gallery page first (`vg.py draw gallery --frames N`, read `build/gallery/drawn/<shot>/<frame>.jpg`).
+5. Iterate with `vg.py preview <id> --shots` and `--at <times>`; read the sheet, fix coordinates, repeat. `vg.py draw` re-renders only changed shots, but any change in actor code re-renders all draw shots.
 
 ## 3. Prepare & measure
 
@@ -76,3 +86,6 @@ You cannot listen to audio. Verify it objectively: `vg.py audio <id> --stems`, c
 - Strong `fog.density` (>0.3) or bright bloom on light scenes washes the frame out. Low-contrast pastel plates need a lower `bloom` threshold strength.
 - Calm styles: set `sfx: false` on title/markers and add soft `bell`/`chime`/`gong` events instead of the default cinematic hits.
 - Generated plates may contain pseudo-text (signs, lanterns). Keep it small and out of focus, or regenerate.
+- Draw shots: YAML strings containing `: ` (e.g. a scene `text` with a colon) must be quoted. `enter` presets differ from text `reveal` modes (`slam` is a reveal mode; for items use `stamp`).
+- Draw shots: the Japanese fonts (`jp` = Klee, `round` = M PLUS Rounded) render Cyrillic too wide — use them for kanji/kana, and `hand` (Caveat) or Montserrat for Russian.
+- Draw shots: person `pose` angles are in screen terms; a raised arm bends its forearm up with a negative elbow (`wave: a2 [128, -78]`). Props in hands extend along the forearm; rotate them with `hold_rot`.

@@ -8,6 +8,7 @@
 #   + смещение:     "@Слово+0.3", "@end-0.25"         число = абсолютные секунды
 # Координаты эффектов/якорей — пиксели кадра-«плиты» 1296x2304 (сетка: python3 vg.py grid <id>).
 # Координаты HUD (x, y) — пиксели экрана 1080x1920.
+# Шот может быть не картинкой (plate:), а сценой, нарисованной кодом (draw:) — см. шот "drawn" ниже и docs/DRAW.md.
 
 title: "Название ролика"
 
@@ -76,6 +77,16 @@ scenes:
         start: "@история-0.12"
         transition: {type: zoom, dur: 0.3}
         camera: {keys: [{t: 0, z: 1.05}, {t: end, z: 1.15}]}
+      - id: drawn                    # своя графика вместо картинки: актёры из docs/DRAW.md (координаты — пиксели экрана)
+        start: "@мысль-0.12"
+        transition: {type: whip_x}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}]}
+          layers:
+            - {actor: sky, hour: 18, par: 0}                                      # небо на закате
+            - {actor: skyline, x: 540, y: 1500, w: 1400, h: 700, lit: 0.3, par: 0.5}
+            - {actor: person, x: 540, y: 1480, look: {outfit: casual, hair: short}, pose: wave, face: happy}
+            - {actor: badge, x: 540, y: 600, at: "@мысль", enter: pop, title: "ГЛАВНАЯ МЫСЛЬ", style: light, color: amber, sfx: true}
     hud:
       - {component: marker, at: "@main.vo_start-0.05", icon: check, text: "**ГЛАВНОЕ:** ПУНКТ"}
       - {component: chip, at: "@советы", icon: info, text: "КОРОТКАЯ ПОДСКАЗКА", x: 60, y: 1050}

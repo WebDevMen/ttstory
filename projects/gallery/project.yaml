@@ -1,0 +1,123 @@
+# Visual catalog of draw actors (used to check and document the library). Render: vg.py draw gallery --frames ...
+title: "Галерея актёров"
+voice: {voice: ru-RU-SvetlanaNeural, rate: "+10%", gap: 0.3, tail: 0.5}
+theme: {preset: minimal, captions: {enabled: false}}
+scenes:
+  - id: people
+    text: Персонажи.
+    shots:
+      - id: people
+        draw:
+          bg: "#e9eef6"
+          layers:
+            - {actor: person, x: 150, y: 560, look: {outfit: sailor, hair: long}, pose: wave, face: happy}
+            - {actor: person, x: 400, y: 560, look: {outfit: gakuran, hair: spiky}, pose: stand, face: smile}
+            - {actor: person, x: 650, y: 560, look: {outfit: blazer_skirt, hair: ponytail}, pose: together, face: smile}
+            - {actor: person, x: 900, y: 560, look: {outfit: kyushoku}, pose: hold, hold: tray}
+            - {actor: person, x: 150, y: 1100, look: {age: kid, outfit: casual, hat: kid, bag: randoseru, hair: short}, pose: raise, face: happy}
+            - {actor: person, x: 400, y: 1100, look: {age: adult, outfit: teacher_m, hair: side, glasses: true}, pose: point, face: talk}
+            - {actor: person, x: 650, y: 1100, look: {age: adult, outfit: teacher_f, hair: bun}, pose: bow}
+            - {actor: person, x: 900, y: 1100, look: {outfit: pe, hair: twintails}, pose: cheer, face: surprised}
+            - {actor: person, x: 150, y: 1700, view: side, look: {outfit: sailor, hair: ponytail, bag: school_bag}, walk: 1.8}
+            - {actor: person, x: 380, y: 1700, view: side, look: {age: kid, outfit: casual, hat: kid, bag: randoseru}, walk: 2}
+            - {actor: person, x: 640, y: 1700, view: side, look: {outfit: pe, hair: bob}, pose: wipe, run: true, walk: 2.4, hold: rag}
+            - {actor: person, x: 900, y: 1700, view: side, look: {outfit: baseball, hair: buzz}, pose: swing_ready, hold: bat, hold_rot: 150}
+  - id: world
+    text: Окружение.
+    shots:
+      - id: school_morning
+        draw:
+          layers:
+            - {actor: sky, hour: 7.6, par: 0}
+            - {actor: tree, kind: round, h: 380, x: 980, y: 1330, par: 0.6}
+            - {actor: school, x: 540, y: 1330, time: 8.4, plaque: "第一中学校", flag: true, scale: 1.0}
+            - {actor: ground, x: -500, y: 1330, w: 2200, h: 600, color: ["#d9c29a", "#c7ab7f"]}
+            - {actor: tree, kind: sakura, h: 520, x: 120, y: 1520}
+            - {actor: tree, kind: sakura, h: 460, x: 930, y: 1560, seed: 3}
+            - {actor: person, view: side, x: 400, y: 1680, look: {outfit: sailor, hair: ponytail, bag: school_bag}, walk: 1.8}
+            - {actor: person, view: side, x: 640, y: 1720, look: {outfit: gakuran, hair: short}, walk: 1.8}
+      - id: street_train
+        start: "@Окружение.end"
+        draw:
+          layers:
+            - {actor: sky, hour: 17.4, par: 0}
+            - {actor: train, x: -200, y: 1020, cars: 3, speed: 260, at: 0}
+            - {actor: house, x: 180, y: 1300, seed: 1}
+            - {actor: house, x: 520, y: 1300, seed: 2, w: 340}
+            - {actor: house, x: 880, y: 1300, seed: 5}
+            - {actor: ground, x: -300, y: 1600, w: 1800, h: 400, color: "#c9c3b8"}
+            - {actor: street, x: -300, y: 1300, w: 1800, poles: 560}
+            - {actor: person, view: side, x: 300, y: 1340, look: {age: kid, outfit: casual, hat: kid, bag: randoseru}, walk: 2}
+            - {actor: streetlight, x: 940, y: 1340, on: 0.6}
+  - id: night
+    text: Ночь.
+    shots:
+      - id: night_city
+        draw:
+          bg: ["#070b18", "#141a35"]
+          layers:
+            - {actor: stars, count: 160, region: [0, 0, 1080, 1200]}
+            - {actor: skyline, x: 540, y: 1500, w: 1300, h: 760, lit: 0.22}
+            - {actor: building, x: 540, y: 1560, floors: 9, cols: 12, lit: 0.2, target: {floor: 7, col: 3, at: 0}}
+  - id: inside
+    text: Интерьеры.
+    shots:
+      - id: classroom
+        draw:
+          layers:
+            - {actor: room, floor_y: 1020, windows: [{x: 70, y: 260, w: 260, h: 300}], board: {x: 420, y: 300, w: 300, h: 220}, clock: {x: 880, y: 330, r: 70, time: 8.5}}
+            - {actor: classroom, rows: 3, cols: 4, pose: sit, back_y: 1150, front_y: 1720, spread: 255}
+      - id: lockers
+        start: "@Интерьеры.end"
+        draw:
+          bg: "#efe6d6"
+          layers:
+            - {actor: lockers, x: 540, y: 560, rows: 4, cols: 5, highlight: {row: 2, col: 3, label: "ТЫ"}, swap: {row: 2, col: 3, at: 0}}
+            - {actor: blackboard, x: 540, y: 1180, w: 900, h: 380, lines: [{text: "起立・礼・着席", x: 60, y: 40, size: 92, font: jp, weight: 600}, {text: "встать · поклон · сесть", x: 60, y: 190, size: 70}], date: "日直 山田", at: 0}
+            - {actor: tray, x: 290, y: 1660, scale: 0.7}
+            - {actor: shoe, kind: uwabaki, x: 770, y: 1600, w: 230}
+            - {actor: shoe, kind: sneaker, x: 770, y: 1760, w: 230}
+            - {actor: prop, kind: bucket, x: 1000, y: 1780, scale: 0.8}
+  - id: ui
+    text: Интерфейс.
+    shots:
+      - id: ui
+        draw:
+          bg: ["#0b1020", "#1b1530"]
+          layers:
+            - {actor: phone, screen: alert, x: 300, y: 560, w: 440, h: 760}
+            - {actor: battery, x: 800, y: 330, w: 380, h: 170, level: 25}
+            - {actor: timetag, x: 800, y: 120, text: "ДЕНЬ 1 — 03:18"}
+            - {actor: badge, x: 800, y: 600, icon: "!", title: "ОШИБКА №1: ОКНО", sub: "ВИДНО ЗА 1 КМ", size: 28}
+            - {actor: badge, x: 800, y: 760, style: outline, color: teal, title: "ПАУЭРБАНК", size: 28}
+            - {actor: card, x: 800, y: 1040, w: 260, emoji: "⚾", title: "Бейсбол", sub: "до 19:00", number: 1}
+            - {actor: checklist, x: 70, y: 1180, items: [{text: "Полы", at: 0}, {text: "Окна", at: 0}, {text: "Туалеты", at: 9}]}
+            - {actor: meter, x: 760, y: 1320, w: 520, label: "ЧИСТОТА", value: 72}
+            - {actor: bubble, x: 300, y: 1620, text: "Итадакимас!", size: 44}
+            - {actor: clock, x: 830, y: 1650, r: 130, time: 12.5, numbers: true}
+  - id: libs
+    text: Библиотеки.
+    shots:
+      - id: libs
+        draw:
+          bg: "#f4efe6"
+          layers:
+            - {actor: map, x: 300, y: 330, w: 520, h: 560, focus: [Japan], land: "#cfd6e2", hi: "#e2463f", pins: [{lon: 139.69, lat: 35.68, label: "Токио", at: 0}], detail: 50}
+            - {actor: holo, x: 800, y: 330, w: 460, h: 460, model: globe, color: "#3a6fd8", params: {spin: 0.08}, opts: {markers: [{lat: 35.7, lon: 139.7, key: tokyo}]}}
+            - {actor: chart, x: 300, y: 960, w: 520, h: 420, type: bar, ink: "#222", data: [{label: Пн, value: 6}, {label: Вт, value: 7}, {label: Ср, value: 6}, {label: Чт, value: 8}, {label: Пт, value: 7}], suffix: "", grow: {at: 0, dur: 0.6}}
+            - {actor: chart, x: 800, y: 960, w: 400, h: 400, type: donut, data: [{label: "Уроки", value: 6, color: "#3a6fd8"}, {label: "Кружки", value: 3, color: "#ff8a3c"}, {label: "Обед", value: 1, color: "#46e68c"}], size: 24}
+            - {actor: sketch, kind: rect, x: 300, y: 1450, w: 440, h: 240, fill: "#ffd36b", stroke: "#222", boil: 6}
+            - {actor: sketch, kind: arrow, x: 560, y: 1450, points: [[0, 120], [180, 40], [380, 120]], curve: true, stroke: "#e2463f", sw: 6}
+            - {actor: lottie, src: assets/pulse.json, x: 820, y: 1450, w: 260, h: 260}
+            - {actor: particles, kind: petals, region: [0, 1250, 1080, 1920], count: 30}
+            - {actor: particles, kind: sparkles, region: [600, 1650, 1050, 1900], count: 10}
+  - id: custom
+    text: Свои актёры.
+    shots:
+      - id: custom
+        draw:
+          bg: "#fff4e0"
+          layers:
+            - {actor: sunburst, x: 540, y: 800, r: 620, at: 0, speed: 18}
+            - {actor: text, text: "СВОЙ\n**АКТЁР**", x: 540, y: 800, size: 130, color: "#1d2347", accent: "#d7263d", at: 0, reveal: {by: word, mode: slam, stagger: 0.2}}
+            - {actor: text, text: "projects/<id>/actors/sunburst.js", x: 540, y: 1250, size: 40, font: mono, weight: 700, color: "#5d3d28", bg: {color: "#ffffff", pad: "10px 24px", radius: 12}}

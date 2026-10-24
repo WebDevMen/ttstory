@@ -1,11 +1,15 @@
 # TTStory — движок вертикальных роликов для TikTok / Shorts / Reels
 
-Сценарий + несколько AI-кадров превращаются в готовый 60-секундный ролик 9:16 с движением камеры по глубине, живыми эффектами (туман, вода, частицы, свет, молнии), стеклянным интерфейсом с 3D-голограммами, субтитрами с подсветкой слов, звуковым дизайном и музыкой. Всё описывается в одном файле `projects/<id>/project.yaml`.
+Сценарий превращается в готовый 60-секундный ролик 9:16. Картинка — либо AI-кадры с движением камеры по глубине, либо **своя графика, нарисованная кодом**: персонажи с позами и мимикой, здания, интерьеры, телефоны, карты, графики — библиотека из ~45 «актёров» на SVG/HTML + GSAP, Lottie, rough.js, D3, three.js. Сверху — живые эффекты, интерфейс, субтитры с подсветкой слов, звуковой дизайн и музыка. Каждое движение привязано к слову диктора. Всё описывается в одном файле `projects/<id>/project.yaml`.
 
 | Ролик | Стиль | Файл | Проект |
 |---|---|---|---|
 | «Мануал по выживанию: танкер», 61 с | stylized 3D CGI, sci-fi HUD, мужской голос, тёмная электроника | [`out/tanker.mp4`](out/tanker.mp4) | [`projects/tanker`](projects/tanker/project.yaml) |
 | «3 правила чайной церемонии», 36 с | рисованная акварель, светлый минимализм, женский голос, пентатоника | [`out/tea.mp4`](out/tea.mp4) | [`projects/tea`](projects/tea/project.yaml) |
+| «Один день в японской школе», 59 с | **100% своя графика** (без нейросетей): персонажи, панорамы с параллаксом, моушн-дизайн | [`out/school.mp4`](out/school.mp4) | [`projects/school`](projects/school/project.yaml) |
+| «Три часа ночи», 19 с | своя графика в стиле ночных объяснялок: телефон-оповещение, панелька, окна, батарея | [`out/showcase.mp4`](out/showcase.mp4) | [`projects/showcase`](projects/showcase/project.yaml) |
+
+![Актёры для своей графики](docs/img/actors.jpg)
 
 ![Кадры из «Танкера»](out/preview.jpg)
 
@@ -14,7 +18,7 @@
 ```bash
 ./setup.sh && source .venv/bin/activate     # один раз: пакеты, Chromium, модели
 python3 vg.py new my_video                  # projects/my_video/ из шаблона
-#   → положить кадры 9:16 в projects/my_video/plates/, написать project.yaml
+#   → положить кадры 9:16 в projects/my_video/plates/ (или нарисовать шоты кодом: draw:), написать project.yaml
 python3 vg.py voice my_video && python3 vg.py compile my_video   # длительность и тайминги
 python3 vg.py prep my_video && python3 vg.py grid my_video       # апскейл, глубина, сетка координат
 python3 vg.py preview my_video --shots      # быстрые превью-кадры
@@ -26,7 +30,8 @@ python3 vg.py all my_video                  # готовый out/my_video.mp4
 ## Документация
 
 - **[docs/MANUAL.md](docs/MANUAL.md)** — мануал от А до Я: как устроен конвейер, как писать сценарий и промпты для кадров, как оживлять кадры, делать графику и звук, рецепты разных стилей, чек-лист качества, разбор «Танкера», решение проблем.
-- **[docs/REFERENCE.md](docs/REFERENCE.md)** — справочник по всем параметрам: камера, маски, 20+ эффектов, 24 HUD-компонента, 4 темы, 5 стилей субтитров, 30+ звуков, 15 амбиенсов, 10 музыкальных стилей.
+- **[docs/DRAW.md](docs/DRAW.md)** — своя графика без нейросетей: нарисованные шоты `draw:`, камера и параллакс, анимация по словам, каталог всех актёров, библиотеки, как написать своего актёра.
+- **[docs/REFERENCE.md](docs/REFERENCE.md)** — справочник по всем параметрам: камера, маски, 20+ эффектов, 24 HUD-компонента, 4 темы, 6 стилей субтитров, 30+ звуков, 15 амбиенсов, 10 музыкальных стилей.
 - **[projects/_template/project.yaml](projects/_template/project.yaml)** — шаблон проекта с комментариями.
 
 ## Устройство
@@ -37,13 +42,15 @@ engine/
   tts.py                  озвучка (Microsoft Edge neural TTS) с таймингами слов
   compile.py              таймлайн: сцены, шоты, ссылки на слова "@Слово" → секунды
   prep.py                 Real-ESRGAN ×4 + Depth Anything V2 (ONNX Runtime)
-  scene.py                2.5D-камера с параллаксом, маски, библиотека эффектов, переходы, грейдинг
+  scene.py                2.5D-камера с параллаксом, маски, библиотека эффектов, переходы, грейдинг (и для AI-кадров, и для нарисованных)
   audio.py                библиотека звуков и амбиенсов, музыкальные стили, автозвуки, сведение
   hud/                    HTML/CSS/three.js: runtime, компоненты, темы, 3D-модели, шрифты, эмодзи
-  render_hud.cjs          покадровый рендер HUD в headless Chromium (Playwright)
+  hud/draw/               своя графика: runtime (камера, слои, анимация, якоря) + actors/ (библиотека актёров)
+  hud/vendor/             GSAP, lottie-web, rough.js, D3, topojson + Natural Earth, three.js — локально, офлайн
+  render_hud.cjs          покадровый рендер HUD и нарисованных шотов в headless Chromium (Playwright)
   mux.py, qa.py           финальная сборка (−14 LUFS), контактные листы, сетки координат
-projects/<id>/            project.yaml + plates/ (ключевые кадры)
+projects/<id>/            project.yaml + plates/ (ключевые кадры) и/или actors/ (свои актёры проекта)
 out/                      готовые ролики
 ```
 
-Инструменты: Figma AI (генерация кадров), ONNX Runtime, OpenCV, NumPy/SciPy, Microsoft Edge TTS, three.js, Playwright/Chromium, FFmpeg. Шрифты (Exo 2, JetBrains Mono, Montserrat, Playfair Display, Unbounded) — OFL. Эмодзи — Twemoji (CC-BY 4.0). three.js — MIT.
+Инструменты: Figma AI (генерация кадров), ONNX Runtime, OpenCV, NumPy/SciPy, Microsoft Edge TTS, three.js, GSAP, lottie-web, rough.js, D3, Playwright/Chromium, FFmpeg. Шрифты (Exo 2, JetBrains Mono, Montserrat, Playfair Display, Unbounded, Caveat, Klee One, M PLUS Rounded 1c) — OFL. Эмодзи — Twemoji (CC-BY 4.0). three.js, lottie-web, rough.js — MIT; D3, topojson, world-atlas — ISC (карты Natural Earth — public domain); GSAP — бесплатная Standard License.

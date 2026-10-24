@@ -120,7 +120,30 @@ class Cam:
         return G["W"] / 2 + qx * s + self.px * dd + self.sx, G["H"] / 2 + qy * s + self.py * dd + self.sy
 
 
+def draw_meta(shot):
+    key = ("drawmeta", shot["id"])
+    c = G["cache"]
+    if key not in c:
+        f = os.path.join(build_dir(G["pid"], "drawn", shot["id"]), "meta.json")
+        c[key] = json.load(open(f)) if os.path.exists(f) else {"frames": {}}
+    return c[key]
+
+
+def draw_cam(shot, t):
+    """Camera of a code-drawn shot as exported by the draw renderer (world px == plate px for effects)."""
+    fr = draw_meta(shot)["frames"]
+    f = int(round(t * G["fps"]))
+    m = fr.get(str(f)) or fr.get(str(f - 1)) or fr.get(str(f + 1))
+    if not m:
+        world = (shot["draw"].get("world") or [G["W"], G["H"]])
+        return Cam(1.0, world[0] / 2, world[1] / 2)
+    c = m["cam"]
+    return Cam(c["z"], c["x"], c["y"], c.get("roll", 0.0), sx=c.get("sx", 0.0), sy=c.get("sy", 0.0))
+
+
 def camera_for(shot, t):
+    if shot.get("draw") is not None:
+        return draw_cam(shot, t)
     spec = shot["camera"]
     u = t - shot["start"]
     dur = max(1e-3, shot["end"] - shot["start"])
@@ -840,10 +863,37 @@ def grade(img, exposure=1.0, contrast=0.12, sat=1.05, lift=(0, 0, 0), gain=(1, 1
     return lum + (img - lum) * sat
 
 
+def draw_layer(cam, shot, t):
+    """A code-drawn frame (build/<id>/drawn/<shot>/<frame>.jpg) + synthetic depth and world coordinates for effects."""
+    f = int(round(t * G["fps"]))
+    d_dir = build_dir(G["pid"], "drawn", shot["id"])
+    path = next((os.path.join(d_dir, f"{x:05d}.jpg") for x in (f, f - 1, f + 1) if os.path.exists(os.path.join(d_dir, f"{x:05d}.jpg"))), None)
+    if path is None:
+        raise FileNotFoundError(f"draw frame {f} of shot {shot['id']} is missing — run: python3 vg.py draw {G['pid']}")
+    img = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+    key = ("drawdepth", shot["id"])
+    c = G["cache"]
+    if key not in c:
+        dp = shot["draw"].get("depth", [0.1, 0.8])
+        if isinstance(dp, (int, float)):
+            c[key] = np.full((G["H"], G["W"]), float(dp), np.float32)
+        else:
+            c[key] = np.repeat(np.linspace(float(dp[0]), float(dp[1]), G["H"], dtype=np.float32)[:, None], G["W"], 1)
+    gx, gy = c["grid"]
+    r = math.radians(-cam.roll)
+    qx, qy = gx - cam.sx, gy - cam.sy
+    mx = (cam.cx + (math.cos(r) * qx - math.sin(r) * qy) / cam.z).astype(np.float32)
+    my = (cam.cy + (math.sin(r) * qx + math.cos(r) * qy) / cam.z).astype(np.float32)
+    return img, c[key], np.zeros((G["H"], G["W"], 4), np.float32), [], mx, my
+
+
 def render_shot(shot, t):
     textures()
     cam = camera_for(shot, t)
-    img, d, ax, names, mx, my = remap_plate(cam, shot, t)
+    if shot.get("draw") is not None:
+        img, d, ax, names, mx, my = draw_layer(cam, shot, t)
+    else:
+        img, d, ax, names, mx, my = remap_plate(cam, shot, t)
     ctx = Ctx(shot, t, cam, img, d, ax, names, mx, my)
     for e in shot["effects"]:
         if e["type"] in DISPLACE and e["type"] not in EFFECTS:
@@ -998,6 +1048,10 @@ def export_camera(pid):
         shot = shot_at(t)
         cam = camera_for(shot, t)
         anchors = {}
+        if shot.get("draw") is not None:              # anchors of drawn shots come from the draw renderer
+            m = draw_meta(shot)["frames"].get(str(f))
+            frames.append({"shot": shot["id"], "shake": [round(cam.sx, 2), round(cam.sy, 2)], "anchors": m["anchors"] if m else {}})
+            continue
         for name, a in (shot.get("anchors") or {}).items():
             if len(a) > 2:
                 d = float(a[2])
