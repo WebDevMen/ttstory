@@ -269,6 +269,9 @@ export class Item {
     this.w = typeof w === "function" ? w(this.props) : w;
     this.h = typeof h === "function" ? h(this.props) : h;
     if ((this.w == null || this.h == null) && this.inst.el) {
+      // auto-sized (HTML) items are re-measured after every update (render), so a late web font or a growing counter
+      // keeps the item on its origin instead of drifting to one side
+      if (this.inst.el instanceof HTMLElement) this.autoSize = [this.w == null, this.h == null];
       // children of a group / phone screen are built before their parent is in the document: measure on first show
       if (!this.inst.el.isConnected) this.remeasure = [this.w == null, this.h == null];
       const r = this.inst.el.getBoundingClientRect();
@@ -382,7 +385,24 @@ export class Item {
     const drawK = a?.draw ?? b?.draw ?? null;
     if (drawK != null || this._drawn) this.applyDraw(drawK ?? 1);
     if (this.inst.update) this.inst.update(t, this);
+    if (this.autoSize && !this.remeasure) this.refit(tilt);
     for (const c of this.children) c.render(t);
+  }
+
+  // auto-sized item: if its content changed size, update the box and shift by the origin difference (same frame)
+  refit(tilt) {
+    const el = this.inst.el, [mw, mh] = this.autoSize;
+    const bw = mw ? el.offsetWidth : this.w, bh = mh ? el.offsetHeight : this.h;
+    if (!bw || !bh || (Math.abs(bw - this.w) < 0.5 && Math.abs(bh - this.h) < 0.5)) return;
+    this.w = bw; this.h = bh;
+    this.fx.style.width = `${bw}px`; this.fx.style.height = `${bh}px`;
+    const [ox0, oy0] = this.origin;
+    this.origin = resolveOrigin(this.spec.origin ?? this.inst.origin ?? this.def.origin, bw, bh);
+    const [ox, oy] = this.origin;
+    this.matrix = this.matrix.translate(ox0 - ox, oy0 - oy);
+    const m = this.matrix;
+    if (tilt) this.wrap.style.transform = `translate(${m.e + ox * m.a + oy * m.c}px, ${m.f + ox * m.b + oy * m.d}px) perspective(${this.spec.persp ?? 1200}px) rotateX(${this.rx}deg) rotateY(${this.ry}deg) matrix(${m.a},${m.b},${m.c},${m.d},0,0) translate(${-ox}px, ${-oy}px)`;
+    else this.wrap.style.transform = `matrix(${m.a},${m.b},${m.c},${m.d},${m.e},${m.f})`;
   }
 
   filters(a, b) {

@@ -30,6 +30,7 @@ python3 vg.py new my_video                  # …или projects/my_video/ из 
 python3 vg.py voice my_video && python3 vg.py compile my_video   # длительность и тайминги
 python3 vg.py prep my_video && python3 vg.py grid my_video       # апскейл, глубина, сетка координат
 python3 vg.py preview my_video --shots      # быстрые превью-кадры
+python3 vg.py layout my_video               # проверка вёрстки: обрезанный/наезжающий текст, субтитры, зоны площадки
 python3 vg.py all my_video                  # готовый out/my_video.mp4
 ```
 
@@ -59,6 +60,7 @@ engine/
   hud/vendor/             GSAP, lottie-web, rough.js, D3, topojson + Natural Earth, three.js — локально, офлайн
   render_hud.cjs          покадровый рендер HUD и нарисованных шотов в headless Chromium (Playwright)
   mux.py, qa.py           финальная сборка (−14 LUFS), контактные листы, сетки координат
+  layout.py               проверка вёрстки нарисованных шотов (стандарт аккуратности, docs/DRAW.md §10.1)
 projects/<id>/            script.yaml + script.md (сценарий), project.yaml + plates/ (ключевые кадры) и/или actors/ (свои актёры проекта)
 out/                      готовые ролики
 ```

@@ -39,7 +39,7 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 2. Camera always moves (`camera.keys` push-in, panorama in a wider `world`, `follow`). Keep scene effects for life: falling petals, steam, glow, sparkles.
 3. Layout: marker y≈214, main art y 300–1150, captions over a floor/road band (`captions_top`), decor only below y 1550; hide captions when a big kinetic title says the same (`theme.captions.hide`). Labels over a panning world: `space: screen`.
 4. Missing object → write an actor in `projects/<id>/actors/<name>.js` (or the library); `vg.py actors` lists what exists. Check new actors on a gallery page first (`vg.py draw gallery --frames N`, read `build/gallery/drawn/<shot>/<frame>.jpg`).
-5. Iterate with `vg.py preview <id> --shots` and `--at <times>`; read the sheet, fix coordinates, repeat. `vg.py draw` re-renders only changed shots, but any change in actor code re-renders all draw shots.
+5. Iterate with `vg.py preview <id> --shots` and `--at <times>`; read the sheet, fix coordinates, repeat. Then run the layout audit (§5b). `vg.py draw` re-renders only changed shots, but any change in actor code re-renders all draw shots.
 
 ## 3. Prepare & measure
 
@@ -62,6 +62,15 @@ python3 vg.py compile <id> && python3 vg.py preview <id> --shots          # ~1 m
 python3 vg.py preview <id> --at <times of HUD entrances, impacts, transitions>
 ```
 Read `build/<id>/preview/preview.jpg` and check: composition, plate edges never visible, anchors on their objects, no overlapping HUD, captions readable, colors consistent. Fix the YAML and re-run. Don't start the full render before the preview is clean.
+
+## 5b. Layout audit — the design-quality gate (mandatory for draw shots)
+
+The user explicitly requires neat, consistent graphics: no text touching or cut by the frame, no «almost centred» items, no overlaps with other texts or captions, one type scale, equal spacing, nothing drifting or coming apart during animation. The standard is `docs/DRAW.md` §10.1 — follow it while composing, not only when fixing.
+
+```bash
+python3 vg.py layout <id>        # after compile; build/<id>/layout/sheet.jpg shows every issue boxed
+```
+Fix until **0 errors and ≤ 3 warnings**, and keep a warning only when it is deliberate (say which and why in the final note). Then look at the start, middle and end of every shot (`preview --at`) for what automation cannot judge: uneven gaps, ragged stacks, mismatched styles, parts of a composite drawing out of place. Never start the full render with known sloppy placement.
 
 ## 6. Full render & QA
 

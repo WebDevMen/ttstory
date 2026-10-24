@@ -214,5 +214,16 @@ window.renderFrame = async (frame, src) => {
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   return true;
 };
+// layout audit (vg.py layout): where the captions are on this frame (null when hidden)
+window.hudLayout = async (frame) => {
+  update(frame / TL.fps);
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  if (capEl.style.display === "none" || !capEl.textContent.trim()) return { caption: null };
+  const spans = [...capEl.querySelectorAll(".w")].map((s) => s.getBoundingClientRect()).filter((r) => r.width > 0);
+  if (!spans.length) return { caption: null };
+  const box = [Math.min(...spans.map((r) => r.left)), Math.min(...spans.map((r) => r.top)), Math.max(...spans.map((r) => r.right)), Math.max(...spans.map((r) => r.bottom))];
+  const text = [...capEl.querySelectorAll(".w")].map((s) => s.textContent.trim()).join(" ");
+  return { caption: { box: box.map((v) => Math.round(v)), text } };
+};
 window.hudInfo = { duration: TL.duration, frames: TL.frames, fps: TL.fps };
 window.hudReady = true;

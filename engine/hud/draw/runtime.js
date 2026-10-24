@@ -251,5 +251,49 @@ window.drawShotFrame = async (shotId, frame) => {
   }
   return { cam: { x: cam.x, y: cam.y, z: cam.z, roll: cam.roll, sx: cam.sx, sy: cam.sy }, anchors };
 };
+// layout audit (vg.py layout): the on-screen box of every visible item of one frame — text lines measured tightly
+// (Range client rects), the rest by the item box; entering/exiting items are flagged so the checker can skip them.
+const TEXTY = new Set(["text", "badge", "timetag", "callout", "bubble", "card", "checklist", "meter", "neon_sign", "mail"]);
+function layoutOf(it, out, parentPath, parentMoving) {
+  if (!it.visible) return;
+  const path = `${parentPath}${parentPath ? "/" : ""}${it.id || it.spec.actor}#${it.index ?? 0}`;
+  // entering/exiting, or a text still revealing word by word (slam/pop overshoot)
+  const rv = it.spec.reveal, words = String(it.spec.text ?? "").split(/\s+/).length;
+  const revealing = rv && it.t < it.at + (rv.dur ?? 0.5) + (rv.stagger ?? 0.06) * words * (rv.by === "char" ? 6 : 1) + 0.15;
+  const moving = parentMoving || it.ei < 1 || it.eo > 0 || !!revealing;
+  let op = 1;
+  for (let e = it.wrap; e && !e.classList.contains("stage"); e = e.parentElement) op *= parseFloat(getComputedStyle(e).opacity || "1");
+  const r = it.fx.getBoundingClientRect();
+  const rec = { actor: it.spec.actor, id: it.id || null, path, space: it.spec.space || "world", op: Math.round(op * 100) / 100, moving,
+    blur: Math.round(it.v("blur", 0) * 10) / 10,
+    box: [r.left, r.top, r.right, r.bottom].map((v) => Math.round(v)), texty: TEXTY.has(it.spec.actor), lines: [], text: "", overflow: false };
+  if (rec.texty || it.spec.actor === "text") {
+    const walker = document.createTreeWalker(it.fx, NodeFilter.SHOW_TEXT);
+    const parts = [];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!n.textContent.trim()) continue;
+      const pe = n.parentElement;
+      if (pe && (getComputedStyle(pe).visibility === "hidden" || parseFloat(getComputedStyle(pe).opacity) === 0)) continue;
+      parts.push(n.textContent.trim());
+      const rg = document.createRange(); rg.selectNodeContents(n);
+      for (const lr of rg.getClientRects()) if (lr.width > 1 && lr.height > 1) rec.lines.push([lr.left, lr.top, lr.right, lr.bottom].map((v) => Math.round(v)));
+    }
+    rec.text = parts.join(" ").slice(0, 60);
+    const el = it.inst.el;
+    if (el && el.scrollWidth && el.clientWidth && el.scrollWidth > el.clientWidth + 3 && getComputedStyle(el).overflow !== "visible") rec.overflow = true;
+  }
+  out.push(rec);
+  for (const c of it.children) layoutOf(c, out, path, moving);
+}
+window.drawLayout = async (shotId, frame) => {
+  const st = await stageFor(shotId);
+  renderStage(st, frame / FPS);
+  if (H.pending && H.pending.length) { await Promise.all(H.pending); H.pending = []; }
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const out = [];
+  st.items.forEach((it, i) => { it.index = i; layoutOf(it, out, "", false); });
+  const cam = camState(st.shot, frame / FPS);
+  return { cam: { x: cam.x, y: cam.y, z: cam.z }, items: out };
+};
 window.drawInfo = { shots: TL.shots.filter((s) => s.draw).map((s) => s.id), fps: FPS, actors: Object.keys(ACTORS).sort() };
 window.drawReady = true;

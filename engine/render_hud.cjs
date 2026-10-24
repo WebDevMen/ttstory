@@ -4,6 +4,8 @@
 //   node engine/render_hud.cjs draw   <project> [workers] [frame...] [--force]
 //        code-drawn shots -> build/<project>/drawn/<shot>/<frame>.jpg + meta.json (camera + anchors per frame);
 //        unchanged shots are skipped (hash of the shot spec + actor code), explicit frames are always rendered.
+//   node engine/render_hud.cjs layout <project> [step]             layout audit: item boxes + captions of sampled frames
+//        of every draw shot -> build/<project>/layout/frames.json + f_XXXXX.jpg (analysed by engine/layout.py)
 // Needs an http server serving the repository root on $PORT (vg.py starts one automatically).
 const { chromium } = require("playwright");
 const { spawn } = require("child_process");
@@ -131,6 +133,36 @@ async function drawMode(browser, pid, tl, workers, frames, force) {
   console.log(`  drawn ${count} frames in ${((Date.now() - t0) / 1000).toFixed(0)} s`);
 }
 
+// ------------------------------------------------------------------ layout audit
+async function layoutMode(browser, pid, tl, step) {
+  const out = path.join(ROOT, "build", pid, "layout");
+  fs.rmSync(out, { recursive: true, force: true });
+  fs.mkdirSync(out, { recursive: true });
+  const dpage = await browser.newPage({ viewport: { width: tl.width, height: tl.height }, deviceScaleFactor: 1 });
+  dpage.on("pageerror", (e) => { console.error("[draw pageerror]", e.message); process.exitCode = 2; });
+  await dpage.goto(`http://127.0.0.1:${PORT}/engine/hud/draw.html?project=${encodeURIComponent(pid)}`);
+  await dpage.waitForFunction(() => window.drawReady === true, null, { timeout: 180000 });
+  await dpage.evaluate(() => document.fonts.ready);
+  const hpage = await openPage(browser, pid);
+  const res = [];
+  for (const s of tl.shots) {
+    if (!s.draw) continue;
+    const f0 = Math.ceil(s.start * tl.fps) + 2, f1 = Math.floor(s.end * tl.fps) - 2;
+    const fr = [];
+    for (let f = f0; f < f1; f += step) fr.push(f);
+    if (f1 > f0 && fr[fr.length - 1] !== f1) fr.push(f1);
+    for (const f of fr) {
+      const { cam, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
+      const hud = await hpage.evaluate((x) => window.hudLayout(x), f);
+      const shotFile = `f_${String(f).padStart(5, "0")}.jpg`;
+      fs.writeFileSync(path.join(out, shotFile), await dpage.screenshot({ type: "jpeg", quality: 80 }));
+      res.push({ frame: f, t: Math.round((f / tl.fps) * 100) / 100, shot: s.id, scene: s.scene, image: shotFile, cam, items, caption: hud.caption });
+    }
+  }
+  fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ width: tl.width, height: tl.height, frames: res }));
+  console.log(`  measured ${res.length} frames`);
+}
+
 (async () => {
   const [mode, pid, ...rest] = process.argv.slice(2);
   const tl = JSON.parse(fs.readFileSync(path.join(ROOT, "build", pid, "timeline.json"), "utf8"));
@@ -140,6 +172,8 @@ async function drawMode(browser, pid, tl, workers, frames, force) {
     const args = rest.filter((a) => a !== "--force");
     const frames = args.length > 1 ? args.slice(1).map(Number) : null;
     await drawMode(browser, pid, tl, Number(args[0] || 3), frames, force);
+  } else if (mode === "layout") {
+    await layoutMode(browser, pid, tl, Number(rest[0] || 12));
   } else if (mode === "stills") {
     const dir = path.join(ROOT, "build", pid, "stills");
     fs.mkdirSync(dir, { recursive: true });

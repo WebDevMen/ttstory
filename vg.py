@@ -14,6 +14,7 @@
   python3 vg.py audio <id> [--stems]      sound design + music + mix
   python3 vg.py hud <id> [--workers 3]    composite HUD + captions over the scene frames
   python3 vg.py mux <id>                  final mp4 -> out/<id>.mp4 (loudness -14 LUFS)
+  python3 vg.py layout <id> [--step 12]   layout audit of draw shots: cut/overlapping texts, captions, safe zones
   python3 vg.py qa <id>                   contact sheets (1 frame per second) + loudness report
   python3 vg.py all <id>                  voice → compile → prep → draw → scene → audio → hud → mux → qa
 
@@ -224,6 +225,19 @@ def cmd_preview(a):
     qa.preview_sheet(a.id, frames)
 
 
+def cmd_layout(a):
+    from engine import layout
+    from engine.common import load_timeline
+    if not has_draw(load_timeline(a.id)):
+        print("  no draw shots")
+        return
+    step("layout audit")
+    run_node(["layout", a.id, str(a.step)])
+    errs, warns = layout.run(a.id, a.step)
+    if errs or warns > 3:
+        sys.exit(1)
+
+
 def cmd_all(a):
     t0 = time.time()
     cmd_voice(a)
@@ -254,6 +268,7 @@ def main():
     p = sub.add_parser("hud"); p.add_argument("id"); p.add_argument("--workers", type=int, default=3); p.set_defaults(fn=cmd_hud)
     p = sub.add_parser("mux"); p.add_argument("id"); p.add_argument("--maxrate", default="8M"); p.set_defaults(fn=cmd_mux)
     p = sub.add_parser("qa"); p.add_argument("id"); p.set_defaults(fn=cmd_qa)
+    p = sub.add_parser("layout"); p.add_argument("id"); p.add_argument("--step", type=int, default=12); p.set_defaults(fn=cmd_layout)
     from engine.script import cli as script_cli
     script_cli.add_parser(sub)
     p = sub.add_parser("all"); p.add_argument("id"); p.add_argument("--force", action="store_true"); p.add_argument("--jobs", type=int, default=4)
