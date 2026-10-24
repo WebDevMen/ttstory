@@ -1,4 +1,4 @@
-// UI actors drawn inside the scene: phone, battery, timetag, callout, badge, card, checklist, meter, bubble, clock.
+// UI actors drawn inside the scene: phone, battery, timetag, callout, badge, card, checklist, meter, bubble, mail, clock.
 // They live in the world (move with the camera) unless the item has `space: screen`.
 
 const box = (H, css, html = "") => H.div(css, html);
@@ -250,6 +250,60 @@ export const bubble = {
       update(t, it) {
         if (!bw) { const r = b.getBoundingClientRect(), m = it.screenMatrix(), sc = Math.hypot(m.a, m.b) || 1; bw = r.width / sc; bh = r.height / sc; }
         b.style.transform = `translate(${left ? -bw + 30 : -30}px, ${-bh - 40}px)`;
+      },
+    };
+  },
+};
+
+// ------------------------------------------------------------------ mail: an e-mail / support thread in a desktop window
+// title (window bar), folder (small caps line), subject, color (accent), w, h, size (body text), messages: [{from, addr, avatar
+// (emoji or letters), color (avatar), time, text, out (true = written by the hero: accent frame), attach: {name, sub, ext, icon,
+// color, at (glows from then on)}, at}] — each message slides in at its time, cards stack from the top
+export const mail = {
+  origin: "center",
+  create(p, H) {
+    const w = p.w ?? 940, h = p.h ?? 900, size = p.size ?? 30, acc = H.col(p.color ?? "#4de1ff"), bar = 60, M = mono(H);
+    const el = box(H, `width:${w}px;height:${h}px;border-radius:22px;overflow:hidden;background:#0c111b;font-family:Montserrat;
+      box-shadow:0 0 0 3px ${H.rgba(acc, 0.45)}, 0 0 50px ${H.rgba(acc, 0.22)}, 0 30px 60px rgba(0,0,0,.6)`);
+    const dot = (c) => `<span style="width:16px;height:16px;border-radius:50%;background:${c}"></span>`;
+    el.innerHTML = `<div style="position:absolute;left:0;top:0;width:${w}px;height:${bar}px;background:#161c2a;display:flex;align-items:center;gap:12px;padding:0 22px;box-sizing:border-box">
+        ${dot("#ff5f57")}${dot("#febc2e")}${dot("#28c840")}<span style="margin-left:16px;font:700 24px ${M};color:#aab4c8;white-space:nowrap">${H.markup(p.title ?? "")}</span></div>`;
+    const col = document.createElement("div");
+    col.style.cssText = `position:absolute;left:0;top:${bar}px;width:${w}px;padding:26px 30px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px`;
+    col.innerHTML = `<div style="padding:0 4px 20px;border-bottom:2px solid rgba(255,255,255,.08)">
+        ${p.folder ? `<div style="font:800 ${size * 0.6}px ${M};letter-spacing:2px;color:${acc}">${H.markup(p.folder)}</div>` : ""}
+        <div style="font:900 ${size * 1.3}px/1.15 Montserrat;color:#fff;margin-top:10px">${H.markup(p.subject ?? "")}</div></div>`;
+    el.appendChild(col);
+    const cards = (p.messages || []).map((m) => {
+      const out = !!m.out, a = m.attach, ac = a ? H.col(a.color ?? acc) : acc;
+      const d = document.createElement("div");
+      d.style.cssText = `position:relative;border-radius:20px;padding:22px 26px;background:${out ? H.rgba(acc, 0.1) : "#151c2b"};
+        border:2px solid ${out ? H.rgba(acc, 0.6) : "rgba(255,255,255,.09)"};opacity:0`;
+      d.innerHTML = `<div style="display:flex;align-items:center;gap:18px">
+          <div style="flex:none;width:${size * 1.85}px;height:${size * 1.85}px;border-radius:50%;background:${H.col(m.color ?? "#2a3550")};display:grid;place-items:center;font:900 ${size * 0.9}px Montserrat;color:#fff">${H.icon(m.avatar ?? "👤")}</div>
+          <div style="flex:1;min-width:0"><div style="font:800 ${size * 0.95}px Montserrat;color:#fff;white-space:nowrap">${H.markup(m.from ?? "")}</div>
+            ${m.addr ? `<div style="font:600 ${size * 0.68}px ${M};color:#8a94ab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${H.markup(m.addr)}</div>` : ""}</div>
+          ${m.time ? `<div style="flex:none;font:700 ${size * 0.68}px ${M};color:#8a94ab">${m.time}</div>` : ""}</div>
+        ${m.text ? `<div style="margin-top:16px;font:600 ${size}px/1.3 Montserrat;color:#d8deeb">${H.markup(m.text)}</div>` : ""}
+        ${a ? `<div class="att" style="margin-top:18px;display:flex;align-items:center;gap:20px;padding:16px 20px;border-radius:16px;background:rgba(255,255,255,.05);border:2px solid ${H.rgba(ac, 0.7)}">
+            <div style="flex:none;width:${size * 2}px;height:${size * 2.4}px;border-radius:10px;background:${ac};display:grid;place-items:center;font:900 ${size * 0.66}px ${M};color:#fff">${a.icon ? H.icon(a.icon) : a.ext ?? "FILE"}</div>
+            <div style="min-width:0"><div style="font:800 ${size * 0.95}px Montserrat;color:#fff;white-space:nowrap">${H.markup(a.name ?? "")}</div>
+              ${a.sub ? `<div style="font:700 ${size * 0.66}px ${M};letter-spacing:1px;color:${H.shade(ac, 0.35)};margin-top:4px">${H.markup(a.sub)}</div>` : ""}</div></div>` : ""}`;
+      col.appendChild(d);
+      return [m, d, d.querySelector(".att"), ac];
+    });
+    return {
+      el, w, h,
+      update(t) {
+        for (const [m, d, att, ac] of cards) {
+          const k = H.P(t, m.at ?? -1, 0.35);
+          d.style.opacity = H.clamp(k * 2);
+          d.style.transform = `translateY(${(1 - H.E.outBack(k)) * 40}px) scale(${H.lerp(0.96, 1, H.E.outBack(k))})`;
+          if (att) {
+            const g = H.P(t, m.attach.at ?? 1e9, 0.3), pulse = 0.75 + 0.25 * Math.sin(t * 7);
+            att.style.boxShadow = g > 0 ? `0 0 ${30 * g * pulse}px ${H.rgba(ac, 0.8 * g)}, inset 0 0 ${18 * g}px ${H.rgba(ac, 0.3 * g)}` : "none";
+          }
+        }
       },
     };
   },

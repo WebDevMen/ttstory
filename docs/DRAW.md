@@ -233,6 +233,7 @@ anim:
 | `checklist` | список с галочками | `items: [{text, at}] size color ink width show_at stagger` |
 | `meter` | полоса прогресса | `value` (дорожка) `max label unit color w size ink` |
 | `bubble` | реплика | `text side size color ink font width` |
+| `mail` | окно почты / переписки с поддержкой: карточки писем въезжают по словам, вложение светится | `title folder subject color w h size`, `messages: [{from addr avatar color time text out attach: {name sub ext icon color at} at}]` |
 | `clock` | настенные часы | `time` (дорожка, часы: `8.5` = 8:30) `r numbers seconds face frame` |
 
 ### 7.6 Библиотеки и частицы

@@ -252,7 +252,7 @@ scenes:
             - {actor: text, text: "0 ОШИБОК", x: 540, y: 1120, size: 90, weight: 900, color: god, stroke: {w: 8, color: "#031410"}, rot: -4, at: "@ошибки+0.1", enter: stamp, shadow: "0 0 26px rgba(77,225,255,.7)"}
       - id: p_allin
         start: "@финале-0.12"
-        captions_top: 1330
+        captions_top: 1490      # под табличкой POTRIPPER
         transition: {type: zoom, dur: 0.3}
         effects:
           - {type: flash, events: [{at: "@пустой", amp: 0.25, decay: 0.4}]}
@@ -268,9 +268,10 @@ scenes:
               children:
                 - {actor: poker_table, seats: [{name: "POTRIPPER", stack: "$41 200", avatar: "🕶️", color: "#3a2a10"}, {name: "CrazyMarco", stack: "$38 800", avatar: "🦁", color: "#2c2a1f"}], logo: "ФИНАЛ", active: [{at: 0, v: 1}, {at: "@на#2", v: 0}], pot: [{at: 0, v: 22500}, {at: "@отвечает", v: 222810, dur: 0.6}, {at: "@тридцать", v: 0, dur: 0.4}]}
                 - {actor: playing_card, rank: "K", suit: d, w: 105, x: -224, y: -40, at: "@финале", enter: flip_y, face: 1}
-                - {actor: playing_card, rank: "K", suit: h, w: 105, x: -112, y: -40, at: "@финале+0.12", enter: flip_y, face: 1}
-                - {actor: playing_card, rank: "4", suit: h, w: 105, x: 0, y: -40, at: "@финале+0.24", enter: flip_y, face: 1}
-                - {actor: playing_card, rank: "7", suit: s, w: 105, x: 112, y: -40, at: "@финале+0.36", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "K", suit: h, w: 105, x: -112, y: -40, at: "@финале+0.1", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "4", suit: h, w: 105, x: 0, y: -40, at: "@финале+0.2", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "7", suit: s, w: 105, x: 112, y: -40, at: "@финале+0.3", enter: flip_y, face: 1}
+                - {actor: playing_card, rank: "3", suit: c, w: 105, x: 224, y: -40, at: "@финале+0.4", enter: flip_y, face: 1}
                 - {actor: playing_card, rank: "9", suit: c, w: 110, x: -55, y: -490, face: [{at: 0, v: 0}, {at: "@пустой", v: 1, dur: 0.3}]}
                 - {actor: playing_card, rank: "2", suit: h, w: 110, x: 55, y: -490, face: [{at: 0, v: 0}, {at: "@пустой+0.08", v: 1, dur: 0.3}]}
                 - {actor: playing_card, rank: "10", suit: c, w: 110, x: -55, y: 490, face: [{at: 0, v: 0}, {at: "@пустой", v: 1, dur: 0.3}], highlight: [{at: 0, v: 0}, {at: "@пустой+0.3", v: 1, dur: 0.2}], glow: alarm}
@@ -304,17 +305,19 @@ scenes:
           bg: *dark_bg
           camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
           layers:
-            - actor: monitor
+            - actor: mail
               x: 540
-              y: 880
-              w: 960
-              h: 740
+              y: 770
+              w: 980
+              h: 840
+              size: 38
               title: "ПОЧТА · support@poker"
+              folder: "ВХОДЯЩИЕ › ПОДДЕРЖКА"
+              subject: "История раздач финала"
               color: god
-              children:
-                - {actor: bubble, x: 860, y: 230, text: "Пришлите историю раздач финала", side: right, size: 36, color: "#2f7cf6", ink: "#ffffff", width: 560, at: "@попросил-0.05", enter: slide_left}
-                - {actor: bubble, x: 100, y: 430, text: "Re: история раздач", side: left, size: 36, color: "#2a3042", ink: "#ffffff", width: 460, at: "@прислал-0.05", enter: slide_right}
-                - {actor: badge, x: 400, y: 560, icon: "📎", title: "hand_history.xls", sub: "9 МБ · ВСЕ СТОЛЫ", style: dark, color: god, size: 40, at: "@прислал+0.15", enter: pop, blink: {freq: 1.6, min: 0.6}}
+              messages:
+                - {from: "CrazyMarco", addr: "игрок · 2-е место", avatar: "🦁", color: "#3a3220", out: true, text: "Пришлите, пожалуйста, историю раздач финала.", at: "@попросил-0.1"}
+                - {from: "Служба поддержки", addr: "support@poker", avatar: "♠", color: "#b3122f", text: "Re: история раздач — файл во вложении.", attach: {name: "hand_history.xls", sub: "ВСЕ СТОЛЫ · ВСЕ КАРТЫ · IP", ext: "XLS", color: "#1f9a52", at: "@прислал"}, at: "@сайт-0.1"}
             - {actor: text, text: "ЗАПРОС ПРОИГРАВШЕГО", x: 540, y: 260, size: 56, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#03060c"}, space: screen, at: "@попросил-0.05", enter: rise}
       - id: f_sheet
         start: "@файл-0.12"
@@ -535,8 +538,8 @@ scenes:
               enter: stamp
               pulse: {freq: 1.6, amp: 0.03}
               children:
-                - {actor: shape, kind: rect, x: 0, y: 0, w: 900, h: 220, radius: 110, origin: center, fill: {linear: ["#ff5a6e", "#b3001b"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#ff3b4e", r: 30, a: 0.9}}
-                - {actor: text, text: "ХАКЕР СНАРУЖИ", x: 0, y: 4, size: 88, weight: 900, color: "#ffffff"}
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 860, h: 200, radius: 100, origin: center, fill: {linear: ["#ff5a6e", "#b3001b"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#ff3b4e", r: 30, a: 0.9}}
+                - {actor: text, text: "ХАКЕР СНАРУЖИ", x: 0, y: 3, size: 66, weight: 900, color: "#ffffff"}
             - {actor: text, text: "ИЛИ", x: 540, y: 800, size: 70, font: mono, color: "#ffffff", at: "@или", enter: pop, blink: {freq: 1.5, min: 0.4}}
             - actor: group
               x: 540
@@ -545,8 +548,8 @@ scenes:
               enter: stamp
               pulse: {freq: 1.6, amp: 0.03, phase: 3.14}
               children:
-                - {actor: shape, kind: rect, x: 0, y: 0, w: 900, h: 220, radius: 110, origin: center, fill: {linear: ["#5ee8ff", "#0a7fa6"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#4de1ff", r: 30, a: 0.9}}
-                - {actor: text, text: "КАЗИНО ИЗНУТРИ", x: 0, y: 4, size: 88, weight: 900, color: "#ffffff"}
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 860, h: 200, radius: 100, origin: center, fill: {linear: ["#5ee8ff", "#0a7fa6"], angle: 180}, stroke: "#ffd34d", sw: 6, glow: {color: "#4de1ff", r: 30, a: 0.9}}
+                - {actor: text, text: "КАЗИНО ИЗНУТРИ", x: 0, y: 3, size: 66, weight: 900, color: "#ffffff"}
             - {actor: badge, x: 540, y: 330, icon: "🔔", title: "АФЕРА №3 — СКОРО", style: solid, color: gold, size: 50, at: "@Третья", enter: drop}
       - id: z_loop
         start: "@очереди-0.15"

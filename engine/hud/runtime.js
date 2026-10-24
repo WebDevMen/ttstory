@@ -185,7 +185,9 @@ function updateCaptions(t, scene, shot) {
     const on = t >= w.start - 0.03 && (nx ? t < nx.start - 0.03 : true);
     s.classList.toggle("on", on);
     s.classList.toggle("past", t >= w.start - 0.03 && !on);
-    s.style.transform = on ? `scale(${1 + (CAP.pop ?? 0.07) * (1 - P(t, w.start, 0.15))})` : "scale(1)";
+    // the pop grows the word up, but sideways only by ~6 px per side, so it never eats the gap to its neighbours
+    const pop = 1 + (CAP.pop ?? 0.07) * (1 - P(t, w.start, 0.15));
+    s.style.transform = on ? `scale(${Math.min(pop, 1 + 12 / (s.offsetWidth || 1e9))}, ${pop})` : "scale(1)";
   });
 }
 
