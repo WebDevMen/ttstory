@@ -37,6 +37,7 @@ export const stack = {
           const along = pos + sz[i][main] / 2;
           pos += sz[i][main] + gap;
           const off = align === "start" ? -(maxC - sz[i][cross]) / 2 : align === "end" ? (maxC - sz[i][cross]) / 2 : 0;
+          if (Math.abs((k.over[main ? "y" : "x"] ?? 0) - along) > 0.05 || Math.abs((k.over[main ? "x" : "y"] ?? 0) - off) > 0.05) H.layoutDirty = true;
           k.over[main ? "y" : "x"] = along;
           k.over[main ? "x" : "y"] = off;
           k.prepare(t);                    // re-place this frame (children render right after this update)

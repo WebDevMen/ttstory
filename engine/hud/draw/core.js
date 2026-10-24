@@ -434,7 +434,9 @@ export class Item {
     const sc = Math.abs(this.v("scale", 1)), sx = sc * Math.abs(this.v("sx", 1)), sy = sc * Math.abs(this.v("sy", 1));
     const r = (Math.abs(this.v("rot", 0)) % 180) * Math.PI / 180, c = Math.abs(Math.cos(r)), sn = Math.abs(Math.sin(r));
     const aw = nw * sx * c + nh * sy * sn, ah = nw * sx * sn + nh * sy * c;
-    this.fitK = Math.min(1, maxW / Math.max(1, aw), maxH / Math.max(1, ah));
+    const k = Math.min(1, maxW / Math.max(1, aw), maxH / Math.max(1, ah));
+    if (Math.abs(k - (this.fitK ?? 1)) > 1e-4) this.H.layoutDirty = true;
+    this.fitK = k;
   }
 
   // auto-sized item: if its content changed size, update the box and shift by the origin difference (same frame)
@@ -445,6 +447,7 @@ export class Item {
     const bh = mh ? (sc ? Math.max(el.offsetHeight, el.scrollHeight || 0) : el.offsetHeight) : this.h;
     if (this.fitOn) this.updateFit(bw, bh);
     if (!bw || !bh || (Math.abs(bw - this.w) < 0.5 && Math.abs(bh - this.h) < 0.5)) return;
+    this.H.layoutDirty = true;
     this.w = bw; this.h = bh;
     this.fx.style.width = `${bw}px`; this.fx.style.height = `${bh}px`;
     const [ox0, oy0] = this.origin;

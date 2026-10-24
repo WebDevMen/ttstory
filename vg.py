@@ -16,6 +16,7 @@
   python3 vg.py mux <id>                  final mp4 -> out/<id>.mp4 (loudness -14 LUFS)
   python3 vg.py layout <id> [--step 12]   graphics audit of draw shots: layout, proportions, floor, poses, contrast,
                                           motion (jumps, jitter, flicker); picks caption bands for captions_top: auto
+  python3 vg.py bench [--update]          actor test bench: gallery shots vs reference images (tests/bench/)
   python3 vg.py qa <id>                   contact sheets (1 frame per second) + loudness report
   python3 vg.py all <id>                  voice → compile → prep → draw → scene → audio → hud → mux → qa
 
@@ -244,6 +245,15 @@ def cmd_layout(a):
         sys.exit(1)
 
 
+def cmd_bench(a):
+    from engine import bench
+    step("actor test bench (projects/gallery)")
+    bench.clean()
+    run_draw("gallery", list(bench.frames("gallery").values()), workers=3)
+    if bench.compare("gallery", update=a.update):
+        sys.exit(1)
+
+
 def cmd_all(a):
     t0 = time.time()
     cmd_voice(a)
@@ -274,6 +284,7 @@ def main():
     p = sub.add_parser("hud"); p.add_argument("id"); p.add_argument("--workers", type=int, default=3); p.set_defaults(fn=cmd_hud)
     p = sub.add_parser("mux"); p.add_argument("id"); p.add_argument("--maxrate", default="8M"); p.set_defaults(fn=cmd_mux)
     p = sub.add_parser("qa"); p.add_argument("id"); p.set_defaults(fn=cmd_qa)
+    p = sub.add_parser("bench"); p.add_argument("--update", action="store_true"); p.set_defaults(fn=cmd_bench)
     p = sub.add_parser("layout"); p.add_argument("id"); p.add_argument("--step", type=int, default=12); p.add_argument("--mstep", type=int, default=2, help="motion pass: every N-th frame (0 = off)"); p.set_defaults(fn=cmd_layout)
     from engine.script import cli as script_cli
     script_cli.add_parser(sub)

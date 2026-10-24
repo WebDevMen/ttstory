@@ -228,10 +228,24 @@ async function stageFor(shotId) {
     if (!shot || !shot.draw) throw new Error(`shot '${shotId}' is not a draw shot`);
     for (const [k, s] of STAGES) if (k !== shotId) { s.items.forEach((it) => it.destroy()); s.el.remove(); STAGES.delete(k); }
     STAGES.set(shotId, await buildStage(shot));
+    await document.fonts.ready;            // fonts used by the new stage are loaded before its first frame
   }
   const st = STAGES.get(shotId);
   for (const s of STAGES.values()) s.el.style.display = s === st ? "" : "none";
   return st;
+}
+
+// a frame is final when the layout settled: auto-sized items, fits and stacks may change sizes during the first
+// render (fonts, counters), so render again until nothing moves (max 4 passes) — every frame is the same whichever
+// worker draws it and in whatever order
+function renderSettled(st, t) {
+  let cam;
+  for (let i = 0; i < 4; i++) {
+    H.layoutDirty = false;
+    cam = renderStage(st, t);
+    if (!H.layoutDirty) break;
+  }
+  return cam;
 }
 
 function renderStage(st, t) {
@@ -250,7 +264,9 @@ function renderStage(st, t) {
 window.drawShotFrame = async (shotId, frame) => {
   const st = await stageFor(shotId);
   const t = frame / FPS;
-  const cam = renderStage(st, t);
+  let cam = renderSettled(st, t);
+  // an item shown for the first time may start loading a font: wait for it and lay the frame out again
+  if (document.fonts.status !== "loaded") { await document.fonts.ready; cam = renderSettled(st, t); }
   if (H.pending && H.pending.length) { await Promise.all(H.pending); H.pending = []; }
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   const anchors = {};
@@ -311,7 +327,8 @@ function layoutOf(it, out, parentPath, parentMoving) {
 }
 window.drawLayout = async (shotId, frame) => {
   const st = await stageFor(shotId);
-  renderStage(st, frame / FPS);
+  renderSettled(st, frame / FPS);
+  if (document.fonts.status !== "loaded") { await document.fonts.ready; renderSettled(st, frame / FPS); }
   if (H.pending && H.pending.length) { await Promise.all(H.pending); H.pending = []; }
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   const out = [];
