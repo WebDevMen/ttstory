@@ -52,8 +52,9 @@ scenes:
     shots:
       - id: h_weight
         plate: hook
+        captions_top: 1470
         camera:
-          keys: [{t: 0, z: 1.0, x: 648, y: 1180}, {t: end, z: 1.1, x: 648, y: 1240}]
+          keys: [{t: 0, z: 1.0, x: 648, y: 1000}, {t: end, z: 1.07, x: 648, y: 1030}]
           sway: {x: 3, y: 3, roll: 0.25, freq: 0.12}
           parallax: {px: 10, py: 4, freq: 0.12, k: [0, 0.05]}
         effects:
@@ -235,7 +236,7 @@ scenes:
           backdrop: {pattern: folk}
           camera: {zoom: [1.0, 1.05], shakes: [{at: "@куй", amp: 12}]}
           blocks:
-            - {type: title, text: "Пословицы **спорят**", at: "@пословицы", size: l, sync: true}
+            - {type: kicker, text: "Пословицы спорят", icon: Swords, at: 0.1}
             - type: versus
               vs_at: "@спорят"
               a: {text: "Тише едешь — дальше будешь", icon: Snail, at: "@Тише-0.1", color: pos}
@@ -314,7 +315,7 @@ scenes:
         plate: free
         transition: {type: whip_x, flash: 0.1}
         camera:
-          keys: [{t: 0, z: 1.1, x: 648, y: 1250}, {t: end, z: 1.0, x: 648, y: 1200}]
+          keys: [{t: 0, z: 1.06, x: 648, y: 1120}, {t: end, z: 1.0, x: 648, y: 1100}]
           parallax: {px: 12, py: 5, freq: 0.15, k: [0, 0.06]}
         effects:
           - {type: glow, at: [648, 700], depth: 0.4, sigma: 320, color: [1, 0.8, 0.4], intensity: 0.16, pulse: {freq: 0.8, amp: 0.3}}

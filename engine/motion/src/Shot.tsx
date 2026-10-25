@@ -119,7 +119,7 @@ const Stage: React.FC<{top: number; bottom: number; align: any; gap: number; chi
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const h = el.scrollHeight, w = el.scrollWidth;
+    const h = el.offsetHeight, w = el.offsetWidth;   // layout size: animation transforms (slide-ins) don't count
     const nk = Math.min(1, avail / Math.max(1, h), (GRID.W - 2 * GRID.side) / Math.max(1, w));
     if (Math.abs(nk - k) > 0.005) setK(nk);
   });

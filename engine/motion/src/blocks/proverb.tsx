@@ -16,12 +16,12 @@ const paperNoise = `url("data:image/svg+xml;utf8,${encodeURIComponent(
 
 function crackPoints(seed: string) {
   const pts: [number, number][] = [[50, 0]];
-  for (let i = 1; i < 9; i++) pts.push([50 + (random(seed + i) - 0.5) * 9, (100 * i) / 9]);
+  for (let i = 1; i < 7; i++) pts.push([50 + (i % 2 ? 1 : -1) * (2.5 + random(seed + i) * 4), (100 * i) / 7]);
   pts.push([50, 100]);
   return pts;
 }
 
-export const Proverb: React.FC<any> = ({text, w = 900, size = 'm', rot = 0, color, strike, crack, break: brk, dim, quote = true, id = 'p'}) => {
+export const Proverb: React.FC<any> = ({text, w = 900, size = 'm', rot = 0, color, strike, crack, break: brk, dim, quote = true, id = 'p', compact}) => {
   const t = useT();
   const {fps, pal} = useCtx();
   const base = typeof size === 'number' ? size : (TYPE as any)[size] ?? TYPE.m;
@@ -32,9 +32,9 @@ export const Proverb: React.FC<any> = ({text, w = 900, size = 'm', rot = 0, colo
   const kc = crack == null ? 0 : ramp(t, crack, 0.35);
   const kb = brk == null || t < brk ? 0 : (t - brk);
   const ks = strike == null ? 0 : ramp(t, strike, 0.4);
-  const band = 30;
+  const band = compact ? 24 : 30;
   const face = (
-    <div style={{position: 'relative', width: w, padding: `${band + 34}px 70px`, background: card, borderRadius: 22, boxSizing: 'border-box',
+    <div style={{position: 'relative', width: w, padding: `${band + (compact ? 22 : 34)}px 70px`, background: card, borderRadius: 22, boxSizing: 'border-box',
       boxShadow: '0 30px 60px rgba(0,0,0,.45), inset 0 0 0 3px rgba(80,50,20,.18), inset 0 0 70px rgba(120,80,30,.25)'}}>
       <div style={{position: 'absolute', inset: 0, borderRadius: 22, backgroundImage: paperNoise, opacity: 0.9, mixBlendMode: 'multiply'}} />
       <div style={{position: 'absolute', left: 26, right: 26, top: 16, height: band, backgroundImage: ornament(pal.folk, card), backgroundRepeat: 'repeat-x', backgroundPosition: 'center'}} />
@@ -62,8 +62,10 @@ export const Proverb: React.FC<any> = ({text, w = 900, size = 'm', rot = 0, colo
         {face}
         {kc > 0 && (
           <svg style={{position: 'absolute', inset: 0, overflow: 'visible'}} width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polyline points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke="rgba(255,240,210,.9)" vectorEffect="non-scaling-stroke"
+              style={{strokeWidth: 16}} strokeLinejoin="miter" pathLength={1} strokeDasharray="1" strokeDashoffset={1 - kc} />
             <polyline points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke="#1b0f08" vectorEffect="non-scaling-stroke"
-              style={{strokeWidth: 7}} strokeLinejoin="round" pathLength={1} strokeDasharray="1" strokeDashoffset={1 - kc} />
+              style={{strokeWidth: 9}} strokeLinejoin="miter" pathLength={1} strokeDasharray="1" strokeDashoffset={1 - kc} />
           </svg>
         )}
       </div>

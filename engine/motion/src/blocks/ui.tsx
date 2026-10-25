@@ -14,7 +14,7 @@ export const Versus: React.FC<any> = ({a, b, vs = 'VS', vs_at, kind = 'proverb'}
   const hit = b?.at != null ? Math.exp(-Math.max(0, t - b.at - 0.15) * 7) * (t > b.at + 0.15 ? 1 : 0) : 0;
   const side = (s: any, p: number, dir: number) => (
     <div style={{opacity: clamp01(p * 2), translate: `${(1 - p) * 760 * dir}px ${hit * 10 * dir}px`, position: 'relative'}}>
-      {kind === 'proverb' ? <Proverb text={s.text} size={s.size ?? 's'} w={860} rot={s.rot ?? dir * -2} id={`vs${dir}`} strike={s.strike} />
+      {kind === 'proverb' ? <Proverb text={s.text} size={s.size ?? 'm'} w={900} rot={s.rot ?? dir * -2} id={`vs${dir}`} strike={s.strike} compact />
         : <Card {...s} />}
       {s.icon && (
         <div style={{position: 'absolute', [dir < 0 ? 'left' : 'right']: -26, bottom: -40, width: 116, height: 116, borderRadius: 58, display: 'grid', placeItems: 'center',

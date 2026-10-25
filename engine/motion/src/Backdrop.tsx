@@ -32,8 +32,8 @@ export const Backdrop: React.FC<{spec?: BackdropSpec}> = ({spec = {}}) => {
     <AbsoluteFill style={{background: `linear-gradient(180deg, ${pal.bg[0]} 0%, ${pal.bg[1]} 55%, ${pal.bg[2]} 100%)`, overflow: 'hidden'}}>
       <AbsoluteFill style={{background: `radial-gradient(60% 40% at ${lx}% ${ly}%, ${pal.glow}55 0%, transparent 70%)`, opacity: g}} />
       {blobs.map((b, i) => (
-        <div key={i} style={{position: 'absolute', left: `${b.x}%`, top: `${b.y}%`, width: b.s, height: b.s, marginLeft: -b.s / 2, marginTop: -b.s / 2,
-          borderRadius: '50%', background: i === 1 ? pal.accent : pal.glow, opacity: b.a * (i === 1 ? 0.35 : 1), filter: 'blur(140px)'}} />
+        <div key={i} style={{position: 'absolute', left: `${b.x}%`, top: `${b.y}%`, width: b.s * 1.6, height: b.s * 1.6, marginLeft: -b.s * 0.8, marginTop: -b.s * 0.8,
+          background: `radial-gradient(closest-side, ${i === 1 ? pal.accent : pal.glow} 0%, transparent 100%)`, opacity: b.a * (i === 1 ? 0.35 : 1)}} />
       ))}
       {pattern && <AbsoluteFill style={{backgroundImage: pattern, backgroundSize: '120px 120px', backgroundPosition: `0px ${(t * 6) % 120}px`,
         maskImage: 'radial-gradient(70% 55% at 50% 45%, black 0%, transparent 100%)', WebkitMaskImage: 'radial-gradient(70% 55% at 50% 45%, black 0%, transparent 100%)'}} />}

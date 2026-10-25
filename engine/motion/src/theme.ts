@@ -63,8 +63,8 @@ export const TYPE = {
 export const GRID = {
   W: 1080, H: 1920,
   side: 72,              // side margin of the stage
-  stageTop: 230,         // under the platform's top UI
-  stageBottom: 1170,     // captions band starts below (≈1200–1430)
+  stageTop: 250,         // under the platform's top UI
+  stageBottom: 1180,     // captions band starts below (≈1220–1430)
   gap: 40,               // vertical rhythm between blocks
   maxText: 936,          // W - 2*side
 };
