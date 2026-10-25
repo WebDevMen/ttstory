@@ -320,8 +320,11 @@ def _support(fr, items):
     backdrop (or a gap opens between them and the ground when the camera moves); outdoor shots need far planes."""
     out = []
     surfaces = [it for it in items if it.get("surface")]
-    if not surfaces:                   # abstract / illustrative scene on a flat background: nothing is meant to stand
-        return out
+    # a wide band in the lower part of the frame (a floor drawn as a rect) is a floor too
+    floorish = lambda sf: sf["surface"] == "floor" or (sf["box"][2] - sf["box"][0] >= 0.8 * W and sf["box"][1] > 0.4 * H)
+    if not any(floorish(sf) for sf in surfaces) and not any(it.get("ground") for it in items):
+        return out                     # abstract / illustrative scene (no ground, floor or draw.floor): nothing is meant to stand
+    order = {id(it): i for i, it in enumerate(items)}
     for it in items:
         st = it.get("stands")
         if not st or st["air"] or it["moving"] or it.get("blur", 0) >= 2:
@@ -334,14 +337,19 @@ def _support(fr, items):
         if not xs:
             continue
         under = lambda x: [sf for sf in surfaces if sf is not it and sf["box"][0] <= x <= sf["box"][2] and sf["box"][1] <= y <= sf["box"][3]]
+        # a base hidden behind something drawn in front of it (the front row of machines, a counter) cannot be seen floating
+        hidden = lambda x: any(order[id(o)] > order[id(it)] and (o.get("stands") or o.get("surface")) and o["op"] >= 0.9
+                               and o["box"][0] <= x <= o["box"][2] and o["box"][1] <= y <= o["box"][3] for o in items)
         found = [under(x) for x in xs]
-        if not all(found):
+        if not all(f or hidden(x) for f, x in zip(found, xs)):
             out.append(("warn", "support", it["path"], f"{_label(it)} висит в воздухе: под основанием нет земли/пола (виден фон) — "
                         f"поставьте под него поверхность на том же par или утопите основание в землю", [b]))
             continue
         P = lambda q: 1 if q.get("par") is None else q["par"]
         par = P(it)
         under_all = [sf for f in found for sf in f]
+        if not under_all:
+            continue
         if not any(abs(P(sf) - par) <= PAR_TOL for sf in under_all):
             # another parallax layer: harmless while the camera keeps them together, a gap once it moves them apart —
             # remember the base height over the surface's top edge; run() warns when it drifts during the shot

@@ -320,7 +320,8 @@ function layoutOf(it, out, parentPath, parentMoving) {
   if (!it.parent && (it.spec.space ?? "world") !== "screen") {
     rec.par = it.layer ? it.layer.par : 1;
     if (GROUNDED.has(it.spec.actor) || it.def.grounded) rec.stands = { air: !!it.spec.air };
-    if (SURFACES.has(it.spec.actor) || it.def.surface) rec.surface = true;
+    // "floor": a real ground/floor (turns the check on for the shot); true: something one can stand on (shape, image…)
+    if (SURFACES.has(it.spec.actor) || it.def.surface) rec.surface = it.def.surface || ["ground", "street", "room"].includes(it.spec.actor) ? "floor" : true;
   }
   if (it.poseClamped) rec.pose_clamped = it.poseClamped;
   // appears with a hard cut (no enter, no reveal/count/opacity animation) after the shot has started
