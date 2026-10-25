@@ -37,6 +37,7 @@ FLOOR_TOL = 8                     # px: a grounded object farther than this from
 SUPPORT_PROBE = 4                 # px below an object's base where its surface must be
 PAR_TOL = 0.02                    # an object and its surface must share the parallax layer (par) within this
 DRIFT_TOL = 5                     # px: on different layers, a base moving more than this against its surface = visible gap/slide
+EDGE_ZONE = 60                    # px: … but only near the surface's top edge (horizon) — deeper in a plain ground it is invisible
 BACKDROP_FAR = 1                  # an outdoor shot (sky) needs at least this many far elements (par < 1) besides sky/stars/clouds
 SKYISH = {"sky", "stars", "cloud", "particles"}
 MAX_TEXTS = 5                     # more simultaneous prominent texts (besides captions) = cluttered frame
@@ -330,19 +331,22 @@ def _support(fr, items):
         if y >= H or b[2] <= 0 or b[0] >= W or b[2] - b[0] < 12:
             continue                   # base below the frame edge (foreground) or off screen
         xs = [x for x in (b[0] + (b[2] - b[0]) * k for k in (0.2, 0.5, 0.8)) if 0 <= x < W]
+        if not xs:
+            continue
         under = lambda x: [sf for sf in surfaces if sf is not it and sf["box"][0] <= x <= sf["box"][2] and sf["box"][1] <= y <= sf["box"][3]]
         found = [under(x) for x in xs]
         if not all(found):
             out.append(("warn", "support", it["path"], f"{_label(it)} висит в воздухе: под основанием нет земли/пола (виден фон) — "
                         f"поставьте под него поверхность на том же par или утопите основание в землю", [b]))
             continue
-        par = it.get("par", 1)
+        P = lambda q: 1 if q.get("par") is None else q["par"]
+        par = P(it)
         under_all = [sf for f in found for sf in f]
-        if not any(abs((sf.get("par") or 1) - (par or 1)) <= PAR_TOL for sf in under_all):
+        if not any(abs(P(sf) - par) <= PAR_TOL for sf in under_all):
             # another parallax layer: harmless while the camera keeps them together, a gap once it moves them apart —
             # remember the base height over the surface's top edge; run() warns when it drifts during the shot
-            sf = min(under_all, key=lambda q: abs((q.get("par") or 1) - (par or 1)))
-            out.append(("drift", "support", it["path"] + ":par", (b[3] - sf["box"][1], par, sf.get("par") or 1, _label(it)), [b]))
+            sf = min(under_all, key=lambda q: abs(P(q) - par))
+            out.append(("drift", "support", it["path"] + ":par", (b[3] - sf["box"][1], par, P(sf), _label(it)), [b]))
     if any(it["actor"] == "sky" for it in items) and any(it.get("stands") for it in items):
         far = [it for it in items if it.get("par", 1) < 1 and it["actor"] not in SKYISH and not it.get("surface")]
         if len(far) < BACKDROP_FAR:
@@ -380,7 +384,7 @@ def run(pid, step=12):
             per_frame.setdefault(fr["image"], []).append((lvl, boxes))
     for (shot, key), seq in drift.items():
         dys = [m[0] for _, m, _ in seq]
-        if max(dys) - min(dys) > DRIFT_TOL:
+        if max(dys) - min(dys) > DRIFT_TOL and min(dys) < EDGE_ZONE:
             _, (dy, par, spar, lab), boxes = seq[0]
             found[("warn", "support", shot, key)] = {
                 "level": "warn", "kind": "support", "shot": shot, "t0": seq[0][0], "t1": seq[-1][0], "n": len(seq), "boxes": boxes,
