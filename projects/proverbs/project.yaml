@@ -269,6 +269,7 @@ scenes:
     shots:
       - id: r_bench
         plate: bench
+        captions_top: 1470
         transition: {type: dissolve, dur: 0.5}
         camera:
           keys: [{t: 0, z: 1.04, x: 648, y: 1250}, {t: end, z: 1.14, x: 660, y: 1330}]
