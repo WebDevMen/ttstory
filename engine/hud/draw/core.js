@@ -172,6 +172,10 @@ export const REAL = {
 };
 // actors that stand on the ground (origin = bottom): with `draw.floor` they are checked for floor contact
 export const GROUNDED = new Set(["person", "slot_machine", "desk", "streetlight", "tree", "house", "building", "school", "lockers"]);
+// surfaces things stand on: the layout audit checks that every grounded object (above, or a project actor with
+// `grounded: true` on its def) has one right under its base, on the same parallax layer (docs/DRAW.md §10.6).
+// Project actors that are surfaces declare `surface: true` on their def.
+export const SURFACES = new Set(["ground", "street", "room", "shape", "image", "svg", "sketch", "poker_table"]);
 
 // ------------------------------------------------------------------ items
 const UNIVERSAL = new Set(["actor", "id", "x", "y", "scale", "sx", "sy", "rot", "opacity", "flip", "par", "space", "at", "until",

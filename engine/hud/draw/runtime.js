@@ -2,7 +2,7 @@
 // Open /engine/hud/draw.html?project=<id>; window.drawShotFrame(shotId, frame) draws one frame of one shot and returns
 // {cam, anchors} for the scene layer / HUD. Actors: engine/hud/draw/actors/* + projects/<id>/actors/*.js.
 import * as lib from "../lib.js";
-import { Item, ease, track, mix, noise, rng, hex, smoothPath, isTrack, TEXTY, SLOTS, GROUNDED } from "./core.js";
+import { Item, ease, track, mix, noise, rng, hex, smoothPath, isTrack, TEXTY, SLOTS, GROUNDED, SURFACES } from "./core.js";
 import BUILTIN from "./actors/index.js";
 import rough from "../vendor/rough.esm.js";
 
@@ -315,6 +315,12 @@ function layoutOf(it, out, parentPath, parentMoving) {
   const floor = H.shot && H.shot.draw && H.shot.draw.floor;
   if (floor != null && !it.parent && GROUNDED.has(it.spec.actor) && (it.spec.space ?? "world") !== "screen" && (it.layer?.par ?? 1) === Number(H.shot.draw.floor_par ?? 1)) {
     rec.ground = { y: Math.round(it.v("y", 0)), floor, air: !!it.spec.air };
+  }
+  // support: grounded objects need a surface under their base on the same parallax layer (layout audit «support»)
+  if (!it.parent && (it.spec.space ?? "world") !== "screen") {
+    rec.par = it.layer ? it.layer.par : 1;
+    if (GROUNDED.has(it.spec.actor) || it.def.grounded) rec.stands = { air: !!it.spec.air };
+    if (SURFACES.has(it.spec.actor) || it.def.surface) rec.surface = true;
   }
   if (it.poseClamped) rec.pose_clamped = it.poseClamped;
   // appears with a hard cut (no enter, no reveal/count/opacity animation) after the shot has started

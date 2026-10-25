@@ -44,7 +44,8 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 - Prompt formula: `Vertical 9:16 frame. <camera/POV> <subject + action + environment> <light/atmosphere> <style tail>. No text, no letters, no UI, no watermark.` Ask for a clear foreground/background (parallax), room for the HUD, and visible "animatable" elements (water, neon, steam, windows, lamps).
 - Composition rule for the motion method: the subject in the lower two thirds, the top third calm and empty for titles; the recurring hero described with identical words in every prompt.
 - Generate with Figma AI when available: `create_new_file` (plan from `whoami`) once → `create_session` → `generate_image` with `model: gemini-3.1-flash-image`, `width: 1152`, `height: 2048`. Download `image.url` immediately with curl into `projects/<id>/plates/<name>.png`. These calls spend the user's Figma AI credits: generate only what the plan needs (typically 5–10 frames) and report the count. Without Figma, ask the user for images from any generator (9:16) or use their photos.
-- Look at all frames together (contact sheet). Regenerate any frame with broken hands, gibberish text in a visible place, or a mismatched palette.
+- Ask for depth in every prompt: a layered background (distant city / hills / forest), atmospheric haze, objects firmly standing on the ground with contact shadows.
+- Look at all frames together (contact sheet). Regenerate any frame with broken hands, gibberish text in a visible place, a mismatched palette, objects floating above the ground, or an empty flat background.
 - Save every prompt in the shot's `prompt:` field or in `plates/PROMPTS.md`.
 
 ## 2a. Motion-graphics shots (`motion:`) — method `motion`
@@ -60,6 +61,7 @@ Characters, places, situations → AI illustrations (`plate:`) in ONE style bibl
 
 ## 2b. Code-drawn shots (`draw:`) — method `draw` (default)
 
+0. Build depth before details (`docs/DRAW.md` §10.6): sky wider than the frame; 2–3 background planes (distant city / hills / forest at `par 0.15–0.25`, middle plane at `par 0.3–0.6`), **each on its own ground strip with the same `par`** and the bases sunk into it; lighter and hazier with distance, a haze band on the horizon; life in the backdrop (smoke, lights, birds, particles). Mark project actors `grounded: true` / `surface: true`.
 1. After `voice` + `compile`, dump the word timings (`build/<id>/timeline.json` → `words`) and plan one composition per shot: background (`sky` with `hour`, `room`, `bg` gradient), 2–3 depth planes (`par: 0` sky, `0.3–0.6` far, `1` main, `1.1–1.2` foreground), the main subject (characters `person`/`classroom`, objects, `phone`, `map`, `chart`…), and 1–3 word-timed accents (`badge`, `callout`, `text` with `reveal`, `prop`, pose/face changes). Every element that appears gets `at: "@word"`, an `enter`, and usually `sfx`.
 2. Camera always moves (`camera.keys` push-in, panorama in a wider `world`, `follow`). Keep scene effects for life: falling petals, steam, glow, sparkles.
 3. Layout: marker y≈214, main art y 300–1150, captions over a floor/road band (`captions_top`), decor only below y 1550; hide captions when a big kinetic title says the same (`theme.captions.hide`). Labels over a panning world: `space: screen`.
@@ -102,7 +104,7 @@ The user explicitly requires neat, consistent graphics: no text touching or cut 
 ```bash
 python3 vg.py layout <id>        # after compile; build/<id>/layout/sheet.jpg shows every issue boxed
 ```
-Fix until **0 errors and ≤ 3 warnings**, and keep a warning only when it is deliberate (say which and why in the final note). Besides layout it reports proportions, floor contact, clamped poses, clutter, pop-ins, contrast, exposure and motion (jumps, jitter, flicker). Then look at the start, middle and end of every shot (`preview --at`) for what automation cannot judge: uneven gaps, ragged stacks, mismatched styles, parts of a composite drawing out of place. Never start the full render with known sloppy placement.
+Fix until **0 errors and ≤ 3 warnings**, and keep a warning only when it is deliberate (say which and why in the final note). Besides layout it reports proportions, floor contact, clamped poses, clutter, pop-ins, contrast, exposure and motion (jumps, jitter, flicker). It also reports `[support]` (a grounded object with nothing under its base, or standing on ground of another parallax layer — a gap opens when the camera moves) and `[backdrop]` (only sky behind the subject). Then look at the start, middle and end of every shot (`preview --at`) for what automation cannot judge — go through the «fresh eyes» checklist of `docs/DRAW.md` §10.6: floating or sliding objects, empty or flat backdrop, background showing at frame edges, repeated stamps, inconsistent light, a world that does not match itself, uneven gaps, ragged stacks, mismatched styles, parts of a composite drawing out of place. Never start the full render with known sloppy placement.
 
 ## 5c. Storyboard approval
 

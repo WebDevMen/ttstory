@@ -8,7 +8,9 @@ of docs/DRAW.md §10 («Аккуратность»):
   ! text closer than MARGIN to the frame edge · two texts overlapping · captions over a text or over a key object ·
     text in a platform UI zone (top bar, bottom caption/nick zone, right button column) · «almost centred» texts
     (a few px off the vertical axis) · text too small to read on a phone · objects out of proportion (real sizes) ·
-    an object not standing on the floor · a pose outside natural joint ranges · a cluttered frame · an element that
+    an object not standing on the floor · an object with nothing under its base (it floats over the backdrop) or standing
+    on a surface of another parallax layer (a gap opens when the camera moves) · an empty backdrop (only sky behind the
+    subject: no far planes) · a pose outside natural joint ranges · a cluttered frame · an element that
     pops in without an entrance · low text contrast · a frame too dark or blown out
   motion pass (every 2nd frame): jumps (teleports), jitter, flicker
 
@@ -32,6 +34,11 @@ CENTER_TOL = (6, 40)              # 6..40 px off the axis = «almost centred» (
 MIN_LINE = 27                     # px: a text line lower than this is hard to read on a phone
 PROPORTION = 1.3                  # px-per-metre of two real-sized objects in one plane may differ at most this much
 FLOOR_TOL = 8                     # px: a grounded object farther than this from the floor line floats / sinks
+SUPPORT_PROBE = 4                 # px below an object's base where its surface must be
+PAR_TOL = 0.02                    # an object and its surface must share the parallax layer (par) within this
+DRIFT_TOL = 5                     # px: on different layers, a base moving more than this against its surface = visible gap/slide
+BACKDROP_FAR = 1                  # an outdoor shot (sky) needs at least this many far elements (par < 1) besides sky/stars/clouds
+SKYISH = {"sky", "stars", "cloud", "particles"}
 MAX_TEXTS = 5                     # more simultaneous prominent texts (besides captions) = cluttered frame
 PROMINENT = 50                    # px line height: smaller lines (a receipt, a list) are one composition, not clutter
 MIN_CONTRAST = 0.28               # luminance spread (p95 − p5) inside a text line box
@@ -165,6 +172,7 @@ def _check_frame(fr, prev=None):
             out.append(("warn", "pose", it["path"], f"поза вне естественного диапазона ({it['pose_clamped']}) — исправлена движком, проверьте задумку: {_label(it)}", [it["box"]]))
         if it.get("pop") and not it["moving"]:
             out.append(("warn", "pop", it["path"], f"появляется рывком, без анимации входа (enter): {_label(it)}", [it["box"]]))
+    out += _support(fr, items)
     tops = [it for it in texts if "/" not in it["path"] and max((l[3] - l[1] for l in it["_lines"]), default=0) >= PROMINENT]
     if len(tops) > MAX_TEXTS:
         out.append(("warn", "clutter", "frame", f"перегруженный кадр: {len(tops)} надписей одновременно (> {MAX_TEXTS})", [it["_box"] for it in tops]))
@@ -306,6 +314,43 @@ def _captions_auto(pid, d, data):
     return changed
 
 
+def _support(fr, items):
+    """Grounded objects need a surface right under their base on the same parallax layer, or they hang in the air over the
+    backdrop (or a gap opens between them and the ground when the camera moves); outdoor shots need far planes."""
+    out = []
+    surfaces = [it for it in items if it.get("surface")]
+    if not surfaces:                   # abstract / illustrative scene on a flat background: nothing is meant to stand
+        return out
+    for it in items:
+        st = it.get("stands")
+        if not st or st["air"] or it["moving"] or it.get("blur", 0) >= 2:
+            continue
+        b = it["box"]
+        y = b[3] + SUPPORT_PROBE
+        if y >= H or b[2] <= 0 or b[0] >= W or b[2] - b[0] < 12:
+            continue                   # base below the frame edge (foreground) or off screen
+        xs = [x for x in (b[0] + (b[2] - b[0]) * k for k in (0.2, 0.5, 0.8)) if 0 <= x < W]
+        under = lambda x: [sf for sf in surfaces if sf is not it and sf["box"][0] <= x <= sf["box"][2] and sf["box"][1] <= y <= sf["box"][3]]
+        found = [under(x) for x in xs]
+        if not all(found):
+            out.append(("warn", "support", it["path"], f"{_label(it)} висит в воздухе: под основанием нет земли/пола (виден фон) — "
+                        f"поставьте под него поверхность на том же par или утопите основание в землю", [b]))
+            continue
+        par = it.get("par", 1)
+        under_all = [sf for f in found for sf in f]
+        if not any(abs((sf.get("par") or 1) - (par or 1)) <= PAR_TOL for sf in under_all):
+            # another parallax layer: harmless while the camera keeps them together, a gap once it moves them apart —
+            # remember the base height over the surface's top edge; run() warns when it drifts during the shot
+            sf = min(under_all, key=lambda q: abs((q.get("par") or 1) - (par or 1)))
+            out.append(("drift", "support", it["path"] + ":par", (b[3] - sf["box"][1], par, sf.get("par") or 1, _label(it)), [b]))
+    if any(it["actor"] == "sky" for it in items) and any(it.get("stands") for it in items):
+        far = [it for it in items if it.get("par", 1) < 1 and it["actor"] not in SKYISH and not it.get("surface")]
+        if len(far) < BACKDROP_FAR:
+            out.append(("warn", "backdrop", "frame", "пустой фон: за объектами только небо — добавьте дальние планы "
+                        "(город, руины, холмы, лес) со своей землёй и дымкой (docs/DRAW.md §10.6)", []))
+    return out
+
+
 def run(pid, step=12):
     """Analyse build/<pid>/layout/frames.json (written by render_hud.cjs layout). Returns (errors, warnings, captions_changed)."""
     d = build_dir(pid, "layout")
@@ -313,6 +358,7 @@ def run(pid, step=12):
     caps_changed = _captions_auto(pid, d, data)
     found = {}                     # (level, kind, shot, key) -> issue with a time range
     per_frame = {}
+    drift = {}                     # (shot, key) -> [(t, (base over surface top, par, surface par, label), boxes)]
     prev = None
     for fr in data["frames"]:
         same = prev if prev and prev["shot"] == fr["shot"] else None
@@ -320,6 +366,9 @@ def run(pid, step=12):
         found_frame = _check_frame(fr, same)
         _pixels(d, fr, found_frame)
         for lvl, kind, key, msg, boxes in found_frame:
+            if lvl == "drift":                 # collected over the shot, judged below
+                drift.setdefault((fr["shot"], key), []).append((fr["t"], msg, boxes))
+                continue
             k = (lvl, kind, fr["shot"], key)
             g = found.get(k)
             if g:
@@ -329,6 +378,15 @@ def run(pid, step=12):
                 found[k] = {"level": lvl, "kind": kind, "shot": fr["shot"], "t0": fr["t"], "t1": fr["t"], "msg": msg, "n": 1,
                             "frame": fr, "boxes": boxes}
             per_frame.setdefault(fr["image"], []).append((lvl, boxes))
+    for (shot, key), seq in drift.items():
+        dys = [m[0] for _, m, _ in seq]
+        if max(dys) - min(dys) > DRIFT_TOL:
+            _, (dy, par, spar, lab), boxes = seq[0]
+            found[("warn", "support", shot, key)] = {
+                "level": "warn", "kind": "support", "shot": shot, "t0": seq[0][0], "t1": seq[-1][0], "n": len(seq), "boxes": boxes,
+                "frame": next(f for f in data["frames"] if f["shot"] == shot and f["t"] == seq[0][0]),
+                "msg": f"{lab} (par {par}) стоит на земле другого плана (par {spar}) и за шот уплывает относительно неё на "
+                       f"{round(max(dys) - min(dys))} px — дайте плану свою полосу земли с тем же par (docs/DRAW.md §10.6)"}
     for lvl, kind, shot, key, t0, t1, msg in _motion(d):
         found[(lvl, kind, shot, key)] = {"level": lvl, "kind": kind, "shot": shot, "t0": t0, "t1": t1, "msg": msg, "n": 1, "boxes": []}
     issues = sorted(found.values(), key=lambda g: (g["t0"], g["level"] != "err"))

@@ -5,6 +5,7 @@
 // at the deepest notch), rim (colour of the back light on the right edge)
 export const ruin = {
   origin: "bottom",
+  grounded: true,
   create(p, H) {
     const F = p.floors ?? 14, N = p.cols ?? 6, [cw, ch] = p.cell ?? [80, 84];
     const pad = 24, w = N * cw + pad * 2, base = 40, h = F * ch + base;
@@ -115,6 +116,7 @@ export const fire = {
 // pile of concrete debris: w, h, color, seed
 export const rubble = {
   origin: "bottom",
+  grounded: true,
   create(p, H) {
     const w = p.w ?? 420, h = p.h ?? 140, rnd = H.rng(p.seed ?? 9), col = H.col(p.color ?? "#261a16");
     let s = `<path d="M0,${h} Q${w * 0.5},${-h * 0.2} ${w},${h} Z" fill="${H.shade(col, -0.25)}"/>`;
@@ -138,6 +140,7 @@ export const rubble = {
 // abandoned sedan, side view facing right: color, burnt (charred, no tyres), rust (0..1), dust (ash on the roof)
 export const car = {
   origin: "bottom",
+  grounded: true,
   size_m: { w: 4.6 },
   create(p, H) {
     const w = 464, h = 158, id = H.uid("car"), rnd = H.rng(p.seed ?? 3);

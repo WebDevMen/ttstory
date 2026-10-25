@@ -6,7 +6,7 @@ import re
 
 import yaml
 
-from ..common import ROOT, project_dir
+from ..common import ROOT, load_yaml, project_dir
 
 DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 _KB = {}
@@ -16,7 +16,7 @@ def kb(name):
     """formats | hooks | devices | platforms"""
     if name not in _KB:
         with open(os.path.join(DATA, f"{name}.yaml"), encoding="utf-8") as f:
-            _KB[name] = yaml.safe_load(f)
+            _KB[name] = load_yaml(f)
     return _KB[name]
 
 
@@ -99,7 +99,7 @@ def load(pid):
         raise FileNotFoundError(f"{path} not found — create it: python3 vg.py script new {pid} --topic \"...\"")
     with open(path, encoding="utf-8") as f:
         try:
-            s = yaml.safe_load(f) or {}
+            s = load_yaml(f) or {}
         except yaml.YAMLError as e:
             raise ValueError(f"{os.path.relpath(path, ROOT)}: ошибка YAML — {e}") from None
     if not isinstance(s, dict):
