@@ -47,7 +47,7 @@ KPIS = ["completion", "rewatch", "shares", "saves", "comments", "follows", "like
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
-STYLES = ("motion", "draw", "plates", "mixed")
+STYLES = ("draw", "motion", "plates", "mixed")
 # blocks of the motion engine (engine/motion/src/Shot.tsx, docs/MOTION.md §4) — shots name them as motion:<block>
 MOTION_BLOCKS = ["kicker", "title", "text", "number", "proverb", "versus", "bars", "meter", "checklist", "badge", "stamp", "source",
                  "comment", "icon", "card", "sprite", "spacer", "swap", "row"]
@@ -311,7 +311,7 @@ def validate(s, iss):
     dur = meta.get("duration", 60)
     if not isinstance(dur, (int, float)) or not 10 <= dur <= 180:
         iss.error("schema", "meta.duration", "длительность — число секунд от 10 до 180")
-    if meta.get("style", "motion") not in STYLES:
+    if meta.get("style", "draw") not in STYLES:
         iss.error("schema", "meta.style", "style: " + " | ".join(STYLES))
 
     brief = s.get("brief") or {}

@@ -139,7 +139,7 @@ def add_parser(sub):
     x = ss.add_parser("new"); x.add_argument("id"); x.add_argument("--topic", required=True)
     x.add_argument("--format", default="explainer", choices=list(model.formats()))
     x.add_argument("--duration", type=int, default=60); x.add_argument("--platforms", default="tiktok,reels,shorts")
-    x.add_argument("--wishes"); x.add_argument("--style", default="motion", choices=["motion", "draw", "plates", "mixed"])
+    x.add_argument("--wishes"); x.add_argument("--style", default="draw", choices=["draw", "motion", "plates", "mixed"])
     x.add_argument("--voice"); x.add_argument("--rate"); x.add_argument("--force", action="store_true"); x.set_defaults(fn=cmd_new)
     x = ss.add_parser("check"); x.add_argument("id"); x.add_argument("--tts", action="store_true"); x.set_defaults(fn=cmd_check)
     x = ss.add_parser("render"); x.add_argument("id"); x.add_argument("--tts", action="store_true"); x.set_defaults(fn=cmd_render)

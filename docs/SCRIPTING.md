@@ -167,7 +167,7 @@ python3 vg.py script project blackout                # черновик projects
 ```yaml
 version: 1
 meta:       {title, topic, wishes, language: ru, platforms: [tiktok, reels, shorts], primary_platform,
-             duration: 60, format: what_if, style: draw | plates | mixed,
+             duration: 60, format: what_if, style: draw | motion | plates | mixed,   # draw — по умолчанию; как выбрать — MANUAL.md §0
              voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz"}, status: draft | checked | approved}
 brief:      {goal, kpi: [completion rewatch shares saves comments follows likes clicks monetization],
              audience: {who, age, interests: [], pains: [], desires: [], knowledge},

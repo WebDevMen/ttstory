@@ -64,7 +64,7 @@ def build(s, pid):
     cap_style = theme.get("captions", "clean")
     music = prod.get("music") if isinstance(prod.get("music"), dict) else {}
     beats = [b for b in s.get("beats") or [] if isinstance(b, dict) and b.get("id")]
-    style = meta.get("style", "motion")
+    style = meta.get("style", "draw")
 
     L = []
     w = L.append

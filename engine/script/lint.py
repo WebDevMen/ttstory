@@ -172,7 +172,7 @@ def run(s, pid=None, tts=False):
                         iss.error("actor", sw, f"нет HUD-компонента '{a[4:]}'")
                 elif a not in actors:
                     iss.error("actor", sw, f"нет актёра '{a}' — выберите из `vg.py actors` или пометьте new:{a}")
-            if meta.get("style", "motion") in ("draw", "motion") and not sh.get("actors"):
+            if meta.get("style", "draw") in ("draw", "motion") and not sh.get("actors"):
                 iss.warn("visual", sw, "кадр без актёров/блоков — из чего он будет нарисован?")
             for key in ("animation", "graphics", "sfx"):
                 for ev in sh.get(key) or []:

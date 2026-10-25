@@ -15,7 +15,7 @@ meta:
   primary_platform: tiktok
   duration: 60
   format: listicle
-  style: draw
+  style: motion
   voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz"}
   status: checked
 

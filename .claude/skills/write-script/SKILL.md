@@ -11,7 +11,7 @@ The deliverable is `projects/<id>/script.yaml` that passes `script check` (0 err
 
 ## 0. Intake (no unnecessary questions)
 
-Take from the request: topic, wishes, platforms, duration, voice, style. Defaults when not given: 60 s, platforms `tiktok,reels,shorts` (TikTok primary), Russian, `ru-RU-DmitryNeural +18%` (Svetlana for soft/cultural topics), `style: motion` (AI illustrations + motion graphics). Ask the user only if the topic itself is ambiguous enough that two readings lead to different videos. Pick a short latin `id` (e.g. `blackout`).
+Take from the request: topic, wishes, platforms, duration, voice, style. Defaults when not given: 60 s, platforms `tiktok,reels,shorts` (TikTok primary), Russian, `ru-RU-DmitryNeural +18%` (Svetlana for soft/cultural topics), `style: draw` (own code-drawn graphics). Ask the user only if the topic itself is ambiguous enough that two readings lead to different videos — and about the graphics method: take it from the request («своя графика / без нейросетей / как школа» → `draw`, «иллюстрации / ИИ-картинки / моушн / как пословицы» → `motion`, «как танкер / чай / AI-кадры» → `plates`); if the request says nothing about graphics, ask once (AskUserQuestion: `draw` recommended, `motion`, `plates`), and if nobody can answer use `draw`. Pass it as `script new … --style <method>`. Pick a short latin `id` (e.g. `blackout`).
 
 ## 1. Research (web) — before writing anything
 
@@ -40,7 +40,8 @@ Follow docs/SCRIPTING.md §7: 2.2–2.8 words/s (60 s ≈ 140–150 words), one 
 
 ## 5. Visual direction (this is what makes it watchable)
 
-- Default style is `motion` (docs/MOTION.md): characters and situations are AI illustrations — name them `art:<name>` in `actors` (one style bible for the whole video, subject in the lower two thirds, top third free for titles); facts, numbers, comparisons, sayings and calls to action are motion-graphics blocks — `motion:<block>` (`title number proverb versus bars meter checklist stamp badge comment card kicker source`, catalogue in docs/MOTION.md §4). Alternate illustration → graphic → illustration every 2–5 s. Legacy `draw` actors (`python3 vg.py actors`, docs/DRAW.md §7) only when the user asks for that style; mark missing ones `new:<name>`. Sounds/ambiences/transitions/music: `python3 vg.py script formats`.
+- Style `draw` (default, docs/DRAW.md): name actors from `python3 vg.py actors` (§7 of DRAW.md) in `actors`; mark missing ones `new:<name>`.
+- Style `motion` (only when chosen, docs/MOTION.md): characters and situations are AI illustrations — name them `art:<name>` in `actors` (one style bible for the whole video, subject in the lower two thirds, top third free for titles); facts, numbers, comparisons, sayings and calls to action are motion-graphics blocks — `motion:<block>` (`title number proverb versus bars meter checklist stamp badge comment card kicker source`, catalogue in docs/MOTION.md §4). Alternate illustration → graphic → illustration every 2–5 s. Sounds/ambiences/transitions/music: `python3 vg.py script formats`.
 - 1–4 shots per beat; cut 0.1–0.2 s before the key word (`at: "@слово-0.1"`). For every shot: `visual` (subject, action, foreground/mid/background, color/light), `actors`, `camera` (it always moves), `animation` (what moves on which word), `graphics` (≤ 7 words), `sfx` (a sound on every visual hit), `transition`.
 - Rhythm: two events in the first 1.5 s, a new visual event every 2–3 s, no shot shorter than 0.6 s, events inside their own shot. Color and music follow the emotion curve (`music` per beat). The final frame echoes the first.
 

@@ -1,20 +1,26 @@
 ---
 name: make-video
-description: Create a vertical (9:16) social video — TikTok / Shorts / Reels — from a script with this repo's engine (AI keyframes + 2.5D depth-parallax animation, or code-drawn scenes from the draw actor library; HTML/three.js HUD + procedural sound). Use whenever the user asks for a new video/ролик, own/controllable graphics ("своя графика", "без нейросетей", motion design, explainer), a different style or story, changes to an existing project in projects/, or "сделай как танкер/школа".
+description: Create a vertical (9:16) social video — TikTok / Shorts / Reels — from a script with this repo's engine (code-drawn scenes from the draw actor library by default, or on request AI illustrations + Remotion motion graphics, or AI keyframes + 2.5D depth-parallax; HTML/three.js HUD + procedural sound). Use whenever the user asks for a new video/ролик, own/controllable graphics ("своя графика", "без нейросетей", motion design, explainer), a different style or story, changes to an existing project in projects/, or "сделай как танкер/школа".
 ---
 
 # make-video — production workflow
 
-The repo turns `projects/<id>/project.yaml` + keyframe images into a finished MP4. Read `docs/MOTION.md` (the default graphics method), `docs/MANUAL.md` (process, style recipes, quality checklist) and `docs/REFERENCE.md` (every key) before writing a project.
+The repo turns `projects/<id>/project.yaml` + keyframe images into a finished MP4. Read `docs/MANUAL.md` (process, style recipes, quality checklist; §0 — how to choose the graphics method) and `docs/REFERENCE.md` (every key) before writing a project, plus the docs of the chosen method: `docs/DRAW.md` or `docs/MOTION.md`.
 
-**Default method (use it for every new video unless the user asks otherwise): illustrated video + motion graphics.**
-- Characters, places, situations → AI illustrations (`plate:`) in ONE style bible, 2.5D parallax + effects. Never draw people with the `person` puppet for new videos.
-- Facts, numbers, comparisons, sayings, rules, calls to action → `motion:` scenes (engine/motion, Remotion): blocks in a flex column (`kicker`, `title`, `number`, `proverb`, `versus`, `bars`, `meter`, `checklist`, `stamp`, `comment`…), spring motion, one design system. No hand-placed coordinates.
-- Text over an illustration → `motion:` on the plate shot with `align: top` + `scrim` (the art keeps its top third empty for it).
-- Reference: `projects/proverbs/project.yaml`. Catalogue of blocks and keys: `docs/MOTION.md` §3–4.
-- The old `draw:` actor scenes remain for existing projects and special cases; don't start new videos with them. Use `projects/tanker/project.yaml` (dynamic sci-fi, 61 s) and `projects/tea/project.yaml` (calm painted look, 36 s) as templates: copy their patterns, not their content.
+**Choose the graphics method first (the user decides; never switch it on your own):**
 
-A shot's picture is either an AI keyframe (`plate:`) or a **code-drawn scene** (`draw:` — actors from `engine/hud/draw/actors`, see `docs/DRAW.md`; template: `projects/school/project.yaml`, 59 s, no AI images at all; visual catalog: `projects/gallery`). Use `draw:` when the user wants controllable/own graphics, motion design, explainers, infographics, characters that act on words, UI/phone/map/chart scenes, or when no image generator is available. Mixing both kinds in one video is fine.
+| Method | What it is | Docs / reference | Pick it when the request says… |
+|---|---|---|---|
+| `draw` — **default** | own graphics drawn by code: actor library, camera, parallax, word-timed animation; no AI images, no credits | `docs/DRAW.md`, §2b below; `projects/school`, `slots`, `superuser`, `blame` | «своя графика», «без нейросетей», «кодом», «как школа / как казино / как раньше», or nothing about graphics and the user confirmed the default |
+| `motion` | AI illustrations (Figma AI credits) for characters and places + Remotion motion graphics (blocks, flex layout, spring motion) | `docs/MOTION.md`, §2 + §2a below; `projects/proverbs` | «иллюстрации», «ИИ-картинки», «нейросеть», «моушн», «Remotion», «как пословицы» |
+| `plates` | AI keyframes with 2.5D depth parallax | §2 below; `projects/tanker`, `projects/tea` | «как танкер», «как чай», «кинематографично», «AI-кадры» |
+| `mixed` | combination of the above in one video | — | the user asks for a mix |
+
+- Source of the choice, in order: the user's words in this request → `meta.style` in `projects/<id>/script.yaml` → the method an existing project already uses.
+- If none of them settles it, ask the user once before writing anything (AskUserQuestion: `draw` first and marked recommended, `motion`, `plates`). If nobody can answer (an automated run), use `draw` and say so in the final note.
+- Write the chosen method into `script.yaml` `meta.style` so later steps follow it.
+
+A shot's picture is an AI keyframe (`plate:`), a **code-drawn scene** (`draw:` — actors from `engine/hud/draw/actors`, see `docs/DRAW.md`; template: `projects/school/project.yaml`, 59 s, no AI images at all; visual catalog: `projects/gallery`) or a **motion-graphics scene** (`motion:`, optionally over a plate). Mixing kinds in one video is fine when the chosen method is `mixed`.
 
 The quality bar is the tanker video: every shot moves (camera + parallax + at least one living layer), every HUD item and sound is tied to a spoken word, captions are readable, and the audio is layered and normalized.
 
@@ -32,7 +38,7 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 2. Without a script.yaml: `python3 vg.py new <id> [--from tea|tanker]`, fill in `title`, `voice`, `theme`, and the scenes with `text` and one shot each (plate names you will generate).
 3. `python3 vg.py voice <id> && python3 vg.py compile <id>` → check the duration. Trim or extend the text **before** generating images.
 
-## 2. Style bible → keyframes
+## 2. Style bible → keyframes (methods `motion`, `plates`; skip for `draw`)
 
 - Pick one style tail and use it on every prompt (see MANUAL §5.2 and §13). Describe recurring objects (hands, gloves, sleeves, the hero item) with identical words in every prompt.
 - Prompt formula: `Vertical 9:16 frame. <camera/POV> <subject + action + environment> <light/atmosphere> <style tail>. No text, no letters, no UI, no watermark.` Ask for a clear foreground/background (parallax), room for the HUD, and visible "animatable" elements (water, neon, steam, windows, lamps).
@@ -41,7 +47,9 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 - Look at all frames together (contact sheet). Regenerate any frame with broken hands, gibberish text in a visible place, or a mismatched palette.
 - Save every prompt in the shot's `prompt:` field or in `plates/PROMPTS.md`.
 
-## 2a. Motion-graphics shots (`motion:`) — the default for every non-character beat
+## 2a. Motion-graphics shots (`motion:`) — method `motion`
+
+Characters, places, situations → AI illustrations (`plate:`) in ONE style bible, 2.5D parallax + effects; facts, numbers, comparisons, sayings, rules, calls to action → `motion:` scenes (blocks `kicker`, `title`, `number`, `proverb`, `versus`, `bars`, `meter`, `checklist`, `stamp`, `comment`…, no hand-placed coordinates); text over an illustration → `motion:` on the plate shot with `align: top` + `scrim`. Reference: `projects/proverbs/project.yaml`; catalogue: `docs/MOTION.md` §3–4.
 
 1. After `voice` + `compile`, plan each beat as *illustration → graphic → illustration*: a new picture or graphic event every 2–5 s.
 2. Write blocks, not coordinates (`docs/MOTION.md` §4): one kicker, one main element (title / number / proverb / bars / versus / meter), at most one supporting element (stamp / badge / source). Tie every `at` to the spoken word (`"@word"`), use `sync: true` on titles that repeat the voice, `swap` when one element replaces another in place.
@@ -50,7 +58,7 @@ Long steps (`prep`, `scene`, `hud`, `all`, `mux`) must run with `run_in_backgrou
 5. Shots over illustrations: `plate:` + `motion:` with `align: top` and `scrim`; keep text off faces.
 6. Missing block type → add a component in `engine/motion/src/blocks/` and register it (docs/MOTION.md §8), then document it.
 
-## 2b. Code-drawn shots (`draw:`) — legacy actor scenes
+## 2b. Code-drawn shots (`draw:`) — method `draw` (default)
 
 1. After `voice` + `compile`, dump the word timings (`build/<id>/timeline.json` → `words`) and plan one composition per shot: background (`sky` with `hour`, `room`, `bg` gradient), 2–3 depth planes (`par: 0` sky, `0.3–0.6` far, `1` main, `1.1–1.2` foreground), the main subject (characters `person`/`classroom`, objects, `phone`, `map`, `chart`…), and 1–3 word-timed accents (`badge`, `callout`, `text` with `reveal`, `prop`, pose/face changes). Every element that appears gets `at: "@word"`, an `enter`, and usually `sfx`.
 2. Camera always moves (`camera.keys` push-in, panorama in a wider `world`, `follow`). Keep scene effects for life: falling petals, steam, glow, sparkles.

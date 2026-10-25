@@ -59,7 +59,7 @@ def hook_type_plan(fmt, n=8):
     return [order[i % len(order)] for i in range(n)] if len(order) >= 4 else (order * n)[:n]
 
 
-def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="motion", voice=None, rate=None):
+def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="draw", voice=None, rate=None):
     fmts = model.formats()
     if fmt_id not in fmts:
         raise SystemExit(f"unknown format '{fmt_id}' — python3 vg.py script formats")
@@ -102,7 +102,7 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="mot
     w(f"  primary_platform: {platforms[0]}")
     w(f"  duration: {duration}                    # цель, секунды (проверка: ±12%)")
     w(f"  format: {fmt_id}                 # {fmt['name']} · все форматы: python3 vg.py script formats")
-    w(f"  style: {style}                      # motion (иллюстрации + моушн-графика, по умолчанию) | draw (старые актёры) | plates | mixed")
+    w(f"  style: {style}                      # draw (своя графика кодом, по умолчанию) | motion (ИИ-иллюстрации + моушн-графика) | plates (AI-кадры) | mixed")
     w(f"  voice: {{voice: {vo['voice']}, rate: {q(vo['rate'])}, pitch: {q(vo['pitch'])}}}")
     w("  status: draft                    # draft → checked → approved")
     w("")
@@ -158,7 +158,7 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="mot
         w("    shots:")
         w(f"      - id: {bid}_a")
         w(f"        visual: {q(TODO)}          # что в кадре: объект, действие, планы (передний / средний / фон), цвет")
-        w("        actors: []                 # art:<иллюстрация> (персонажи, места) · motion:<блок> (title number proverb bars versus meter stamp…) · hud:<компонент> · старые актёры draw")
+        w("        actors: []                 # актёры draw: python3 vg.py actors · art:<иллюстрация> и motion:<блок> — для style: motion · hud:<компонент> · new:<имя> если такого нет")
         w(f"        camera: {q(TODO)}          # движение камеры: наезд, панорама, облёт, тряска на ударе…")
         w("        animation:                 # что двигается и на каком слове")
         w(f"          - {{at: \"@start\", what: {q(TODO)}}}")
@@ -203,7 +203,7 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="mot
     return "\n".join(L) + "\n"
 
 
-def run(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="motion", voice=None, rate=None, force=False):
+def run(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="draw", voice=None, rate=None, force=False):
     path = model.script_path(pid)
     if os.path.exists(path) and not force:
         raise SystemExit(f"{os.path.relpath(path)} already exists (--force to overwrite)")
