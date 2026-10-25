@@ -907,7 +907,24 @@ def render_shot(shot, t):
     img = bloom(ctx.img, b[0], b[1], b[2] if len(b) > 2 else (1, 1, 1))
     g = {"exposure": 1.0, "contrast": 0.12, "sat": 1.05, "lift": [0, 0, 0], "gain": [1, 1, 1], **(look.get("grade") or {})}
     img = grade(img, g["exposure"], g["contrast"], g["sat"], g["lift"], g["gain"])
+    if shot.get("motion") is not None and shot.get("plate"):
+        img = motion_overlay(img, shot, t)
     return img, cam
+
+
+def motion_overlay(img, shot, t):
+    """Composite the transparent motion-graphics layer (engine/motion) over a plate shot, after grading: crisp graphics."""
+    f = int(round(t * G["fps"]))
+    d = build_dir(G["pid"], "motion", shot["id"])
+    path = next((os.path.join(d, f"{x:05d}.png") for x in (f, f - 1, f + 1) if os.path.exists(os.path.join(d, f"{x:05d}.png"))), None)
+    if path is None:
+        raise FileNotFoundError(f"motion frame {f} of shot {shot['id']} is missing — run: python3 vg.py motion {G['pid']}")
+    rgba = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+    if rgba.shape[2] < 4:
+        return img
+    over = cv2.cvtColor(rgba[..., :3], cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+    a = rgba[..., 3:4].astype(np.float32) / 255.0
+    return img * (1 - a) + over * a
 
 
 # ----------------------------------------------------------------------------- transitions & post

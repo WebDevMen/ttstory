@@ -64,6 +64,7 @@ def build(s, pid):
     cap_style = theme.get("captions", "clean")
     music = prod.get("music") if isinstance(prod.get("music"), dict) else {}
     beats = [b for b in s.get("beats") or [] if isinstance(b, dict) and b.get("id")]
+    style = meta.get("style", "motion")
 
     L = []
     w = L.append
@@ -71,7 +72,13 @@ def build(s, pid):
     w("# Уже готово: голос, сцены с текстом, кадры со сменой на словах и переходами, музыка по блокам, звуки на словах.")
     w("# Вместо картинки каждый кадр — аниматик-карточка (текст на экране + описание кадра): темп можно проверить сразу")
     w(f"# (python3 vg.py voice {pid} && python3 vg.py compile {pid} && python3 vg.py preview {pid} --shots).")
-    w("# Дальше замените layers каждого кадра настоящей графикой по плану из комментариев (skill make-video, docs/DRAW.md).")
+    if style == "motion":
+        w("# Кадры с art:<имя> уже ссылаются на иллюстрацию plates/<имя>.png — сгенерируйте её в одном стиле (docs/MOTION.md §6);")
+        w("# остальные — моушн-графика: доведите блоки по плану из комментариев (skill make-video, docs/MOTION.md).")
+        w("")
+        w("motion: {palette: night}")
+    else:
+        w("# Дальше замените layers каждого кадра настоящей графикой по плану из комментариев (skill make-video, docs/DRAW.md).")
     w("")
     w(f"title: {q(meta.get('title') or pid)}")
     w("")
@@ -146,12 +153,33 @@ def build(s, pid):
             amb = [a for a in amb if a in ambiences]
             if amb:
                 w("        ambience: [" + ", ".join(flow({"sound": a, "gain": -18}) for a in amb) + "]")
+            gtext = next((str(ev["text"]) for ev in sh.get("graphics") or [] if isinstance(ev, dict) and ev.get("text")), None)
+            title = str((b.get("on_screen") if j == 0 else None) or gtext or b.get("title") or sh["id"])
+            if style == "motion":
+                art = next((str(a)[4:] for a in sh.get("actors") or [] if str(a).startswith("art:")), None)
+                if art:          # illustration + graphics on top (the plate must be generated: docs/MOTION.md §6)
+                    w(f"        plate: {art}")
+                    w("        camera: {keys: [{t: 0, z: 1.0, x: 648, y: 1250}, {t: end, z: 1.1, x: 648, y: 1250}], parallax: {px: 10, py: 4, freq: 0.12, k: [0, 0.05]}}")
+                w("        motion:")
+                if art:
+                    w("          scrim: {side: top, k: 0.72, h: 36}")
+                    w("          align: top")
+                w("          blocks:")
+                if j == 0 and not art and b.get("title"):
+                    w("            - " + flow({"type": "kicker", "text": str(b["title"]), "at": 0}))
+                w("            - " + flow({"type": "title", "text": title, "at": 0.1, "size": "l", "lines": 2}))
+                for ev in sh.get("graphics") or []:
+                    if isinstance(ev, dict) and ev.get("text") and str(ev["text"]) != title:
+                        kind = "stamp" if "stamp" in str(ev.get("type", "")) else "badge"
+                        w("            - " + flow({"type": kind, "text": str(ev["text"]), "at": ref(ev.get("at"), bid)}))
+                for ev in sh.get("sfx") or []:
+                    if isinstance(ev, dict) and ev.get("sound") in sounds:
+                        sfx.append({"sound": ev["sound"], "at": ref(ev.get("at"), bid), "gain": -14})
+                continue
             w("        draw:")
             w(f"          bg: {flow(BG)}")
             w("          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}")
             w("          layers:")
-            gtext = next((str(ev["text"]) for ev in sh.get("graphics") or [] if isinstance(ev, dict) and ev.get("text")), None)
-            title = str((b.get("on_screen") if j == 0 else None) or gtext or b.get("title") or sh["id"])
             w("            - " + flow({"actor": "text", "text": title.upper(), "x": 540, "y": 560, "size": 76, "width": 940,
                                         "color": "#ffffff", "at": "@start", "enter": "pop"}))
             w("            - " + flow({"actor": "text", "text": str(sh.get("visual") or ""), "x": 540, "y": 900, "size": 34, "width": 900,

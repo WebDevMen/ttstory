@@ -9,6 +9,7 @@
   python3 vg.py grid <id>                 coordinate grids over the plates (to place anchors, glows, masks, HUD)
   python3 vg.py preview <id> [--at 5,12.5 | --shots]   render a few finished frames (scene + HUD) -> build/<id>/preview/
   python3 vg.py draw <id> [--frames a:b] [--force]      render code-drawn shots (draw:) -> build/<id>/drawn/ (scene runs it too)
+  python3 vg.py motion <id> [--frames a:b] [--force]    render motion-graphics shots (motion:, Remotion) (scene runs it too)
   python3 vg.py actors [id]               list the draw actors (built-in + the project's own)
   python3 vg.py scene <id> [--frames a:b] render the scene layer (all frames by default)
   python3 vg.py audio <id> [--stems]      sound design + music + mix
@@ -148,7 +149,29 @@ def parse_frames(spec, total):
 
 
 def has_draw(tl):
-    return any(s.get("draw") is not None for s in tl["shots"])
+    return any(s.get("draw") is not None and s["draw"].get("engine") != "motion" for s in tl["shots"])
+
+
+def has_motion(tl):
+    return any(s.get("motion") is not None for s in tl["shots"])
+
+
+def run_motion(pid, frames=None, workers=4, force=False):
+    """Render motion-graphics shots (engine/motion, Remotion): all of them, or only the given frames."""
+    mdir = os.path.join(ROOT, "engine", "motion")
+    if not os.path.isdir(os.path.join(mdir, "node_modules")):
+        sys.exit("engine/motion/node_modules is missing — run ./setup.sh (npm install in engine/motion)")
+    args = ["node", os.path.join(mdir, "render.mjs"), pid, str(workers)] + ([str(f) for f in frames] if frames is not None else []) + (["--force"] if force else [])
+    subprocess.run(args, check=True, cwd=mdir)
+
+
+def run_graphics(pid, tl, frames=None, workers=3):
+    if has_draw(tl):
+        step("draw shots")
+        run_draw(pid, frames, workers=workers)
+    if has_motion(tl):
+        step("motion shots")
+        run_motion(pid, frames, workers=max(2, workers))
 
 
 def run_draw(pid, frames=None, workers=3, force=False):
@@ -162,6 +185,13 @@ def cmd_draw(a):
     step("draw shots")
     tl = load_timeline(a.id)
     run_draw(a.id, parse_frames(a.frames, tl["frames"]), workers=a.workers, force=a.force)
+
+
+def cmd_motion(a):
+    from engine.common import load_timeline
+    step("motion shots")
+    tl = load_timeline(a.id)
+    run_motion(a.id, parse_frames(a.frames, tl["frames"]), workers=a.workers, force=a.force)
 
 
 def cmd_actors(a):
@@ -181,9 +211,7 @@ def cmd_scene(a):
     from engine.common import load_timeline
     tl = load_timeline(a.id)
     frames = parse_frames(a.frames, tl["frames"])
-    if has_draw(tl):
-        step("draw shots")
-        run_draw(a.id, frames, workers=min(3, a.workers))
+    run_graphics(a.id, tl, frames, workers=min(3, a.workers))
     step("scene layer")
     scene.run(a.id, frames, workers=a.workers)
 
@@ -221,8 +249,7 @@ def cmd_preview(a):
         times = [float(x) for x in a.at.split(",")]
     frames = [min(tl["frames"] - 1, int(round(t * tl["fps"]))) for t in times]
     step(f"preview {len(frames)} frames: " + ", ".join(f"{t:.2f}s" for t in times))
-    if has_draw(tl):
-        run_draw(a.id, frames, workers=min(3, len(frames)))
+    run_graphics(a.id, tl, frames, workers=min(3, len(frames)))
     scene.run(a.id, frames, workers=min(4, len(frames)))
     run_node(["stills", a.id] + [str(f) for f in frames])
     qa.preview_sheet(a.id, frames)
@@ -261,8 +288,7 @@ def cmd_storyboard(a):
     tl = load_timeline(a.id)
     frames = sorted({f for fs in storyboard.frames(a.id).values() for f in fs})
     step(f"storyboard: {len(frames)} frames (start, middle, end of every shot)")
-    if has_draw(tl):
-        run_draw(a.id, frames, workers=3)
+    run_graphics(a.id, tl, frames, workers=3)
     scene.run(a.id, frames, workers=4)
     run_node(["stills", a.id] + [str(f) for f in frames])
     print(f"  page -> {storyboard.build(a.id)}")
@@ -292,6 +318,7 @@ def main():
     p = sub.add_parser("grid"); p.add_argument("id"); p.set_defaults(fn=cmd_grid)
     p = sub.add_parser("preview"); p.add_argument("id"); p.add_argument("--at"); p.add_argument("--shots", action="store_true"); p.set_defaults(fn=cmd_preview)
     p = sub.add_parser("draw"); p.add_argument("id"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=3); p.add_argument("--force", action="store_true"); p.set_defaults(fn=cmd_draw)
+    p = sub.add_parser("motion"); p.add_argument("id"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=4); p.add_argument("--force", action="store_true"); p.set_defaults(fn=cmd_motion)
     p = sub.add_parser("actors"); p.add_argument("id", nargs="?"); p.set_defaults(fn=cmd_actors)
     p = sub.add_parser("scene"); p.add_argument("id"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=4); p.set_defaults(fn=cmd_scene)
     p = sub.add_parser("audio"); p.add_argument("id"); p.add_argument("--stems", action="store_true"); p.set_defaults(fn=cmd_audio)
