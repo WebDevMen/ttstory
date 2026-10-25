@@ -1,0 +1,461 @@
+# «Пословицы-тормоза». 100% code-drawn video from projects/proverbs/script.yaml
+# (skill write-script → vg.py script project → this file).
+# Actors: library people/ui/libs/world/basic and the project's actors/proverbs.js (plank, hare, tape, scissors).
+# Coordinates: screen px 1080x1920. Times: "@word".
+
+title: "Пословицы-тормоза"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz", tail: 1.6}
+
+theme:
+  preset: minimal
+  accent: "255,211,77"
+  captions:
+    style: clean
+    top: auto
+    size: 64
+    max_chars: 18
+    hide:
+      - {from: "@jump/пятьдесят-0.1", until: "@jump/головы#2.end"}
+      - {from: "@twist/законы-0.1", until: "@twist/законы.end+0.3"}
+
+post: {vignette: 0.3, chromatic: 0.0005, grain: 0.02}
+
+draw:
+  palette: {gold: "#ffd34d", lime: "#c6ff3d", minus: "#ff4b3e", paper: "#f3e6c8", folk: "#c8323f", ink: "#2a1a10", dim: "#8f9bc4", wood: "#7a4a24"}
+
+# shared pieces (YAML anchors)
+x-night: &night_bg {type: radial, at: "50% 35%", stops: [[0, "#26306a"], [0.55, "#121735"], [1, "#06081a"]]}
+x-field: &field_bg {type: radial, at: "50% 30%", stops: [[0, "#2c3a74"], [0.6, "#141b3e"], [1, "#070a1c"]]}
+x-warm: &warm_bg {type: radial, at: "50% 38%", stops: [[0, "#5a3a1a"], [0.55, "#26170c"], [1, "#0b0703"]]}
+x-dusk: &dusk_bg {type: radial, at: "50% 35%", stops: [[0, "#3a2350"], [0.6, "#1a1130"], [1, "#08060f"]]}
+x-floor: &floor
+  actor: shape
+  kind: rect
+  x: 540
+  y: 1640
+  w: 1400
+  h: 400
+  fill: {linear: ["#1c2350", "#0a0d22"], angle: 180}
+x-floorline: &floorline {actor: shape, kind: line, points: [[-200, 1440], [1280, 1440]], stroke: "rgba(143,155,196,.35)", sw: 4}
+x-hero: &hero {actor: person, x: 540, y: 1440, look: {age: adult, outfit: casual, hair: short, color: "#3f7fe0", bottom_color: "#2a3358"}}
+x-stars: &stars {actor: particles, kind: dust, region: [40, 120, 1040, 1500], count: 26, size: [2, 5], colors: ["#ffffff", "#ffd34d"], alpha: 0.35, par: 0.3}
+
+audio:
+  music:
+    key: E
+    mode: minor
+    bpm: 100
+    gain: -15
+    sections:
+      - {at: 0, style: pulse, chords: [Em, C, G, D]}
+      - {at: "@measure.start", style: tension}
+      - {at: "@twist.start", style: tension, chords: [Em, Am, C, B]}
+      - {at: "@regret.start", style: epic, chords: [C, D, Em, G]}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK — доски давят
+  - id: hook
+    accent: "255,211,77"
+    caption_marks: {"пословицы": "255,211,77"}
+    text: "Три пословицы из детства тихо держат тебя на месте. Третью ты слышал сто раз."
+    shots:
+      - id: h_weight
+        effects:
+          - {type: glow, at: [540, 700], sigma: 420, color: [1.0, 0.85, 0.5], intensity: 0.1}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.05}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: *night_bg
+          px_per_m: 380
+          floor: 1440
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.06, y: 940}], shakes: [{at: 0.05, amp: 6, dur: 0.2}, {at: "@детства", amp: 8, dur: 0.25}, {at: "@держат", amp: 14, dur: 0.35}]}
+          layers:
+            - *stars
+            - *floor
+            - *floorline
+            - <<: *hero
+              id: hero
+              pose: [{at: 0, v: arms_up}, {at: "@держат", v: {a1: [150, -30], a2: [150, -30], l1: [4, 0], l2: [4, 0], tilt: -4}, dur: 0.3}]
+              face: [{at: 0, v: determined}, {at: "@держат", v: sad}]
+            - {actor: plank, id: p1, text: "ВЫШЕ ГОЛОВЫ НЕ ПРЫГНЕШЬ", x: 540, y: 685, w: 640, h: 120, real: false, at: 0, enter: {type: drop, dur: 0.25}}
+            - {actor: plank, id: p2, text: "ЗА ДВУМЯ ЗАЙЦАМИ…", x: 540, y: 560, w: 640, h: 120, real: false, rot: 2, at: "@детства-0.2", enter: {type: drop, dur: 0.22}}
+            - {actor: plank, id: p3, text: "СЕМЬ РАЗ ОТМЕРЬ…", x: 540, y: 435, w: 640, h: 120, real: false, rot: -2, at: "@держат-0.2", enter: {type: drop, dur: 0.22}}
+            - {actor: text, text: "3 ПОСЛОВИЦЫ-ТОРМОЗА", x: 540, y: 230, size: 80, width: 980, lines: 2, weight: 900, color: gold, stroke: {w: 10, color: "#06081a"}, shadow: "0 0 34px rgba(255,211,77,.6)", space: screen, at: "@пословицы-0.05", enter: stamp}
+      - id: h_voices
+        start: "@третью-0.15"
+        transition: {type: whip_x, flash: 0.08}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08, y: 900}]}
+          layers:
+            - *stars
+            - {actor: silhouette, x: 170, y: 1560, w: 230, h: 300, color: "#2a3366"}
+            - {actor: silhouette, x: 540, y: 1600, w: 260, h: 340, color: "#323d78"}
+            - {actor: silhouette, x: 910, y: 1560, w: 230, h: 300, color: "#2a3366"}
+            - {actor: bubble, x: 200, y: 1250, side: right, text: "СЕМЬ РАЗ ОТМЕРЬ!", size: 38, color: paper, ink: ink, at: "@слышал-0.1", enter: pop}
+            - {actor: bubble, x: 880, y: 1080, side: left, text: "СЕМЬ РАЗ ОТМЕРЬ!", size: 38, color: paper, ink: ink, at: "@слышал+0.12", enter: pop}
+            - {actor: bubble, x: 560, y: 920, side: right, text: "СЕМЬ РАЗ ОТМЕРЬ!", size: 38, color: paper, ink: ink, at: "@сто-0.15", enter: pop}
+            - {actor: text, text: "×{n}", x: 540, y: 470, size: 220, weight: 900, color: gold, stroke: {w: 12, color: "#06081a"}, shadow: "0 0 40px rgba(255,211,77,.6)", space: screen, count: {from: 1, to: 100, at: "@сто-0.1", dur: 0.6}, at: "@сто-0.15", enter: pop}
+    sfx:
+      - {sound: impact, at: 0.05, gain: -12}
+      - {sound: impact, at: "@детства", gain: -12}
+      - {sound: boom, at: "@держат", gain: -12}
+      - {sound: pop, at: "@слышал", gain: -15}
+      - {sound: pop, at: "@слышал+0.22", gain: -15}
+      - {sound: kick, at: "@сто", gain: -11}
+
+  # ------------------------------------------------------------------ 2. №1 — выше головы
+  - id: jump
+    accent: "198,255,61"
+    caption_marks: {"пятьдесят девять сантиметров": "198,255,61"}
+    text: "Первая: «выше головы не прыгнешь». Швед Стефан Хольм ростом метр восемьдесят один взял два сорок. Это на пятьдесят девять сантиметров выше головы."
+    shots:
+      - id: j_plank
+        transition: {type: whip_x, flash: 0.08}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        ambience: [{sound: wind, gain: -26}]
+        draw: &jump_draw
+          bg: *field_bg
+          px_per_m: 360
+          floor: 1440
+          camera: {keys: [{t: 0, z: 1.0, y: 1000}, {t: end, z: 1.04, y: 940, ease: inOut}]}
+          layers:
+            - *stars
+            - {actor: shape, kind: rect, x: 540, y: 1640, w: 1400, h: 400, fill: {linear: ["#b8463a", "#5a1e1a"], angle: 180}}
+            - {actor: shape, kind: line, points: [[-200, 1440], [1280, 1440]], stroke: "rgba(255,255,255,.4)", sw: 4}
+            - {actor: shape, kind: rect, x: 860, y: 1395, w: 420, h: 90, radius: 14, fill: "#2f5fb8", stroke: "#5b8def", sw: 4}
+            - {actor: jump_stand, x: 820, y: 1440, span: 360, top: 900, bar: 864, px_per_m: 360, real: false}
+            - {actor: shape, kind: line, points: [[60, 788], [1020, 788]], stroke: "rgba(198,255,61,.85)", sw: 4, dash: "18 14", at: "@Хольм-0.05", enter: {type: wipe_right, dur: 0.4}}
+            - {actor: text, text: "РОСТ 1,81 М", x: 300, y: 742, size: 44, weight: 900, color: lime, at: "@восемьдесят-0.05", enter: pop}
+            - {actor: text, text: "ПЛАНКА 2,40 М", x: 820, y: 528, size: 44, weight: 900, color: gold, at: "@Хольм-0.05", enter: pop}
+            - <<: *hero
+              id: hero
+              x: 300
+              y: 1440
+              view: side
+              size_m: {h: 1.81}
+              look: {age: adult, outfit: pe, hair: short, color: "#f2f4f8", accent: "#ffd34d", bottom_color: "#22408a"}
+              pose: stand
+              face: determined
+            - {actor: timetag, text: "ПОСЛОВИЦА №1", x: 540, y: 190, size: 34, color: gold, space: screen, at: "@Первая-0.1", enter: fade}
+            - {actor: plank, text: "ВЫШЕ ГОЛОВЫ\nНЕ ПРЫГНЕШЬ", x: 540, y: 360, w: 760, h: 200, real: false, space: screen, at: "@Первая-0.15", enter: {type: drop, dur: 0.3}}
+      - id: j_jump
+        start: "@взял-0.2"
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          <<: *jump_draw
+          camera: {keys: [{t: 0, z: 1.0, y: 1000}, {t: "@сорок", z: 0.94, y: 940, ease: inOut}, {t: end, z: 0.94, y: 960}], shakes: [{at: "@сорок", amp: 8, dur: 0.25}]}
+          layers:
+            - *stars
+            - {actor: shape, kind: rect, x: 540, y: 1640, w: 1400, h: 400, fill: {linear: ["#b8463a", "#5a1e1a"], angle: 180}}
+            - {actor: shape, kind: line, points: [[-200, 1440], [1280, 1440]], stroke: "rgba(255,255,255,.4)", sw: 4}
+            - {actor: shape, kind: rect, x: 860, y: 1395, w: 420, h: 90, radius: 14, fill: "#2f5fb8", stroke: "#5b8def", sw: 4}
+            - {actor: jump_stand, x: 820, y: 1440, span: 360, top: 900, bar: 864, px_per_m: 360, real: false}
+            - {actor: shape, kind: line, points: [[60, 788], [1020, 788]], stroke: "rgba(198,255,61,.85)", sw: 4, dash: "18 14"}
+            - {actor: text, text: "РОСТ 1,81 М", x: 300, y: 742, size: 44, weight: 900, color: lime}
+            - <<: *hero
+              id: hero
+              x: 120
+              y: 1114
+              origin: center
+              view: side
+              size_m: {h: 1.81}
+              air: true
+              look: {age: adult, outfit: pe, hair: short, color: "#f2f4f8", accent: "#ffd34d", bottom_color: "#22408a"}
+              walk: [{at: 0, v: 3.2}, {at: "@взял+0.3", v: 0}]
+              pose: [{at: 0, v: stand}, {at: "@взял+0.3", v: {a1: [120, -20], a2: [120, -20], l1: [70, 110], l2: [60, 120], lean: -20}, dur: 0.25}, {at: "@сорок+0.4", v: {a1: [60, 10], a2: [60, 10], l1: [80, 20], l2: [80, 20], lean: -30}, dur: 0.3}]
+              face: determined
+              anim:
+                - {at: 0, dur: 0.5, x: 470, ease: linear}
+                - {at: "@взял+0.3", dur: 1.0, path: [[470, 1114], [720, 520], [880, 1300]], ease: "power1.inOut"}
+                - {at: "@взял+0.3", dur: 0.5, rot: -90, ease: out}
+                - {at: "@взял+0.8", dur: 0.5, rot: -90, ease: in}
+            - {actor: text, text: "2,40 М", x: 540, y: 250, space: screen, size: 110, weight: 900, color: gold, stroke: {w: 10, color: "#06081a"}, shadow: "0 0 34px rgba(255,211,77,.7)", at: "@сорок-0.05", enter: stamp}
+      - id: j_gap
+        start: "@пятьдесят-0.2"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 720], sigma: 300, color: [0.78, 1.0, 0.24], intensity: 0.12, from: "@сантиметров-0.05", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.12}}
+        draw:
+          <<: *jump_draw
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.06, y: 900}], shakes: [{at: "@сантиметров", amp: 10, dur: 0.3}]}
+          layers:
+            - *stars
+            - {actor: shape, kind: rect, x: 540, y: 1640, w: 1400, h: 400, fill: {linear: ["#b8463a", "#5a1e1a"], angle: 180}}
+            - {actor: shape, kind: line, points: [[-200, 1440], [1280, 1440]], stroke: "rgba(255,255,255,.4)", sw: 4}
+            - {actor: jump_stand, x: 820, y: 1440, span: 360, top: 900, bar: 864, px_per_m: 360, real: false}
+            - {actor: shape, kind: line, points: [[60, 788], [1020, 788]], stroke: "rgba(198,255,61,.85)", sw: 4, dash: "18 14"}
+            - <<: *hero
+              x: 240
+              y: 1440
+              view: side
+              size_m: {h: 1.81}
+              look: {age: adult, outfit: pe, hair: short, color: "#f2f4f8", accent: "#ffd34d", bottom_color: "#22408a"}
+              pose: stand
+              face: [{at: 0, v: determined}, {at: "@сантиметров", v: happy}]
+            - {actor: shape, kind: polyline, points: [[440, 788], [470, 788], [470, 576], [440, 576]], stroke: lime, sw: 8, at: "@пятьдесят-0.05", enter: {type: draw, dur: 0.4}}
+            - {actor: text, text: "+59 СМ", x: 700, y: 682, size: 104, weight: 900, color: lime, stroke: {w: 10, color: "#06081a"}, shadow: "0 0 34px rgba(198,255,61,.7)", rot: -4, at: "@сантиметров-0.05", enter: stamp}
+            - {actor: text, text: "ВЫШЕ ГОЛОВЫ", x: 700, y: 880, size: 50, weight: 900, color: "#ffffff", at: "@выше#2-0.05", enter: pop}
+            - {actor: plank, text: "ВЫШЕ ГОЛОВЫ\nНЕ ПРЫГНЕШЬ", x: 540, y: 340, w: 760, h: 200, real: false, space: screen, crack: [{at: 0, v: 0}, {at: "@сантиметров", v: 1, dur: 0.3}], split: [{at: 0, v: 0}, {at: "@выше#2", v: 1, dur: 0.6, ease: in}]}
+    sfx:
+      - {sound: impact, at: "@Первая", gain: -12}
+      - {sound: blip, at: "@Хольм", gain: -15}
+      - {sound: footstep, at: "@взял-0.2", gain: -18}
+      - {sound: whoosh, at: "@взял+0.3", gain: -13}
+      - {sound: kick, at: "@сорок", gain: -11}
+      - {sound: riser, at: "@пятьдесят", gain: -16}
+      - {sound: creak, at: "@сантиметров", gain: -15}
+      - {sound: slam, at: "@выше#2", gain: -12}
+
+  # ------------------------------------------------------------------ 3. №2 — два зайца
+  - id: hares
+    accent: "198,255,61"
+    caption_marks: {"на треть реже": "198,255,61"}
+    text: "Вторая: «за двумя зайцами погонишься — ни одного не поймаешь». Но учёные посчитали: кто начинал своё дело, не бросая работу, прогорал на треть реже."
+    shots:
+      - id: z_chase
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [860, 640], sigma: 200, color: [0.9, 0.95, 1.0], intensity: 0.12}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        ambience: [{sound: wind, gain: -24}]
+        draw:
+          bg: *field_bg
+          px_per_m: 330
+          floor: 1440
+          camera: {keys: [{t: 0, z: 1.0, y: 980}, {t: end, z: 1.05, y: 960}]}
+          layers:
+            - *stars
+            - {actor: shape, kind: circle, x: 860, y: 640, r: 70, fill: "#f4f1e4", par: 0.2}
+            - {actor: shape, kind: rect, x: 540, y: 1640, w: 1400, h: 400, fill: {linear: ["#2c5a3a", "#0f2416"], angle: 180}}
+            - {actor: shape, kind: line, points: [[-200, 1440], [1280, 1440]], stroke: "rgba(160,220,160,.35)", sw: 4}
+            - <<: *hero
+              look_dx: [{at: 0, v: 0}, {at: "@зайцами", v: -1, dur: 0.2}, {at: "@погонишься", v: 1, dur: 0.2}, {at: "@ни", v: 0, dur: 0.2}]
+              pose: [{at: 0, v: stand}, {at: "@зайцами", v: point, dur: 0.25}, {at: "@поймаешь-0.1", v: shrug, dur: 0.3}]
+              face: [{at: 0, v: smile}, {at: "@зайцами", v: surprised}, {at: "@поймаешь", v: sad}]
+            - {actor: hare, x: 300, y: 1440, flip: true, w: 260, run: [{at: 0, v: 0}, {at: "@зайцами", v: 3}], anim: [{at: "@зайцами", dur: 1.4, x: -260, ease: in}]}
+            - {actor: hare, x: 780, y: 1440, w: 260, run: [{at: 0, v: 0}, {at: "@зайцами+0.1", v: 3}], anim: [{at: "@зайцами+0.1", dur: 1.4, x: 1340, ease: in}]}
+            - {actor: timetag, text: "ПОСЛОВИЦА №2", x: 540, y: 190, size: 34, color: gold, space: screen, at: "@Вторая-0.1", enter: fade}
+            - {actor: plank, text: "ЗА ДВУМЯ ЗАЙЦАМИ —\nНИ ОДНОГО", x: 540, y: 360, w: 760, h: 200, real: false, space: screen, at: "@Вторая-0.15", enter: {type: drop, dur: 0.3}}
+      - id: z_study
+        start: "@учёные-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [700, 900], sigma: 300, color: [0.78, 1.0, 0.24], intensity: 0.1, from: "@треть-0.05", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05, y: 930}], shakes: [{at: "@треть", amp: 8, dur: 0.25}]}
+          layers:
+            - *stars
+            - {actor: text, text: "РИСК ЗАКРЫТЬ СВОЁ ДЕЛО", x: 540, y: 300, size: 60, width: 960, weight: 900, color: "#ffffff", space: screen, at: "@посчитали-0.1", enter: rise}
+            - {actor: chart, type: bar, x: 540, y: 820, w: 820, h: 700, size: 40, values: false, max: 110, data: [{label: "УШЁЛ СРАЗУ", value: 100, color: minus}, {label: "СОВМЕЩАЛ", value: 67, color: lime}], grow: {at: "@посчитали", dur: 0.9, stagger: 1.9}}
+            - {actor: hare, x: 660, y: 755, w: 150, run: 0, real: false, at: "@работу+0.2", enter: pop}
+            - {actor: hare, x: 785, y: 755, w: 150, run: 0, real: false, flip: true, at: "@работу+0.35", enter: pop}
+            - {actor: text, text: "−33%", x: 720, y: 560, size: 130, weight: 900, color: lime, stroke: {w: 10, color: "#06081a"}, shadow: "0 0 34px rgba(198,255,61,.7)", rot: -5, at: "@треть-0.05", enter: stamp}
+            - {actor: text, text: "Raffiee, Feng · 2014 · США", x: 540, y: 1340, size: 30, font: mono, color: dim, at: "@посчитали", enter: fade}
+    sfx:
+      - {sound: impact, at: "@Вторая", gain: -12}
+      - {sound: whoosh, at: "@зайцами", gain: -13}
+      - {sound: whoosh, at: "@зайцами+0.15", gain: -15}
+      - {sound: blip, at: "@поймаешь", gain: -15}
+      - {sound: typing, at: "@посчитали", gain: -17}
+      - {sound: pop, at: "@работу+0.2", gain: -15}
+      - {sound: pop, at: "@работу+0.35", gain: -15}
+      - {sound: kick, at: "@треть", gain: -11}
+      - {sound: chime, at: "@реже", gain: -16}
+
+  # ------------------------------------------------------------------ 4. №3 — семь раз отмерь
+  - id: measure
+    accent: "198,255,61"
+    caption_marks: {"семьдесят процентов": "198,255,61"}
+    text: "Третья: «семь раз отмерь — один раз отрежь». Звучит мудро, но часто это повод не начинать вообще. Безос советует решать, когда знаешь семьдесят процентов."
+    shots:
+      - id: m_tape
+        transition: {type: whip_x, flash: 0.08}
+        look: {bloom: [0.72, 0.3], grade: {contrast: 0.1, warmth: 0.04}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: *warm_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 980}, {t: end, z: 1.07, y: 960}], shakes: [{at: "@начинать", amp: 5, dur: 0.3}]}
+          layers:
+            - {actor: cloth, x: 540, y: 1080, w: 940, h: 580}
+            - {actor: tape, x: 90, y: 1010, w: 860, h: 64, pull: [{at: 0, v: 0}, {at: "@семь", v: 1, dur: 0.5}, {at: "@отрежь", v: 0.15, dur: 0.3}, {at: "@Звучит", v: 1, dur: 0.35}, {at: "@мудро+0.2", v: 0.15, dur: 0.25}, {at: "@но", v: 1, dur: 0.3}, {at: "@это", v: 0.15, dur: 0.25}, {at: "@повод", v: 1, dur: 0.25}, {at: "@не", v: 0.15, dur: 0.2}, {at: "@начинать", v: 1, dur: 0.25}]}
+            - {actor: scissors, x: 760, y: 1150, w: 380, rot: -20, open: [{at: 0, v: 46}, {at: "@начинать", v: 30, dur: 0.12}, {at: "@начинать+0.12", v: 46, dur: 0.15}, {at: "@вообще", v: 34, dur: 0.12}, {at: "@вообще+0.12", v: 46, dur: 0.15}], float: {amp: 10, freq: 0.7}, at: "@мудро-0.1", enter: fly_right}
+            - {actor: text, text: "ОТМЕРЕНО: {n}", x: 540, y: 640, size: 64, font: mono, weight: 800, color: "#ffffff", count: {from: 1, to: 43, at: "@семь", dur: 4.6, ease: linear}, at: "@семь-0.05", enter: pop}
+            - {actor: badge, x: 540, y: 860, title: "ТАК И НЕ НАЧАЛ", style: solid, color: minus, size: 50, rot: -4, at: "@начинать-0.05", enter: stamp}
+            - {actor: timetag, text: "ПОСЛОВИЦА №3", x: 540, y: 190, size: 34, color: gold, space: screen, at: "@Третья-0.1", enter: fade}
+            - {actor: plank, text: "СЕМЬ РАЗ ОТМЕРЬ —\nОДИН РАЗ ОТРЕЖЬ", x: 540, y: 380, w: 760, h: 200, real: false, space: screen, at: "@Третья-0.15", enter: {type: drop, dur: 0.3}}
+      - id: m_70
+        start: "@Безос-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 760], sigma: 320, color: [0.78, 1.0, 0.24], intensity: 0.1, from: "@семьдесят", fade_in: 0.2}
+        look: {bloom: [0.72, 0.3], grade: {contrast: 0.1}}
+        draw:
+          bg: *warm_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06, y: 920}], shakes: [{at: "@процентов", amp: 10, dur: 0.3}]}
+          layers:
+            - {actor: badge, x: 540, y: 300, title: "ПРАВИЛО ДЖЕФФА БЕЗОСА", style: solid, color: gold, size: 48, space: screen, at: "@Безос-0.05", enter: stamp}
+            - {actor: meter, x: 540, y: 720, w: 760, size: 44, label: "ИНФОРМАЦИЯ", color: lime, value: [{at: 0, v: 0}, {at: "@решать", v: 70, dur: 1.2, ease: out}]}
+            - {actor: shape, kind: line, points: [[694, 690], [694, 800]], stroke: "#ffffff", sw: 6, at: "@решать", enter: fade}
+            - {actor: cloth, x: 540, y: 1130, w: 780, h: 300, cut: [{at: 0, v: 0}, {at: "@семьдесят+0.15", v: 1, dur: 0.45, ease: out}]}
+            - {actor: scissors, x: 540, y: 1100, w: 340, rot: -90, open: [{at: 0, v: 46}, {at: "@семьдесят", v: 0, dur: 0.15}], anim: [{at: "@семьдесят", dur: 0.4, dy: 140, ease: out}]}
+            - {actor: text, text: "70% → РЕШАЙ", x: 540, y: 500, size: 110, width: 980, weight: 900, color: lime, stroke: {w: 10, color: "#0b0703"}, shadow: "0 0 34px rgba(198,255,61,.7)", rot: -4, at: "@процентов-0.05", enter: stamp}
+    sfx:
+      - {sound: impact, at: "@Третья", gain: -12}
+      - {sound: scrape, at: "@семь", gain: -16}
+      - {sound: scrape, at: "@Звучит", gain: -17}
+      - {sound: scrape, at: "@но", gain: -17}
+      - {sound: click, at: "@начинать", gain: -14}
+      - {sound: slam, at: "@начинать+0.05", gain: -15}
+      - {sound: click, at: "@вообще", gain: -15}
+      - {sound: kick, at: "@Безос", gain: -13}
+      - {sound: riser, at: "@решать", gain: -16}
+      - {sound: click, at: "@семьдесят", gain: -10}
+      - {sound: slam, at: "@процентов", gain: -11}
+
+  # ------------------------------------------------------------------ 5. TWIST — пословицы спорят
+  - id: twist
+    accent: "255,211,77"
+    caption_marks: {"не законы": "255,211,77"}
+    text: "И главное: пословицы спорят сами с собой. «Тише едешь — дальше будешь». Но «куй железо, пока горячо». Это не законы, а советы под ситуацию."
+    shots:
+      - id: t_vs
+        transition: {type: glitch, dur: 0.25}
+        effects:
+          - {type: glow, at: [540, 820], sigma: 260, color: [1.0, 0.85, 0.3], intensity: 0.1, from: "@спорят", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.12}}
+        draw:
+          bg: *dusk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@куй", amp: 12, dur: 0.3}]}
+          layers:
+            - *stars
+            - {actor: text, text: "ПОСЛОВИЦЫ СПОРЯТ", x: 540, y: 300, size: 84, width: 980, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#08060f"}, space: screen, at: "@главное", enter: rise}
+            - {actor: text, text: "VS", x: 540, y: 830, size: 150, weight: 900, color: gold, stroke: {w: 10, color: "#08060f"}, shadow: "0 0 40px rgba(255,211,77,.8)", at: "@спорят-0.05", enter: stamp, pulse: {amp: 0.05, freq: 1.4}}
+            - {actor: plank, text: "ТИШЕ ЕДЕШЬ —\nДАЛЬШЕ БУДЕШЬ", x: 540, y: 600, w: 760, h: 190, real: false, rot: -3, at: "@Тише-0.15", enter: {type: fly_left, dur: 0.35}}
+            - {actor: snail, x: 210, y: 850, w: 240, at: "@Тише+0.2", enter: slide_right}
+            - {actor: plank, text: "КУЙ ЖЕЛЕЗО,\nПОКА ГОРЯЧО", x: 540, y: 1060, w: 760, h: 190, real: false, rot: 3, at: "@куй-0.15", enter: {type: fly_right, dur: 0.3}}
+            - {actor: anvil, x: 800, y: 1500, w: 360, strikes: ["@куй", "@железо", "@горячо"], at: "@куй-0.25", enter: pop}
+            - {actor: particles, kind: embers, region: [660, 1120, 1000, 1360], count: 30, colors: ["#ffb02e", "#ff6a2e"], at: "@куй", enter: fade}
+      - id: t_rule
+        start: "@законы-0.2"
+        transition: {type: zoom, dur: 0.3}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.12}}
+        draw:
+          bg: *dusk_bg
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}], shakes: [{at: "@законы", amp: 12, dur: 0.3}]}
+          layers:
+            - *stars
+            - {actor: toolbox, part: back, x: 540, y: 1260, w: 760, h: 300}
+            - {actor: plank, text: "ВЫШЕ ГОЛОВЫ…", x: 540, y: 880, w: 560, h: 110, real: false, rot: -4, at: "@советы-0.2", enter: {type: drop, dur: 0.3}}
+            - {actor: plank, text: "ЗА ДВУМЯ ЗАЙЦАМИ…", x: 540, y: 980, w: 560, h: 110, real: false, rot: 3, at: "@советы-0.05", enter: {type: drop, dur: 0.3}}
+            - {actor: plank, text: "СЕМЬ РАЗ ОТМЕРЬ…", x: 540, y: 1080, w: 560, h: 110, real: false, rot: -2, at: "@советы+0.1", enter: {type: drop, dur: 0.3}}
+            - {actor: toolbox, part: front, x: 540, y: 1260, w: 760, h: 300}
+            - {actor: text, text: "СОВЕТЫ ПОД СИТУАЦИЮ", x: 540, y: 1286, size: 44, width: 560, weight: 900, color: paper, at: "@ситуацию-0.05", enter: pop}
+            - {actor: text, text: "НЕ ЗАКОНЫ", x: 540, y: 470, size: 128, width: 1040, weight: 900, color: gold, stroke: {w: 12, color: "#08060f"}, shadow: "0 0 40px rgba(255,211,77,.7)", rot: -5, space: screen, at: "@законы-0.05", enter: stamp}
+    sfx:
+      - {sound: whoosh, at: "@главное", gain: -16}
+      - {sound: glitch, at: "@спорят", gain: -14}
+      - {sound: whoosh, at: "@Тише-0.1", gain: -13}
+      - {sound: metal_ring, at: "@куй", gain: -12}
+      - {sound: slam, at: "@законы", gain: -11}
+      - {sound: impact, at: "@советы", gain: -15}
+      - {sound: chime, at: "@ситуацию", gain: -15}
+
+  # ------------------------------------------------------------------ 6. PAYOFF — сожаления
+  - id: regret
+    accent: "255,211,77"
+    caption_marks: {"не попробовали": "255,211,77"}
+    text: "И вот что важно. Психологи выяснили: с годами люди жалеют не об ошибках. Они жалеют о том, чего так и не попробовали."
+    shots:
+      - id: r_bench
+        transition: {type: dissolve, dur: 0.35}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.08, warmth: 0.05}}
+        ambience: [{sound: birds, gain: -28}]
+        draw:
+          bg: "#1a1130"
+          px_per_m: 340
+          floor: 1300
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.06, y: 900}]}
+          layers:
+            - {actor: sky, hour: [{at: 0, v: 18.2}, {at: end, v: 19.6}], par: 0}
+            - {actor: tree, kind: round, x: 900, y: 1300, h: 760, par: 0.6, brightness: 0.6}
+            - {actor: ground, x: -300, y: 1296, w: 1700, h: 600, color: ["#3b4a3a", "#1c241c"]}
+            - {actor: bench, x: 520, y: 1300, w: 600, seat: 120, real: false}
+            - actor: person
+              x: 520
+              y: 1385
+              air: true
+              look: {age: adult, outfit: casual, hair: short, hair_color: "#d9d9d9", color: "#7a6a5a", bottom_color: "#3a3f4e", glasses: true}
+              pose: [{at: 0, v: sit}, {at: "@годами", v: {a1: [16, 95], a2: [12, 70], l1: [4, 0], l2: [4, 0], sit: 1, tilt: 6}, dur: 0.5}]
+              face: [{at: 0, v: neutral}, {at: "@жалеют", v: sad}]
+            - {actor: bubble, x: 640, y: 700, side: right, text: "А ЕСЛИ БЫ…", size: 42, color: paper, ink: ink, at: "@жалеют-0.05", enter: pop}
+            - {actor: bubble, x: 420, y: 520, side: left, text: "А ЕСЛИ БЫ…", size: 42, color: paper, ink: ink, at: "@жалеют+0.3", enter: pop}
+            - {actor: timetag, text: "СПУСТЯ ГОДЫ", x: 540, y: 220, size: 36, color: gold, space: screen, at: "@годами-0.05", enter: fade}
+      - id: r_bars
+        start: "@ошибках-0.2"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [700, 800], sigma: 320, color: [1.0, 0.85, 0.3], intensity: 0.12, from: "@попробовали", fade_in: 0.3}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *dusk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05, y: 930}]}
+          layers:
+            - *stars
+            - {actor: text, text: "О ЧЁМ ЖАЛЕЮТ СПУСТЯ ГОДЫ", x: 540, y: 300, size: 60, width: 960, weight: 900, color: "#ffffff", space: screen, at: 0, enter: rise}
+            - {actor: chart, type: bar, x: 540, y: 820, w: 820, h: 700, size: 38, values: false, max: 110, data: [{label: "О СДЕЛАННОМ", value: 40, color: dim}, {label: "О НЕСДЕЛАННОМ", value: 100, color: gold}], grow: {at: "@ошибках", dur: 0.7, stagger: 2.6}}
+            - {actor: text, text: "ПОПРОБУЙ", x: 330, y: 650, size: 78, weight: 900, color: lime, stroke: {w: 10, color: "#08060f"}, shadow: "0 0 34px rgba(198,255,61,.7)", rot: -6, at: "@попробовали+0.15", enter: stamp}
+            - {actor: text, text: "Gilovich, Medvec · 1995", x: 540, y: 1340, size: 30, font: mono, color: dim, at: 0.1, enter: fade}
+    sfx:
+      - {sound: chime, at: "@важно", gain: -16}
+      - {sound: chime, at: "@годами", gain: -17}
+      - {sound: pop, at: "@жалеют", gain: -15}
+      - {sound: pop, at: "@жалеют+0.3", gain: -15}
+      - {sound: blip, at: "@ошибках", gain: -15}
+      - {sound: kick, at: "@попробовали", gain: -11}
+      - {sound: slam, at: "@попробовали+0.15", gain: -15}
+
+  # ------------------------------------------------------------------ 7. CTA — доски разлетаются
+  - id: cta
+    accent: "255,211,77"
+    text: "Какая пословица тормозила тебя? Напиши её в комментарии — разберём её в следующем видео."
+    shots:
+      - id: c_free
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 800], sigma: 460, color: [1.0, 0.8, 0.35], intensity: 0.08}
+          - {type: glow, at: [540, 800], sigma: 460, color: [1.0, 0.85, 0.4], intensity: 0.14, from: "@Напиши", fade_in: 0.4}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, warmth: 0.04}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: *night_bg
+          px_per_m: 380
+          floor: 1440
+          camera: {keys: [{t: 0, z: 1.04, y: 940}, {t: "@Напиши", z: 1.0, y: 960, ease: out}, {t: end, z: 1.04, y: 950}], shakes: [{at: "@Напиши", amp: 14, dur: 0.35}]}
+          layers:
+            - *stars
+            - *floor
+            - *floorline
+            - <<: *hero
+              pose: [{at: 0, v: {a1: [150, -30], a2: [150, -30], l1: [4, 0], l2: [4, 0], tilt: -4}}, {at: "@Напиши+0.1", v: cheer, dur: 0.35}]
+              face: [{at: 0, v: determined}, {at: "@Напиши+0.1", v: happy}]
+            - {actor: plank, text: "ВЫШЕ ГОЛОВЫ НЕ ПРЫГНЕШЬ", x: 540, y: 685, w: 640, h: 120, real: false, crack: [{at: 0, v: 0}, {at: "@тормозила", v: 1, dur: 0.3}], split: [{at: 0, v: 0}, {at: "@Напиши+0.05", v: 1, dur: 0.7, ease: in}]}
+            - {actor: plank, text: "ЗА ДВУМЯ ЗАЙЦАМИ…", x: 540, y: 560, w: 640, h: 120, real: false, rot: 2, crack: [{at: 0, v: 0}, {at: "@тормозила+0.2", v: 1, dur: 0.3}], split: [{at: 0, v: 0}, {at: "@Напиши", v: 1, dur: 0.7, ease: in}]}
+            - {actor: plank, text: "СЕМЬ РАЗ ОТМЕРЬ…", x: 540, y: 435, w: 640, h: 120, real: false, rot: -2, crack: [{at: 0, v: 0}, {at: "@тебя", v: 1, dur: 0.3}], split: [{at: 0, v: 0}, {at: "@Напиши-0.05", v: 1, dur: 0.7, ease: in}]}
+            - {actor: particles, kind: sparkles, region: [140, 420, 940, 1200], count: 30, colors: ["#ffd34d", "#c6ff3d", "#ffffff"], at: "@Напиши+0.2", enter: fade}
+            - {actor: text, text: "КАКАЯ ТОРМОЗИЛА ТЕБЯ?", x: 540, y: 230, size: 80, width: 980, lines: 2, weight: 900, color: gold, stroke: {w: 10, color: "#06081a"}, shadow: "0 0 30px rgba(255,211,77,.6)", space: screen, at: 0.05, enter: rise}
+            - {actor: badge, x: 540, y: 470, icon: "💬", title: "НАПИШИ В КОММЕНТАРИЯХ", style: solid, color: gold, size: 50, space: screen, at: "@Напиши+0.4", enter: pop}
+            - {actor: badge, x: 540, title: "СЛЕДУЮЩАЯ — ТВОЯ", style: outline, color: lime, size: 46, space: screen, y: 590, at: "@следующем-0.05", enter: pop}
+    sfx:
+      - {sound: creak, at: "@тормозила", gain: -14}
+      - {sound: creak, at: "@тебя", gain: -15}
+      - {sound: boom, at: "@Напиши", gain: -11}
+      - {sound: pop, at: "@Напиши+0.4", gain: -15}
+      - {sound: sparkle, at: "@разберём", gain: -15}
+      - {sound: pop, at: "@следующем", gain: -15}
