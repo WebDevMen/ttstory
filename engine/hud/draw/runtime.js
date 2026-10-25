@@ -336,5 +336,5 @@ window.drawLayout = async (shotId, frame) => {
   const cam = camState(st.shot, frame / FPS);
   return { cam: { x: cam.x, y: cam.y, z: cam.z }, realScene: !!(st.shot.draw && st.shot.draw.px_per_m), items: out };
 };
-window.drawInfo = { shots: TL.shots.filter((s) => s.draw).map((s) => s.id), fps: FPS, actors: Object.keys(ACTORS).sort() };
+window.drawInfo = { shots: TL.shots.filter((s) => s.draw && s.draw.engine !== "motion").map((s) => s.id), fps: FPS, actors: Object.keys(ACTORS).sort() };
 window.drawReady = true;

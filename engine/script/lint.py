@@ -108,7 +108,7 @@ def run(s, pid=None, tts=False):
     # ------------------------------------------------------------------ beats: pace, facts, TTS pitfalls, visuals
     actors = model.actor_names(pid)
     sounds, ambiences = model.sound_names()
-    new_actors, new_sounds = set(), set()
+    new_actors, new_sounds, new_art = set(), set(), set()
     events = []          # (time, kind, where)
     for b in beats:
         bid = b.get("id")
@@ -162,13 +162,18 @@ def run(s, pid=None, tts=False):
                 a = str(a)
                 if a.startswith("new:"):
                     new_actors.add(a[4:])
+                elif a.startswith("art:"):
+                    new_art.add(a[4:])
+                elif a.startswith("motion:"):
+                    if a[7:] not in model.MOTION_BLOCKS:
+                        iss.error("actor", sw, f"нет блока моушн-графики '{a[7:]}' — блоки: {', '.join(model.MOTION_BLOCKS)}")
                 elif a.startswith("hud:"):
                     if a[4:] not in model.HUD_COMPONENTS:
                         iss.error("actor", sw, f"нет HUD-компонента '{a[4:]}'")
                 elif a not in actors:
                     iss.error("actor", sw, f"нет актёра '{a}' — выберите из `vg.py actors` или пометьте new:{a}")
-            if meta.get("style", "draw") == "draw" and not sh.get("actors"):
-                iss.warn("visual", sw, "draw-кадр без актёров — из чего он будет нарисован?")
+            if meta.get("style", "motion") in ("draw", "motion") and not sh.get("actors"):
+                iss.warn("visual", sw, "кадр без актёров/блоков — из чего он будет нарисован?")
             for key in ("animation", "graphics", "sfx"):
                 for ev in sh.get(key) or []:
                     if not isinstance(ev, dict):
@@ -196,6 +201,9 @@ def run(s, pid=None, tts=False):
                 name = a.get("sound") if isinstance(a, dict) else a
                 if name and name not in ambiences:
                     iss.error("sound", f"{sw}.ambience", f"нет фона '{name}' (есть: {', '.join(sorted(ambiences))})")
+    if new_art:
+        iss.info("assets", "shots", f"иллюстрации (plates/): {', '.join(sorted(new_art))} — сгенерировать в одном стиле (docs/MOTION.md §6)")
+    M["new_art"] = sorted(new_art)
     for a in sorted(new_actors):
         iss.info("assets", "shots", f"нужен новый актёр: {a} (дописать в projects/<id>/actors или библиотеку)")
     for a in sorted(new_sounds):

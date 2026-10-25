@@ -43,14 +43,15 @@ python3 vg.py all my_video                  # готовый out/my_video.mp4
 
 - **[docs/SCRIPTING.md](docs/SCRIPTING.md)** — сценарии: процесс от темы до готового сценария, что важно TikTok/Reels/Shorts (с источниками), крючки, форматы, удержание, текст для диктора, раскадровка, упаковка, справочник `script.yaml` и все правила проверки.
 - **[docs/MANUAL.md](docs/MANUAL.md)** — мануал от А до Я: как устроен конвейер, как писать сценарий и промпты для кадров, как оживлять кадры, делать графику и звук, рецепты разных стилей, чек-лист качества, разбор «Танкера», решение проблем.
-- **[docs/DRAW.md](docs/DRAW.md)** — своя графика без нейросетей: нарисованные шоты `draw:`, камера и параллакс, анимация по словам, каталог всех актёров, библиотеки, как написать своего актёра.
+- **[docs/MOTION.md](docs/MOTION.md)** — основной способ графики: ИИ-иллюстрации (персонажи и сцены в одном стиле) + моушн-графика на Remotion — заголовки, карточки, счётчики, сравнения, шкалы, комментарии; вёрстку и пружинную анимацию делает движок, без ручных координат. Пример — «Пословицы-тормоза» (`projects/proverbs`).
+- **[docs/DRAW.md](docs/DRAW.md)** — прежняя своя графика без нейросетей: нарисованные шоты `draw:`, камера и параллакс, анимация по словам, каталог всех актёров, библиотеки, как написать своего актёра.
 - **[docs/REFERENCE.md](docs/REFERENCE.md)** — справочник по всем параметрам: камера, маски, 20+ эффектов, 24 HUD-компонента, 4 темы, 6 стилей субтитров, 30+ звуков, 15 амбиенсов, 10 музыкальных стилей.
 - **[projects/_template/project.yaml](projects/_template/project.yaml)** — шаблон проекта с комментариями.
 
 ## Устройство
 
 ```
-vg.py                     команды по этапам: script, voice, compile, prep, grid, preview, scene, audio, hud, mux, qa, all
+vg.py                     команды по этапам: script, voice, compile, prep, grid, preview, motion, scene, audio, hud, mux, qa, all
 engine/
   script/                 сценарии: база знаний (форматы, крючки, приёмы, площадки), тайминг, проверка, документ, черновик проекта
   tts.py                  озвучка (Microsoft Edge neural TTS) с таймингами слов
@@ -59,7 +60,8 @@ engine/
   scene.py                2.5D-камера с параллаксом, маски, библиотека эффектов, переходы, грейдинг (и для AI-кадров, и для нарисованных)
   audio.py                библиотека звуков и амбиенсов, музыкальные стили, автозвуки, сведение
   hud/                    HTML/CSS/three.js: runtime, компоненты, темы, 3D-модели, шрифты, эмодзи
-  hud/draw/               своя графика: runtime (камера, слои, анимация, якоря) + actors/ (библиотека актёров)
+  motion/                 моушн-графика на Remotion (React/TypeScript): дизайн-система, блоки, фон, камера, рендер шотов motion:
+  hud/draw/               прежняя своя графика: runtime (камера, слои, анимация, якоря) + actors/ (библиотека актёров)
   hud/vendor/             GSAP, lottie-web, rough.js, D3, topojson + Natural Earth, three.js — локально, офлайн
   render_hud.cjs          покадровый рендер HUD и нарисованных шотов в headless Chromium (Playwright)
   mux.py, qa.py           финальная сборка (−14 LUFS), контактные листы, сетки координат
@@ -69,4 +71,4 @@ projects/<id>/            script.yaml + script.md (сценарий), project.ya
 out/                      готовые ролики
 ```
 
-Инструменты: Figma AI (генерация кадров), ONNX Runtime, OpenCV, NumPy/SciPy, Microsoft Edge TTS, three.js, GSAP, lottie-web, rough.js, D3, Playwright/Chromium, FFmpeg. Шрифты (Exo 2, JetBrains Mono, Montserrat, Playfair Display, Unbounded, Caveat, Klee One, M PLUS Rounded 1c) — OFL. Эмодзи — Twemoji (CC-BY 4.0). three.js, lottie-web, rough.js — MIT; D3, topojson, world-atlas — ISC (карты Natural Earth — public domain); GSAP — бесплатная Standard License.
+Инструменты: Figma AI (генерация кадров), Remotion (моушн-графика; бесплатно для частных лиц и команд до 3 человек), lucide (иконки, ISC), ONNX Runtime, OpenCV, NumPy/SciPy, Microsoft Edge TTS, three.js, GSAP, lottie-web, rough.js, D3, Playwright/Chromium, FFmpeg. Шрифты (Exo 2, JetBrains Mono, Montserrat, Playfair Display, Unbounded, Manrope, Kurale, Caveat, Klee One, M PLUS Rounded 1c) — OFL. Эмодзи — Twemoji (CC-BY 4.0). three.js, lottie-web, rough.js — MIT; D3, topojson, world-atlas — ISC (карты Natural Earth — public domain); GSAP — бесплатная Standard License.

@@ -49,6 +49,19 @@ def _auto_captions(pid):
     return json.load(open(f, encoding="utf-8"))
 
 
+MOTION_TIME_KEYS = {"at", "until", "vs_at", "mark_at", "like_at", "strike", "crack", "break"}
+
+
+def _motion_rel(obj, start):
+    """Plain numbers in time keys of a motion spec are seconds from the shot start; '@refs' stay absolute."""
+    if isinstance(obj, dict):
+        return {k: (round(start + v, 3) if k in MOTION_TIME_KEYS and isinstance(v, (int, float)) and not isinstance(v, bool)
+                    else _motion_rel(v, start)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_motion_rel(v, start) for v in obj]
+    return obj
+
+
 def run(pid):
     p = load_project(pid)
     v = p["voice"]
@@ -135,7 +148,7 @@ def run(pid):
         for i, sh in enumerate(lst):
             starts.append(s["start"] if i == 0 else refs.resolve(sh.get("start"), sc["id"], (s["start"], s["end"])))
         for i, sh in enumerate(lst):
-            shots.append({"raw": sh, "scene": sc["id"], "id": sh["id"], "plate": None if sh.get("draw") is not None else sh.get("plate", sh["id"]),
+            shots.append({"raw": sh, "scene": sc["id"], "id": sh["id"], "plate": None if sh.get("draw") is not None or (sh.get("motion") is not None and not sh.get("plate")) else sh.get("plate", sh["id"]),
                           "start": round(starts[i], 3), "end": round(starts[i + 1] if i + 1 < len(lst) else s["end"], 3)})
     refs.shots = {x["id"]: x for x in shots}
 
@@ -168,6 +181,10 @@ def run(pid):
             d["camera"] = camera(raw_cam, x, ctx)
             x["draw"] = d
             x["plate"] = None
+        if sh.get("motion") is not None:                           # motion-graphics shot (engine/motion, Remotion)
+            x["motion"] = refs.deep(_motion_rel(deep_merge(p.get("motion") or {}, sh["motion"]), x["start"]), x["scene"], ctx)
+            if not x["plate"]:                                      # full-frame graphics: the scene layer reads it like a draw shot
+                x["draw"] = {"engine": "motion", "camera": {"keys": [{"t": 0}]}, "layers": [], "depth": sh["motion"].get("depth", [0.1, 0.8])}
         x.update({
             "camera": camera(sh.get("camera"), x, ctx),
             "masks": sh.get("masks") or {},
@@ -247,7 +264,9 @@ def run(pid):
     for s in scenes:
         print(f"  scene {s['id']:12s} {s['start']:6.2f} → {s['end']:6.2f}  (voice {s['vo_start']:.2f}–{s['vo_end']:.2f})")
     for x in shots:
-        src = f"plate {x['plate']}" if x["plate"] else f"draw: {len(x['draw'].get('layers') or [])} layers"
+        src = f"plate {x['plate']}" if x["plate"] else f"draw: {len(x['draw'].get('layers') or [])} layers" if x["draw"].get("engine") != "motion" else ""
+        if x.get("motion") is not None:
+            src += (" + " if src else "") + f"motion: {len(x['motion'].get('blocks') or [])} blocks"
         print(f"    shot {x['id']:14s} {x['start']:6.2f} → {x['end']:6.2f}  ({x['end'] - x['start']:.2f}s, {src})")
     if refs.cues:
         print("  cues: " + ", ".join(f"{k}={v:.2f}" for k, v in refs.cues.items()))

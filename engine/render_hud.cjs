@@ -75,7 +75,7 @@ function codeHash(pid) {
 function drawRanges(tl) {
   const out = [];
   tl.shots.forEach((s, i) => {
-    if (!s.draw) return;
+    if (!s.draw || s.draw.engine === "motion") return;
     const tr = s.transition || {}, next = tl.shots[i + 1], ntr = (next && next.transition) || {};
     const padB = tr.type && tr.type !== "cut" && tr.type !== "fade" ? (tr.dur ?? 0.36) / 2 + 0.1 : 0;
     const padA = next && ntr.type && ntr.type !== "cut" && ntr.type !== "fade" ? (ntr.dur ?? 0.36) / 2 + 0.1 : 0;
@@ -146,7 +146,7 @@ async function layoutMode(browser, pid, tl, step, mstep) {
   const hpage = await openPage(browser, pid);
   const res = [];
   for (const s of tl.shots) {
-    if (!s.draw) continue;
+    if (!s.draw || s.draw.engine === "motion") continue;
     const f0 = Math.ceil(s.start * tl.fps) + 2, f1 = Math.floor(s.end * tl.fps) - 2;
     const fr = [];
     for (let f = f0; f < f1; f += step) fr.push(f);
@@ -165,7 +165,7 @@ async function layoutMode(browser, pid, tl, step, mstep) {
   if (mstep > 0) {
     const mot = [];
     for (const s of tl.shots) {
-      if (!s.draw) continue;
+      if (!s.draw || s.draw.engine === "motion") continue;
       const f0 = Math.ceil(s.start * tl.fps) + 1, f1 = Math.floor(s.end * tl.fps) - 1;
       for (let f = f0; f <= f1; f += mstep) {
         const { cam, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
