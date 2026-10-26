@@ -148,9 +148,9 @@ scenes:
           layers:
             - {actor: sky, x: -200, w: 1480, hour: 7.3, par: 0, sun: [190, 860], horizon: 930, clouds: 3, seed: 4}
             # the star falls along an arc, accelerating and growing, tail always behind (orient), leaving a smoke trail
-            - {actor: shape, kind: path, x: 0, y: 0, origin: top-left, d: "M1000,-60 Q700,220 360,860", fill: "none", stroke: "#b0a8b0", sw: 22, opacity: 0.4, blur: 9,
+            - {actor: shape, kind: path, x: 0, y: 0, origin: top-left, d: "M1000,-60 Q700,220 360,860", fill: "none", stroke: "#b0a8b0", sw: 22, opacity: 0.4, blur: 9, enter: {type: fade, dur: 0.2},
                at: "@Звезда-0.55", draw: [{at: 0, v: 0}, {at: "@Звезда-0.55", v: 1, dur: 1.0, ease: inQuad}]}
-            - {actor: meteor, x: 1000, y: -60, len: 480, angle: 180, r: 24, at: "@Звезда-0.55", until: "@упала+0.1",
+            - {actor: meteor, x: 1000, y: -60, len: 480, angle: 180, r: 24, enter: {type: fade, dur: 0.15}, at: "@Звезда-0.55", until: "@упала+0.1",
                scale: [{at: 0, v: 0.6}, {at: "@Звезда-0.55", v: 1.25, dur: 1.0, ease: in}], tail: [{at: 0, v: 0.5}, {at: "@Звезда-0.55", v: 1, dur: 1.0, ease: in}],
                anim: [{at: "@Звезда-0.55", dur: 1.0, path: "M1000,-60 Q700,220 360,860", orient: true, ease: inQuad}]}
             - {actor: forest, x: 540, y: 905, w: 2100, h: 150, hill: 120, color: "#7c8a8a", seed: 3, par: 0.2}
@@ -311,7 +311,7 @@ scenes:
             - {actor: shape, kind: ellipse, x: 540, y: 860, w: 150, h: 70, fill: "#5a3e28", opacity: 0.6}
             - {actor: shape, kind: line, points: [[300, 830], [1000, 860]], stroke: "#a0702a", sw: 3, dash: "10 10", at: "@длинную", enter: draw, enter_dur: 0.5}
             - {actor: human_hand, x: 900, y: 1350, scale: 0.6, rot: -40, skin: "#e2b08a", sleeve: "#6e665c", cuff: "#5e574e", at: "@Ансельм", enter: fade, anim: [{at: "@Ансельм", dur: 0.8, x: 800, y: 1200}]}
-            - {actor: callout, target: [700, 860], x: 540, y: 1260, title: "1 ОГОНЬ = 1 ТЕНЬ", color: "#a0702a", size: 44, space: screen, at: "@Один", enter: pop, sfx: false}
+            - {actor: callout, target: [700, 860], x: 540, y: 1260, title: "1 ОГОНЬ = 1 ТЕНЬ", color: "#a0702a", size: 44, at: "@Один", enter: pop, sfx: false}
       - id: r_many
         start: "@Много-0.22"
         transition: {type: zoom}
@@ -324,13 +324,13 @@ scenes:
             # fires light up one by one, clockwise from the left one; each fire's shadow grows AFTER it (0.15 s later),
             # pointing straight away from it; on «тают» all shadows overlap and dissolve
             - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 0, fill: "rgba(42,26,16,0.42)", blur: 2, opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 45, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+0.15", sx: [{at: 0, v: 0}, {at: "@Много+0.15", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 90, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+0.35", sx: [{at: 0, v: 0}, {at: "@Много+0.35", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 135, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+0.55", sx: [{at: 0, v: 0}, {at: "@Много+0.55", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 180, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+0.75", sx: [{at: 0, v: 0}, {at: "@Много+0.75", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 225, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+0.95", sx: [{at: 0, v: 0}, {at: "@Много+0.95", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 270, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+1.15", sx: [{at: 0, v: 0}, {at: "@Много+1.15", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
-            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 315, fill: "rgba(42,26,16,0.42)", blur: 2, at: "@Много+1.35", sx: [{at: 0, v: 0}, {at: "@Много+1.35", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 45, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+0.15", sx: [{at: 0, v: 0}, {at: "@Много+0.15", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 90, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+0.35", sx: [{at: 0, v: 0}, {at: "@Много+0.35", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 135, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+0.55", sx: [{at: 0, v: 0}, {at: "@Много+0.55", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 180, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+0.75", sx: [{at: 0, v: 0}, {at: "@Много+0.75", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 225, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+0.95", sx: [{at: 0, v: 0}, {at: "@Много+0.95", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 270, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+1.15", sx: [{at: 0, v: 0}, {at: "@Много+1.15", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
+            - {actor: shape, kind: path, d: "M0,-30 L330,-42 L330,42 L0,30 Z", x: 540, y: 860, rot: 315, fill: "rgba(42,26,16,0.42)", blur: 2, enter: {type: fade, dur: 0.15}, at: "@Много+1.35", sx: [{at: 0, v: 0}, {at: "@Много+1.35", v: 1, dur: 0.3, ease: out}], opacity: [{at: 0, v: 1}, {at: "@тают", v: 0, dur: 0.6}]}
             - {actor: bonfire, x: 230, y: 900, scale: 0.42}
             - {actor: bonfire, x: 321, y: 687, scale: 0.42, at: "@Много", enter: pop}
             - {actor: bonfire, x: 540, y: 599, scale: 0.42, at: "@Много+0.2", enter: pop}
@@ -358,7 +358,7 @@ scenes:
             - {actor: shape, kind: circle, x: 170, y: 1100, r: 44, fill: "#ffb347", glow: {color: "#ffd27a", r: 20, a: 1}, anim: [{at: "@полдень-0.07", dur: 1.4, path: [[170, 1100], [300, 820], [540, 720]], ease: inOut}]}
             - {actor: cast_shadow, x: 540, y: 1180, look: {age: adult, outfit: tunic, hair: short}, angle: 92, flat: 0.25, len: [{at: "@полдень-0.22", v: 1.6}, {at: "@полдень-0.07", v: 0.12, dur: 1.4, ease: inOut}], color: "#2a1a10", alpha: 0.75}
             - {actor: person, x: 540, y: 1180, scale: 0.8, look: {age: adult, outfit: tunic, hair: short, silhouette: "#5a3e28"}}
-            - {actor: callout, target: [540, 1190], x: 540, y: 1330, title: "ПОЛДЕНЬ = КОРОТКАЯ ТЕНЬ", color: "#a0702a", size: 40, space: screen, at: "@ногами-0.2", enter: pop, sfx: false}
+            - {actor: callout, target: [540, 1190], x: 540, y: 1330, title: "ПОЛДЕНЬ = КОРОТКАЯ ТЕНЬ", color: "#a0702a", size: 40, at: "@ногами-0.2", enter: pop, sfx: false}
     sfx:
       - {sound: scrape, at: "@Ансельм", gain: -14}
       - {sound: whoosh, at: "@длинную", gain: -14}
@@ -432,7 +432,7 @@ scenes:
             - {actor: shape, kind: circle, x: 440, y: 1200, r: 30, fill: "#ffb347", opacity: 0.8}
             - {actor: shape, kind: circle, x: 452, y: 1196, r: 30, fill: "#2a1a10", opacity: 0.85}
             - {actor: shape, kind: circle, x: 640, y: 1200, r: 30, fill: "#2a1a10", stroke: "#ffb347", sw: 5}
-            - {actor: human_hand, x: 360, y: 1380, scale: 0.55, rot: 20, skin: "#e2b08a", sleeve: "#6e665c", cuff: "#5e574e", at: "@таблицы", enter: fade, anim: [{at: "@таблицы", dur: 0.7, x: 640, y: 1290}]}
+            - {actor: human_hand, x: 1200, y: 1300, scale: 0.4, rot: -68, skin: "#e2b08a", sleeve: "#6e665c", cuff: "#5e574e", at: "@таблицы", enter: fade, anim: [{at: "@таблицы", dur: 0.7, x: 668, y: 1232, ease: out}]}
             - {actor: candle, x: 880, y: 1250, scale: 1.1, halo: 240}
             - {<<: *title, text: "ЗАТМЕНИЕ ЧЕРЕЗ 3 ДНЯ", at: "@затмение-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
       - id: z_eclipse

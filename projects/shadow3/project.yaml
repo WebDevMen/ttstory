@@ -309,7 +309,7 @@ scenes:
             - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 9}
             - {actor: eclipse, x: 540, y: 760, r: 150, cover: [{at: 0, v: 1}, {at: "@первый", v: 0.96, dur: 0.4}], from: 160, ring: [{at: 0, v: 0}, {at: "@первый", v: 1, dur: 0.3}]}
             - {actor: shape, kind: line, points: [[400, 720], [130, 1260]], stroke: beam, sw: 10, at: "@луч", enter: draw, enter_dur: 0.4, glow: {color: "#ffffff", r: 18, a: 1}}
-            - {actor: callout, target: [400, 720], x: 540, y: 1260, title: "ПЕРВЫЙ ЛУЧ", color: gold, size: 44, space: screen, at: "@луч", enter: pop, sfx: false}
+            - {actor: callout, target: [400, 720], x: 540, y: 1260, title: "ПЕРВЫЙ ЛУЧ", color: gold, size: 44, at: "@луч", enter: pop, sfx: false}
       - id: r_mirror
         start: "@зеркало-0.22"
         transition: {type: dip}
@@ -406,8 +406,8 @@ scenes:
             - {actor: shape, kind: line, points: [[160, 330], [300, 1050]], stroke: beam, sw: 12, at: "@Луч+0.1", enter: draw, enter_dur: 0.3, glow: {color: "#ffffff", r: 22, a: 1}}
             - {actor: shape, kind: line, points: [[300, 1050], [700, 1000]], stroke: beam, sw: 14, at: "@щит", enter: draw, enter_dur: 0.3, glow: {color: "#ffffff", r: 26, a: 1}}
             - {actor: person, id: marta, view: side, x: 230, y: 1250, scale: 0.9, look: *marta, face: determined, pose: [{at: 0, v: {a1: [50, 60], a2: [50, 60], l1: [2, 0], l2: [-2, 0]}}, {at: "@подняла", v: {a1: [90, 30], a2: [90, 30], l1: [10, 0], l2: [-10, 0]}, dur: 0.3}]}
-            - {actor: shield, x: [{at: 0, v: 280}, {at: "@подняла", v: 300, dur: 0.3}], y: [{at: 0, v: 1130}, {at: "@подняла", v: 1050, dur: 0.3}], r: 55, sx: 0.55, shine: [{at: 0, v: 0}, {at: "@Луч", v: 1, dur: 0.2}], glow: {color: "#ffffff", r: 20, a: 0.9}}
-            - {actor: callout, target: [300, 1050], x: 540, y: 600, title: "ЩИТ КУЗНЕЦА = ЗЕРКАЛО", color: gold, size: 40, space: screen, at: "@щит", enter: pop, sfx: false}
+            - {actor: shield, id: mirror, x: [{at: 0, v: 280}, {at: "@подняла", v: 300, dur: 0.3}], y: [{at: 0, v: 1130}, {at: "@подняла", v: 1050, dur: 0.3}], r: 55, sx: 0.55, shine: [{at: 0, v: 0}, {at: "@Луч", v: 1, dur: 0.2}], glow: {color: "#ffffff", r: 20, a: 0.9}}
+            - {actor: callout, target: "mirror.top", x: 540, y: 600, title: "ЩИТ КУЗНЕЦА = ЗЕРКАЛО", color: gold, size: 40, space: screen, at: "@щит", enter: pop, sfx: false}
       - id: l_crack
         start: "@треснул-0.22"
         transition: {type: zoom}

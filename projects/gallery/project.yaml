@@ -241,7 +241,9 @@ scenes:
             - {actor: living_shadow, x: 200, y: 1500, h: 520, reach: 1}
             - {actor: living_shadow, x: 420, y: 1500, h: 480, arms_up: 1, color: "#101018"}
             - {actor: candle, x: 640, y: 1500, halo: 160}
-            - {actor: torch, x: 760, y: 1500, halo: 140}
+            - {actor: torch, x: 760, y: 1500, halo: 140, lean: -0.8}
+            - {actor: light_stream, x: 0, y: 0, from: [745, 1300], to: [590, 980], bend: 40, width: 12}
+            - {actor: human_hand, x: 960, y: 800, scale: 0.32, rot: -70}
             - {actor: bonfire, x: 930, y: 1520}
             - {actor: astrolabe, x: 180, y: 1700, r: 90}
             - {actor: book, x: 470, y: 1740, w: 300}
