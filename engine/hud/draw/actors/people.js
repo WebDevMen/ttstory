@@ -5,12 +5,14 @@
 //   view: front | side (side faces right; flip: true faces left)
 //   look: {age: student|kid|adult, skin, hair: short|spiky|buzz|side|bob|long|ponytail|twintails|bun, hair_color,
 //          outfit: sailor|gakuran|blazer|blazer_skirt|pe|kyushoku|kendo|baseball|teacher_m|teacher_f|casual|suit,
+//                  medieval: tunic|dress|smith|robe|knight|peasant_f, beard (true|colour), hair: braid|tonsure too,
 //          color (main outfit color), accent (scarf/tie/stripe), legs: skin|socks|tights, shoes,
 //          bag: randoseru|school_bag, bag_color, hat: kid|cap|kyushoku, mask, glasses, blush, silhouette}
 //   pose (track): stand|wave|raise|cheer|point|think|hold|together|bow|sit|shrug|arms_up | side: stand|bow|sit|wipe|sweep|swing|carry
 //          or an object of joint angles {a1: [shoulder, elbow], a2, l1: [hip, knee], l2, lean, bow, sit, tilt, nod, jump}
 //   walk (track, steps/s; 0 = still), run (bool), face (track): neutral|smile|happy|surprised|talk|sad|sleep|determined|wink
 //   talk: [[from, until], ...] mouth moves, look_dx (track, eyes left/right), hold / hold_l: tray|broom|mop|rag|bat|book|phone|shinai|flag|bowl
+//          |torch|candle|sword|shovel|hammer|bucket|quill; look.hollow: grey eyes without a gleam («пустой»)
 //   anchors: head, face, hand_l, hand_r (front: screen sides), hand (side: near hand), hip, top
 const SK = { light: "#ffe0c4", mid: "#f6cfa8", tan: "#e3b38a", dark: "#b07a55" };
 const HAIR = ["#2b1d1a", "#1f1a24", "#3a2a22", "#4a3326", "#22181a"];
@@ -32,6 +34,13 @@ const OUTFITS = {
   teacher_f: { top: "#d9b98f", collar: "#f6f2ea", accent: "#d9b98f", bottom: "skirt", bottomColor: "#4a4f5c", sleeve: "long", legs: "tights", shoes: "#2a2224" },
   suit: { top: "#2b2f3a", collar: "#f4f6fb", accent: "#7a2b35", bottom: "pants", bottomColor: "#2b2f3a", sleeve: "long", shoes: "#1d1a1a", tie: true },
   casual: { top: "#5b8def", collar: "#5b8def", accent: "#ffffff", bottom: "pants", bottomColor: "#34405e", sleeve: "short", shoes: "#f2f2f2" },
+  // medieval (series «Без тени»)
+  tunic: { top: "#8a6a48", collar: "#7a5c3e", accent: "#3a2a1e", bottom: "pants", bottomColor: "#5a4a3a", sleeve: "long", shoes: "#3a2a1e", legs: "pants" },
+  dress: { top: "#3f6e48", collar: "#e8dcc0", accent: "#c9a46a", bottom: "gown", bottomColor: "#36603e", sleeve: "long", shoes: "#3a2a1e" },
+  smith: { top: "#7a5a40", collar: "#6a4c34", accent: "#5a3a22", bottom: "pants", bottomColor: "#4a3a2e", sleeve: "short", shoes: "#2a1e16", legs: "pants" },
+  robe: { top: "#6e665c", collar: "#5e574e", accent: "#c9b48a", bottom: "gown", bottomColor: "#645d54", sleeve: "long", shoes: "#3a2a1e" },
+  knight: { top: "#8a8f98", collar: "#6f747c", accent: "#2f4f8a", bottom: "pants", bottomColor: "#3a3a40", sleeve: "long", shoes: "#2a2224", legs: "pants" },
+  peasant_f: { top: "#8a5a4a", collar: "#e8dcc0", accent: "#e8dcc0", bottom: "gown", bottomColor: "#6a4a3e", sleeve: "long", shoes: "#3a2a1e" },
 };
 const FRONT_POSES = {
   stand: { a1: [7, 4], a2: [7, 4], l1: [2, 0], l2: [2, 0] },
@@ -174,7 +183,19 @@ export const person = {
       if (!sil) H.el("line", { x1: 0, y1: 10, x2: 0, y2: D.leg - 6, stroke: bottomS, "stroke-width": 3 }, bottomG);
     } else if (O.bottom === "pants") {
       rr(bottomG, -hw / 2 - 2, -14, hw + 4, 26, 8, bottomC);
+    } else if (O.bottom === "gown") {          // long skirt / robe down to the ankles (medieval dress, monk robe)
+      const len = D.leg - 16;
+      P(bottomG, `M${-hw / 2 - 3},-14 L${hw / 2 + 3},-14 L${hw / 2 + (side ? 16 : 26)},${len} Q0,${len + 8} ${-hw / 2 - (side ? 16 : 26)},${len} Z`, bottomC);
+      if (!sil) for (const u of [-0.5, 0, 0.5]) H.el("line", { x1: u * hw * 0.4, y1: 4, x2: u * (hw + 40) * 0.5, y2: len - 4, stroke: bottomS, "stroke-width": 3 }, bottomG);
     }
+    if ((look.outfit === "tunic" || look.outfit === "smith" || look.outfit === "knight") && !sil) {   // tunic skirt over the hips
+      const tc = look.outfit === "knight" ? accent : top;
+      P(bottomG, `M${-hw / 2 - 4},-16 L${hw / 2 + 4},-16 L${hw / 2 + 10},${D.thigh * 0.55} L${-hw / 2 - 10},${D.thigh * 0.55} Z`, tc);
+    } else if ((look.outfit === "tunic" || look.outfit === "smith" || look.outfit === "knight") && sil) {
+      P(bottomG, `M${-hw / 2 - 4},-16 L${hw / 2 + 4},-16 L${hw / 2 + 10},${D.thigh * 0.55} L${-hw / 2 - 10},${D.thigh * 0.55} Z`, sil);
+    }
+    if (look.outfit === "smith" && !sil && !side) P(bottomG, `M${-hw / 2 + 2},-16 L${hw / 2 - 2},-16 L${hw / 2 + 2},${D.thigh + 20} L${-hw / 2 - 2},${D.thigh + 20} Z`, H.col("#5a3a22"));
+    if (look.outfit === "smith" && !sil && side) P(bottomG, `M${hw / 2 - 10},-16 L${hw / 2 + 6},-16 L${hw / 2 + 12},${D.thigh + 20} L${hw / 2 - 8},${D.thigh + 20} Z`, H.col("#5a3a22"));
     // neck + torso
     rr(torsoG, -8, -D.torso - D.neck - 6, 16, D.neck + 14, 6, skinS);
     const tw = side ? D.depth : D.sw, bw = side ? D.depth - 4 : D.hip;
@@ -209,6 +230,31 @@ export const person = {
         if (!side) { H.el("line", { x1: 0, y1: -D.torso + 10, x2: 0, y2: 0, stroke: "#dfe3ea", "stroke-width": 2 }, torsoG); for (let i = 0; i < 3; i++) circ(torsoG, 5, -D.torso + 24 + i * 24, 2.6, "#cfd5df"); }
       } else if (outfit === "kendo") {
         if (!side) P(torsoG, `M-22,${-D.torso} L0,${-D.torso + 46} L22,${-D.torso} L14,${-D.torso} L0,${-D.torso + 30} L-14,${-D.torso} Z`, collar);
+      } else if (outfit === "tunic" || outfit === "peasant_f") {
+        if (!side) { P(torsoG, `M-16,${-D.torso} L0,${-D.torso + 30} L16,${-D.torso} Z`, collar); if (outfit === "tunic") rr(torsoG, -tw / 2 + 2, -16, tw - 4, 12, 4, accent); else rr(torsoG, -D.hip / 2, -14, D.hip, 10, 3, accent); }
+        else rr(torsoG, -tw / 2, -16, tw, 12, 4, accent);
+      } else if (outfit === "dress") {
+        if (!side) {
+          P(torsoG, `M-20,${-D.torso} Q0,${-D.torso + 26} 20,${-D.torso} Z`, collar);
+          for (let i = 0; i < 4; i++) P(torsoG, `M-9,${-D.torso + 30 + i * 16} L9,${-D.torso + 42 + i * 16} M9,${-D.torso + 30 + i * 16} L-9,${-D.torso + 42 + i * 16}`, "none", { stroke: accent, "stroke-width": 2.5 });
+        }
+        rr(torsoG, -tw / 2 + 4, -14, tw - 8, 10, 3, H.shade(top, -0.3));
+      } else if (outfit === "smith") {
+        if (!side) { P(torsoG, `M-26,${-D.torso + 24} L26,${-D.torso + 24} L${D.hip / 2},-4 L${-D.hip / 2},-4 Z`, H.col("#5a3a22")); H.el("path", { d: `M-26,${-D.torso + 24} L-18,${-D.torso} M26,${-D.torso + 24} L18,${-D.torso}`, stroke: "#3a2414", "stroke-width": 4 }, torsoG); }
+        else P(torsoG, `M${tw / 2 - 14},${-D.torso + 24} L${tw / 2 + 4},${-D.torso + 24} L${tw / 2 + 4},-4 L${tw / 2 - 10},-4 Z`, H.col("#5a3a22"));
+      } else if (outfit === "robe") {
+        if (!side) { P(torsoG, `M${-tw / 2 + 4},${-D.torso + 4} Q0,${-D.torso + 40} ${tw / 2 - 4},${-D.torso + 4} L${tw / 2 - 14},${-D.torso - 8} Q0,${-D.torso + 14} ${-tw / 2 + 14},${-D.torso - 8} Z`, collar); }
+        else P(torsoG, `M${-tw / 2 - 6},${-D.torso + 30} Q${-tw / 2 - 14},${-D.torso - 10} ${-tw / 2 + 10},${-D.torso - 8} L${tw / 2 - 6},${-D.torso + 6} Z`, collar);
+        H.el("path", { d: `M${-tw / 2 + 2},-12 Q0,-4 ${tw / 2 - 2},-12`, stroke: accent, "stroke-width": 5, fill: "none" }, torsoG);
+        if (!side) H.el("path", { d: `M8,-10 q4,30 -2,52 M12,-10 q8,26 4,44`, stroke: accent, "stroke-width": 4, fill: "none" }, torsoG);
+      } else if (outfit === "knight") {
+        // mail texture + tabard with an emblem
+        if (!side) {
+          for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) circ(torsoG, -tw / 2 + 10 + c * (tw - 20) / 5, -D.torso + 10 + r * 16, 3, H.shade(top, -0.25));
+          P(torsoG, `M-24,${-D.torso + 8} L24,${-D.torso + 8} L${D.hip / 2 - 2},-2 L${-D.hip / 2 + 2},-2 Z`, accent);
+          P(torsoG, `M0,${-D.torso + 30} l10,8 l-4,14 l8,10 l-14,2 l0,10 l-6,-10 l-12,0 l8,-12 l-4,-12 Z`, H.col("#e8c95a"));
+        } else P(torsoG, `M${tw / 2 - 18},${-D.torso + 8} L${tw / 2 + 2},${-D.torso + 8} L${tw / 2 + 2},-2 L${tw / 2 - 14},-2 Z`, accent);
+        rr(torsoG, -tw / 2 + 2, -16, tw - 4, 10, 3, H.col("#3a2a1e"));
       } else if (outfit === "baseball") {
         if (!side) { H.el("line", { x1: 0, y1: -D.torso + 4, x2: 0, y2: 0, stroke: accent, "stroke-width": 2.5 }, torsoG); H.el("text", { x: 22, y: -D.torso + 54, "font-size": 22, "font-weight": 900, "font-family": "Montserrat", fill: accent, "text-anchor": "middle" }, torsoG).textContent = look.number ?? "7"; }
       }
@@ -245,16 +291,21 @@ export const person = {
     if (!side) {
       if (hairStyle === "long") hb(`M${-R * 1.06},${hc - R * 0.2} Q${-R * 1.1},${hc + R * 2.0} ${-R * 0.7},${hc + R * 2.25} L${R * 0.7},${hc + R * 2.25} Q${R * 1.1},${hc + R * 2.0} ${R * 1.06},${hc - R * 0.2} Z`);
       if (hairStyle === "bob") hb(`M${-R * 1.12},${hc - R * 0.3} Q${-R * 1.2},${hc + R * 0.8} ${-R * 0.95},${hc + R * 0.95} L${R * 0.95},${hc + R * 0.95} Q${R * 1.2},${hc + R * 0.8} ${R * 1.12},${hc - R * 0.3} Z`);
+      if (hairStyle === "braid") {                 // a long braid over the right shoulder (front view)
+        for (let i = 0; i < 7; i++) ell(hairFront, R * 0.78 + i * 1.5, hc + R * 0.7 + i * R * 0.36, R * 0.2, R * 0.24, H.shade(hairC, i % 2 ? -0.12 : 0));
+        circ(hairFront, R * 0.78 + 10, hc + R * 0.7 + 7 * R * 0.36, 6, accent);
+      }
       if (hairStyle === "twintails") { ell(hairBack, -R * 1.18, hc + R * 0.85, R * 0.32, R * 0.85, hairC); ell(hairBack, R * 1.18, hc + R * 0.85, R * 0.32, R * 0.85, hairC); circ(hairBack, -R * 1.0, hc - R * 0.05, 7, accent); circ(hairBack, R * 1.0, hc - R * 0.05, 7, accent); }
       if (hairStyle === "ponytail") ell(hairBack, R * 1.08, hc + R * 0.5, R * 0.26, R * 0.75, hairC, { transform: `rotate(-12 ${R * 1.08} ${hc + R * 0.5})` });
       if (hairStyle === "bun") circ(hairBack, 0, hc - R * 1.02, R * 0.38, hairC);
-      circ(hairBack, 0, hc - R * 0.08, R * 1.04, hairC);
+      if (hairStyle !== "tonsure") circ(hairBack, 0, hc - R * 0.08, R * 1.04, hairC);
       ell(face, -R * 0.95, hc + R * 0.12, R * 0.17, R * 0.21, skinS);
       ell(face, R * 0.95, hc + R * 0.12, R * 0.17, R * 0.21, skinS);
       ell(face, 0, hc, R * 0.93, R, skin);
     } else {
       if (hairStyle === "long") hb(`M${-R * 1.0},${hc - R * 0.3} Q${-R * 1.15},${hc + R * 1.7} ${-R * 0.9},${hc + R * 2.2} L${-R * 0.1},${hc + R * 2.1} Q${-R * 0.2},${hc + R} ${R * 0.2},${hc + R * 0.4} Z`);
       if (hairStyle === "bob") hb(`M${-R * 1.08},${hc - R * 0.2} Q${-R * 1.15},${hc + R * 0.85} ${-R * 0.7},${hc + R * 0.95} L${R * 0.1},${hc + R * 0.8} L${R * 0.3},${hc} Z`);
+      if (hairStyle === "braid") for (let i = 0; i < 7; i++) ell(hairBack, -R * 0.9 - i * 2, hc + R * 0.5 + i * R * 0.34, R * 0.2, R * 0.24, H.shade(hairC, i % 2 ? -0.12 : 0));
       if (hairStyle === "ponytail" || hairStyle === "twintails") ell(hairBack, -R * 1.2, hc + R * 0.35, R * 0.28, R * 0.8, hairC, { transform: `rotate(20 ${-R * 1.2} ${hc + R * 0.35})` });
       if (hairStyle === "bun") circ(hairBack, -R * 0.7, hc - R * 0.8, R * 0.36, hairC);
       ell(face, fx, hc, R * 0.92, R, skin);
@@ -273,6 +324,8 @@ export const person = {
         bob: `M${-R * 1.08},${hc + R * 0.45} Q${-R * 1.12},${top_} 0,${top_} Q${R * 1.12},${top_} ${R * 1.08},${hc + R * 0.45} L${R * 0.86},${hc + R * 0.4} L${R * 0.82},${hc - R * 0.28} Q${R * 0.4},${hc - R * 0.36} 0,${hc - R * 0.3} Q${-R * 0.4},${hc - R * 0.36} ${-R * 0.82},${hc - R * 0.28} L${-R * 0.86},${hc + R * 0.4} Z`,
         long: `M${-R * 1.06},${hc + R * 0.6} Q${-R * 1.12},${top_} 0,${top_} Q${R * 1.12},${top_} ${R * 1.06},${hc + R * 0.6} L${R * 0.84},${hc + R * 0.5} L${R * 0.8},${hc - R * 0.25} Q${R * 0.3},${hc - R * 0.42} ${-R * 0.1},${hc - R * 0.3} Q${-R * 0.5},${hc - R * 0.42} ${-R * 0.8},${hc - R * 0.25} L${-R * 0.84},${hc + R * 0.5} Z`,
       };
+      fringe.tonsure = `M${-R * 1.0},${hc + R * 0.2} Q${-R * 1.06},${hc - R * 0.55} ${-R * 0.7},${hc - R * 0.72} Q0,${hc - R * 0.5} ${R * 0.7},${hc - R * 0.72} Q${R * 1.06},${hc - R * 0.55} ${R * 1.0},${hc + R * 0.2} L${R * 0.9},${hc - R * 0.2} Q0,${hc - R * 0.36} ${-R * 0.9},${hc - R * 0.2} Z`;
+      fringe.braid = fringe.side;
       fringe.ponytail = fringe.side; fringe.twintails = fringe.bob; fringe.bun = `M${-R * 0.98},${hc + R * 0.05} Q${-R * 1.02},${top_} 0,${top_} Q${R * 1.02},${top_} ${R * 0.98},${hc + R * 0.05} Q${R * 0.7},${hc - R * 0.55} 0,${hc - R * 0.6} Q${-R * 0.7},${hc - R * 0.55} ${-R * 0.98},${hc + R * 0.05} Z`;
       hf(fringe[hairStyle] ?? fringe.short);
       if (!sil) P(hairFront, `M${-R * 0.5},${top_ + R * 0.22} Q0,${top_ + R * 0.08} ${R * 0.5},${top_ + R * 0.22}`, "none", { stroke: "rgba(255,255,255,0.18)", "stroke-width": 5, "stroke-linecap": "round" });
@@ -285,8 +338,8 @@ export const person = {
     const eyeEls = ex.map((x) => {
       const eg = g(eyes, { transform: `translate(${x},${ey})` });
       const open = g(eg);
-      ell(open, 0, 0, R * 0.105, R * 0.155, sil ?? "#2a1f2e");
-      if (!sil) circ(open, -R * 0.035, -R * 0.06, R * 0.04, "#ffffff");
+      ell(open, 0, 0, R * 0.105, R * 0.155, sil ?? (look.hollow ? "#5d6470" : "#2a1f2e"));   // hollow: the «empty» look, no gleam
+      if (!sil && !look.hollow) circ(open, -R * 0.035, -R * 0.06, R * 0.04, "#ffffff");
       const closed = P(eg, `M${-R * 0.12},0 Q0,${R * 0.08} ${R * 0.12},0`, "none", { stroke: sil ?? "#2a1f2e", "stroke-width": 4, "stroke-linecap": "round" });
       const happy = P(eg, `M${-R * 0.12},${R * 0.04} Q0,${-R * 0.12} ${R * 0.12},${R * 0.04}`, "none", { stroke: sil ?? "#2a1f2e", "stroke-width": 4.5, "stroke-linecap": "round" });
       return { eg, open, closed, happy };
@@ -296,6 +349,11 @@ export const person = {
     if (!sil && look.blush !== false) for (const x of ex) ell(face, x + (side ? R * 0.05 : x < 0 ? -R * 0.12 : R * 0.12), ey + R * 0.3, R * 0.13, R * 0.07, "rgba(255,120,130,0.35)");
     const mx = side ? fx + R * 0.55 : 0, my = hc + R * 0.55;
     const mouth = P(mouthG, "", "none", { stroke: sil ?? "#7a2f35", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" });
+    if (look.beard) {                            // full beard / moustache (look.beard: true or a colour)
+      const bc = C(look.beard === true ? look.hair_color ?? HAIR[seed % HAIR.length] : look.beard);
+      if (!side) P(acc, `M${-R * 0.82},${hc + R * 0.2} Q${-R * 0.8},${hc + R * 1.25} 0,${hc + R * 1.35} Q${R * 0.8},${hc + R * 1.25} ${R * 0.82},${hc + R * 0.2} Q${R * 0.5},${hc + R * 0.75} ${R * 0.22},${hc + R * 0.5} Q0,${hc + R * 0.42} ${-R * 0.22},${hc + R * 0.5} Q${-R * 0.5},${hc + R * 0.75} ${-R * 0.82},${hc + R * 0.2} Z`, bc);
+      else P(acc, `M${-R * 0.2},${hc + R * 0.3} Q${-R * 0.1},${hc + R * 1.2} ${fx + R * 0.5},${hc + R * 1.2} Q${fx + R * 0.95},${hc + R * 0.9} ${fx + R * 0.9},${hc + R * 0.5} Q${fx + R * 0.6},${hc + R * 0.62} ${fx + R * 0.4},${hc + R * 0.52} Q${R * 0.1},${hc + R * 0.7} ${-R * 0.2},${hc + R * 0.3} Z`, bc);
+    }
     if (look.glasses && !sil) for (const x of ex) circ(acc, x, ey, R * 0.24, "none", { stroke: "#2d2d38", "stroke-width": 3.5 });
     if ((look.mask ?? O.mask) && !sil) {
       rr(acc, side ? fx + R * 0.05 : -R * 0.62, hc + R * 0.3, side ? R * 0.9 : R * 1.24, R * 0.5, R * 0.22, "#ffffff", { stroke: "#dde2ea", "stroke-width": 2 });
@@ -313,6 +371,7 @@ export const person = {
       P(acc, `M${-R * 1.0},${hc - R * 0.35} Q${-R * 1.0},${hc - R * 1.2} 0,${hc - R * 1.22} Q${R * 1.0},${hc - R * 1.2} ${R * 1.0},${hc - R * 0.35} Z`, C("#ffffff"), sil ? {} : { stroke: "#dde2ea", "stroke-width": 2 });
     }
     // held props (in the near / screen-right hand, or held in front)
+    const flames = [];
     function prop(kind, hand, rot) {
       const pg = g(hand, { transform: `rotate(${rot ?? 0})` });
       switch (kind) {
@@ -325,6 +384,18 @@ export const person = {
         case "phone": rr(pg, -9, -18, 18, 32, 4, C("#1d2230")); break;
         case "flag": rr(pg, -2, -120, 4, 130, 2, C("#c9a06a")); rr(pg, 2, -120, 60, 40, 3, C(look.flag_color ?? "#ffffff")); circ(pg, 32, -100, 11, C("#e0414f")); break;
         case "ladle": rr(pg, -3, -10, 6, 70, 3, C("#c7ccd6")); ell(pg, 0, 64, 14, 9, C("#c7ccd6")); break;
+        case "torch": {                            // stick pointing up out of the fist, flame on top (flickers in update)
+          rr(pg, -5, -150, 10, 170, 4, C("#5a3c24")); rr(pg, -11, -166, 22, 24, 5, C("#3a2a1e"));
+          const fg = g(pg, { transform: "translate(0,-166)" });
+          if (!sil) { flames.push(fg); P(fg, "M-16,0 C-16,-30 -4,-40 0,-66 C6,-40 16,-30 16,0 Z", "#ff9a2a"); P(fg, "M-8,0 C-8,-16 -2,-22 0,-36 C3,-22 8,-16 8,0 Z", "#fff0b8"); }
+          break;
+        }
+        case "candle": rr(pg, -16, -6, 32, 8, 3, C("#8a7448")); rr(pg, -7, -46, 14, 42, 3, C("#efe4c8")); { const fg = g(pg, { transform: "translate(0,-48)" }); if (!sil) { flames.push(fg); P(fg, "M0,-26 C7,-14 6,-4 0,0 C-6,-4 -7,-14 0,-26 Z", "#ffd27a"); } } break;
+        case "sword": rr(pg, -4, -14, 8, 30, 3, C("#5a3a22")); rr(pg, -22, 12, 44, 8, 3, C("#8a7a50")); P(pg, "M-6,20 L6,20 L4,170 L0,184 L-4,170 Z", C("#c9ced8")); break;
+        case "shovel": rr(pg, -3, -30, 6, 180, 3, C("#7a5a3a")); P(pg, "M-18,150 L18,150 L14,196 Q0,206 -14,196 Z", C("#6a6e78")); break;
+        case "hammer": rr(pg, -4, -10, 8, 80, 3, C("#6a4a2e")); rr(pg, -20, 60, 40, 22, 4, C("#4a4c54")); break;
+        case "bucket": P(pg, "M-12,0 Q0,-14 12,0", "none", { stroke: C("#3a2a1e"), "stroke-width": 3 }); P(pg, "M-24,6 L24,6 L19,52 L-19,52 Z", C("#7a5a3a")); rr(pg, -25, 12, 50, 5, 2, C("#3a3c44")); rr(pg, -22, 40, 44, 5, 2, C("#3a3c44")); break;
+        case "quill": P(pg, "M0,10 L2,-60 Q16,-40 6,-6 Z", C("#f0ece0")); H.el("path", { d: "M0,10 L2,-60", stroke: C("#9a958a"), "stroke-width": 2 }, pg); break;
         default: break;
       }
       return pg;
@@ -442,6 +513,7 @@ export const person = {
         mouth.setAttribute("d", side && fc !== "surprised" ? d.replace(/M[\d.-]+,/, `M${mx - w2 * 0.2},`) : d);
         mouth.setAttribute("fill", fc === "happy" || fc === "laugh" || fc === "surprised" || talking ? (sil ?? "#7a2f35") : "none");
         if (bagBack) bagBack.style.display = "";
+        flames.forEach((f, i) => f.setAttribute("transform", `${f.getAttribute("transform").split(" scale")[0]} scale(${(0.85 + 0.15 * H.noise(t, 3 + i, 4)).toFixed(3)},${(0.85 + 0.2 * H.noise(t, 7 + i, 5)).toFixed(3)})`));
         this._q = q;
       },
       anchor(name) {

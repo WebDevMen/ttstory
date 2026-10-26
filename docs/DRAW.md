@@ -183,15 +183,15 @@ anim:
 |---|---|
 | `view` | `front` (по умолчанию) или `side` (смотрит вправо; `flip: true` — влево) |
 | `look.age` | `student`, `kid` (ниже ростом, голова больше), `adult` |
-| `look.outfit` | `sailor` (матроска), `gakuran`, `blazer`, `blazer_skirt`, `pe` (физкультура), `kyushoku` (халат, шапочка, маска дежурного), `kendo`, `baseball`, `teacher_m`, `teacher_f`, `suit`, `casual` |
-| `look.hair` | `short spiky buzz side bob long ponytail twintails bun`; `hair_color` |
+| `look.outfit` | `sailor` (матроска), `gakuran`, `blazer`, `blazer_skirt`, `pe` (физкультура), `kyushoku` (халат, шапочка, маска дежурного), `kendo`, `baseball`, `teacher_m`, `teacher_f`, `suit`, `casual`; средневековье: `tunic` (рубаха с поясом), `dress` (платье со шнуровкой), `peasant_f` (крестьянка), `smith` (кузнец в кожаном фартуке), `robe` (ряса монаха), `knight` (кольчуга и табард с гербом) |
+| `look.hair` | `short spiky buzz side bob long ponytail twintails bun braid tonsure`; `hair_color`; `beard: true` или цвет; `hollow: true` — «пустые» глаза без блика |
 | `look` прочее | `skin` (`light mid tan dark` или цвет), `color`, `accent`, `bottom_color`, `legs: skin/socks/tights/pants`, `socks`, `shoes`, `bag: randoseru/school_bag`, `bag_color`, `hat: kid/cap/kyushoku`, `cap_color`, `mask`, `glasses`, `number`, `silhouette: true/цвет` (силуэт одним цветом) |
 | `pose` (дорожка) | спереди: `stand wave raise cheer arms_up point think hold together bow sit shrug surprised`; сбоку: `stand bow sit wipe sweep swing swing_ready carry reach`; или углы суставов `{a1: [плечо, локоть], a2, l1: [бедро, колено], l2, lean, bow, sit, tilt, nod, jump}` |
 | `walk` (дорожка) | шагов в секунду (`0` — стоит), `run: true` — бег |
 | `face` (дорожка) | `smile neutral happy surprised talk sad sleep determined`; моргает сам |
 | `talk` | `[[от, до], ...]` — рот двигается в эти моменты |
 | `look_dx` | взгляд влево/вправо (−1..1) |
-| `hold`, `hold_l` | предмет в руке: `tray bowl pot broom mop rag bat shinai book phone flag ladle`; `hold_rot` — поворот предмета |
+| `hold`, `hold_l` | предмет в руке: `tray bowl pot broom mop rag bat shinai book phone flag ladle torch candle sword shovel hammer bucket quill`; `hold_rot` — поворот предмета (предмет идёт вдоль предплечья; чтобы факел стоял вертикально при поднятой руке, `hold_rot` ≈ сумма углов плеча и локтя руки, например `a2: [70, 70]` → `hold_rot: 140`) |
 | `wave_hand` | помахать поднятой рукой |
 
 `silhouette` — простой силуэт (голова и плечи) для толпы и окон.
@@ -270,6 +270,25 @@ anim:
 | `digits` | «цифровой дождь» (canvas) | `w h color size speed density seed` |
 | `roulette` | рулетка сверху (одно зеро) | `w speed` (°/с), `ball`, `ball_speed`, `land` (момент, когда шарик ложится в зеро), `zero` (дорожка 0..1: зеро светится, остальное тускнеет), `numbers` · файл `odds.js` |
 | `walks` | случайные блуждания: веер сценариев или линия баланса | `w h n steps drift vol start history colors width axis dot seed`, `draw` (дорожка 0..1: линии рисуются слева направо) · файл `odds.js` |
+
+### 7.8 Средневековье и тени (`medieval.js`, серия «Без тени»)
+
+| Актёр | Что это | Параметры |
+|---|---|---|
+| `cottage` | фахверковый дом (соломенная или черепичная крыша) | `w floors wall timber roof thatch seed door_at shutters chimney`, `lit` (дорожка 0..1: окна загораются), `door` (дорожка: дверь светится). Якоря: `door win:i chimney roof` |
+| `chapel` | каменная часовня с деревянной колокольней | `w color roof wood`, `ring` (дорожка: колокол качается), `lit`. Якоря: `bell top door` |
+| `well`, `watermill`, `forge`, `anvil` | колодец; мельница с крутящимся колесом (`speed`, `lit`); кузница с горном; наковальня на пне | цвета `color wood roof` |
+| `cobbles` | мощёная площадь (поверхность, origin — верхний левый угол) | `w h color seed` |
+| `forest` | полоса леса-силуэта, можно на холме | `w h hill color density seed` |
+| `hut_interior` | стена из бруса, балки, дощатый пол на весь кадр | `floor_y wall timber floor window: {x,y,w,h,night} light: [x,y] light_r light_k` (дорожка) |
+| `crater`, `star_stone`, `meteor` | воронка с поваленными деревьями (`glow`); чёрный камень без бликов (`heat`, `drink` — нити света втягиваются, `crack` — трещины и вспышка); огненный шар с хвостом (`len angle r`) | дорожки 0..1 |
+| `smoke`, `fire`, `light_pool` | столб дыма (`speed drift alpha`); пламя (`k` — размер, `lean`); мягкое пятно света (`r color a sy k flicker`) | |
+| `candle`, `torch`, `bonfire` | свеча (`on` — задуть, дымок; `halo`); факел (`len halo k`); костёр | якорь `flame` |
+| `astrolabe`, `book`, `parchment` | астролябия (`spin_speed`); открытая книга (`write` — строки появляются); пергамент для схем | |
+| `cast_shadow` | тень персонажа от источника света — силуэт вложенного `person` | `look view flip pose walk` (как у `person`; у тени может быть **своя** поза — она «двигается сама»), `angle` (0 — на стене позади; > 20 — на земле: 180 — к зрителю, 120 — вниз-вправо), `len` (дорожка; 0 — стянулась к ногам), `flat`, `wide`, `alpha`, `soft`, `color`, `lag` (дорожка, с: тень повторяет движения с опозданием) |
+| `living_shadow` | свободная тень-существо: без лица, длинные руки, дымный низ | `h color alpha`, дорожки `reach arms_up lean crawl walk turn` |
+
+Пример: [`projects/shadow1`](../projects/shadow1/project.yaml) — тени на площади тают на слове, тень на стене растёт, когда свеча опускается, тень поднимает руку сама.
 
 ## 8. Библиотеки
 

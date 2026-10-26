@@ -48,7 +48,9 @@ CAPTION_BANDS = [1250, 1150, 1350, 1060, 1450, 1520]
 BACKDROP = {"shape", "svg", "sky", "stars", "cloud", "skyline", "ground", "street", "particles", "coins", "digits", "group",
             "room", "building", "image", "lottie", "silhouette", "sketch", "buzz", "cctv", "house", "tree", "streetlight",
             "train", "school", "window_grid", "lockers", "classroom", "desk", "blackboard", "hand", "text", "badge",
-            "timetag", "callout", "bubble", "card", "checklist", "meter", "mail"}
+            "timetag", "callout", "bubble", "card", "checklist", "meter", "mail",
+            # medieval.js: scenery, light and atmosphere
+            "cottage", "chapel", "forest", "cobbles", "hut_interior", "crater", "smoke", "fire", "light_pool", "parchment", "cast_shadow", "meteor"}
 
 
 def _area(b):

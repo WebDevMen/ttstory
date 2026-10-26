@@ -202,3 +202,47 @@ scenes:
                 - {actor: shape, kind: circle, r: 60, fill: "#ffd34d"}
                 - {actor: svg, markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><path d="M20 55 L42 75 L80 30" fill="none" stroke="#10141f" stroke-width="12" stroke-linecap="round"/></svg>', w: 80, h: 80}
             - {actor: cctv, cam: "CAM 04", date: "2026-10-24", clock: 78310, label: "ЗАЛ", space: screen}
+  - id: medieval
+    text: Средневековье и тени.
+    shots:
+      - id: medieval_village
+        draw:
+          layers:
+            - {actor: sky, x: -150, w: 1380, hour: 17.4, par: 0}
+            - {actor: forest, x: 540, y: 1000, w: 1800, h: 150, hill: 120, color: "#5a6a70", seed: 3, par: 0.3}
+            - {actor: ground, x: -400, y: 990, w: 1900, h: 600, color: ["#5f6a62", "#4a5048"], par: 0.3}
+            - {actor: chapel, x: 760, y: 1010, scale: 0.55, ring: 1, lit: 0.6, par: 0.5}
+            - {actor: watermill, x: 230, y: 1030, scale: 0.6, speed: 40, par: 0.5}
+            - {actor: ground, x: -400, y: 1010, w: 1900, h: 600, color: ["#6a6a50", "#4a4a38"], par: 0.5}
+            - {actor: cottage, x: 200, y: 1300, seed: 3, lit: 1}
+            - {actor: cottage, x: 560, y: 1300, seed: 8, floors: 1, thatch: false, lit: 0.3, door: 1}
+            - {actor: forge, x: 900, y: 1300, scale: 0.6}
+            - {actor: cobbles, x: -300, y: 1280, w: 1700, h: 700}
+            - {actor: well, x: 420, y: 1500, scale: 0.8}
+            - {actor: anvil, x: 900, y: 1480, scale: 0.8}
+            - {actor: person, x: 120, y: 1660, look: {age: student, outfit: dress, hair: braid, hair_color: "#b8481e"}, pose: stand}
+            - {actor: cast_shadow, x: 120, y: 1660, look: {age: student, outfit: dress, hair: braid}, angle: 75, len: 1.2, lag: 0.3, pose: [{at: 0, v: stand}, {at: 0.5, v: raise, dur: 0.5}]}
+            - {actor: person, x: 300, y: 1690, look: {age: adult, outfit: smith, hair: short, beard: true}, hold: hammer, hold_rot: 180}
+            - {actor: person, x: 480, y: 1690, look: {age: adult, outfit: robe, hair: tonsure, glasses: true}, pose: think}
+            - {actor: person, x: 660, y: 1690, look: {age: kid, outfit: tunic, hair: short, hair_color: "#e2c070"}, hold: candle, hold_rot: 180}
+            - {actor: person, x: 840, y: 1690, look: {age: adult, outfit: knight, hair: short, beard: "#cfcfcf", hair_color: "#cfcfcf"}, hold: sword, hold_rot: 160, hold_l: torch, hold_l_rot: 180}
+            - {actor: person, x: 980, y: 1700, view: side, flip: true, look: {age: adult, outfit: peasant_f, hair: bun}, walk: 1.4}
+      - id: medieval_magic
+        start: "@тени-0.1"
+        draw:
+          bg: "#0b1022"
+          layers:
+            - {actor: sky, hour: 22, par: 0}
+            - {actor: meteor, x: 820, y: 260, len: 520, angle: 215}
+            - {actor: crater, x: 540, y: 1000, w: 900, glow: 0.8}
+            - {actor: star_stone, x: 540, y: 930, r: 70, heat: 1, drink: 1}
+            - {actor: star_stone, x: 880, y: 560, r: 60, crack: 0.8}
+            - {actor: smoke, x: 540, y: 950, w: 300, h: 600, color: "#3a3440", seed: 3}
+            - {actor: living_shadow, x: 200, y: 1500, h: 520, reach: 1}
+            - {actor: living_shadow, x: 420, y: 1500, h: 480, arms_up: 1, color: "#101018"}
+            - {actor: candle, x: 640, y: 1500, halo: 160}
+            - {actor: torch, x: 760, y: 1500, halo: 140}
+            - {actor: bonfire, x: 930, y: 1520}
+            - {actor: astrolabe, x: 180, y: 1700, r: 90}
+            - {actor: book, x: 470, y: 1740, w: 300}
+            - {actor: parchment, x: 840, y: 1740, w: 360, h: 260}

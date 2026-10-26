@@ -9,8 +9,9 @@ import * as libs from "./libs.js";
 import * as casino from "./casino.js";
 import * as cards from "./cards.js";
 import * as odds from "./odds.js";
+import * as medieval from "./medieval.js";
 
-const FILES = { basic, people, world, interior, ui, libs, casino, cards, odds };
+const FILES = { basic, people, world, interior, ui, libs, casino, cards, odds, medieval };
 const seen = {};
 for (const [file, mod] of Object.entries(FILES)) for (const name of Object.keys(mod)) {
   if (seen[name]) throw new Error(`draw actor '${name}' is defined twice: actors/${seen[name]}.js and actors/${file}.js`);
