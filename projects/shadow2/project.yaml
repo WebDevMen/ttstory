@@ -187,7 +187,7 @@ scenes:
 
   # ------------------------------------------------------------------ 3. PROBLEM — колокол «покрой огонь»
   - id: problem
-    text: "Вечером колокол велел гасить огни — так велел старый закон. В ту ночь тени забрали ещё двадцать человек."
+    text: "Староста Ульрих не отменил старый закон: вечером колокол велел гасить огни. В ту ночь тени забрали ещё двадцать человек."
     shots:
       - id: p_bell
         transition: {type: whip_y}
@@ -225,7 +225,7 @@ scenes:
 
   # ------------------------------------------------------------------ 4. ESCALATION — меч не ранит тень
   - id: escalation
-    text: "Сир Годфрид, старый рыцарь, вышел к теням с мечом. Клинок прошёл насквозь, как сквозь дым. А пустые днём молча уходили в лес — копать."
+    text: "Сир Годфрид, рыцарь, вышел к теням с мечом. Клинок прошёл насквозь, с шипением, как сквозь дым. А пустые днём молча уходили в лес — копать."
     shots:
       - id: e_knight
         transition: {type: whip_x}
@@ -348,8 +348,8 @@ scenes:
             - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 7}
             - {actor: shape, kind: line, points: [[90, 1180], [990, 1180]], stroke: ink, sw: 4, opacity: 0.7}
             - {actor: shape, kind: path, d: "M140,1170 Q540,280 940,1170", fill: "none", stroke: "#a0702a", sw: 3, dash: "10 10"}
-            - {actor: shape, kind: circle, x: 170, y: 1100, r: 44, fill: "#ffb347", glow: {color: "#ffd27a", r: 20, a: 1}, anim: [{at: 0.15, dur: 1.4, path: [[170, 1100], [300, 820], [540, 720]], ease: inOut}]}
-            - {actor: cast_shadow, x: 540, y: 1180, look: {age: adult, outfit: tunic, hair: short}, angle: 92, flat: 0.25, len: [{at: 0, v: 1.6}, {at: 0.15, v: 0.12, dur: 1.4, ease: inOut}], color: "#2a1a10", alpha: 0.75}
+            - {actor: shape, kind: circle, x: 170, y: 1100, r: 44, fill: "#ffb347", glow: {color: "#ffd27a", r: 20, a: 1}, anim: [{at: "@полдень-0.07", dur: 1.4, path: [[170, 1100], [300, 820], [540, 720]], ease: inOut}]}
+            - {actor: cast_shadow, x: 540, y: 1180, look: {age: adult, outfit: tunic, hair: short}, angle: 92, flat: 0.25, len: [{at: "@полдень-0.22", v: 1.6}, {at: "@полдень-0.07", v: 0.12, dur: 1.4, ease: inOut}], color: "#2a1a10", alpha: 0.75}
             - {actor: person, x: 540, y: 1180, scale: 0.8, look: {age: adult, outfit: tunic, hair: short, silhouette: "#5a3e28"}}
             - {actor: callout, target: [540, 1190], x: 540, y: 1330, title: "ПОЛДЕНЬ = КОРОТКАЯ ТЕНЬ", color: "#a0702a", size: 40, space: screen, at: "@ногами-0.2", enter: pop, sfx: false}
     sfx:
@@ -361,7 +361,7 @@ scenes:
 
   # ------------------------------------------------------------------ 6. TWIST — тень предупреждает
   - id: sign
-    text: "На рассвете тень Марты снова ожила. Она не нападала. Она чертила на земле знак: солнце, закрытое чёрным кругом."
+    text: "На рассвете тень Марты снова ожила. Марта не побежала. А тень не нападала: она чертила в пыли знак — солнце под чёрным кругом."
     shots:
       - id: s_dawn
         transition: {type: dip}
@@ -381,8 +381,8 @@ scenes:
             - {actor: smoke, x: 960, y: 1130, w: 80, h: 400, color: "#8a8088", n: 8, blur: 7, speed: 20, alpha: 0.5, seed: 9}
             # her long dawn shadow (sun low on the left) lifts its arm toward the ground on its own
             - {actor: cast_shadow, x: 380, y: 1330, scale: 1.0, look: *marta, angle: 112, flat: 0.45, len: 1.35, color: "#1a1210", alpha: 0.65,
-               pose: [{at: 0, v: stand}, {at: "@ожила", v: {a1: [7, 4], a2: [80, 30], l1: [2, 0], l2: [2, 0]}, dur: 0.6}], anim: [{at: "@нападала", dur: 0.5, dx: -50}]}
-            - {actor: person, id: marta, x: 380, y: 1330, scale: 1.0, look: *marta, face: [{at: 0, v: neutral}, {at: "@ожила", v: surprised}, {at: "@нападала", v: neutral}], pose: [{at: 0, v: stand}, {at: "@ожила", v: surprised, dur: 0.3}, {at: "@нападала", v: together, dur: 0.4}], anim: [{at: "@нападала", dur: 0.5, dx: -50}]}
+               pose: [{at: 0, v: stand}, {at: "@ожила", v: {a1: [7, 4], a2: [80, 30], l1: [2, 0], l2: [2, 0]}, dur: 0.6}]}
+            - {actor: person, id: marta, x: 380, y: 1330, scale: 1.0, look: *marta, face: [{at: 0, v: neutral}, {at: "@ожила", v: surprised}, {at: "@побежала", v: determined}], pose: [{at: 0, v: stand}, {at: "@ожила", v: surprised, dur: 0.3}, {at: "@побежала", v: stand, dur: 0.4}]}
             - {actor: person, x: 760, y: 1250, scale: 0.7, look: {age: adult, outfit: tunic, hair: side, beard: true}, pose: sit, face: sleep}
             - {actor: particles, kind: dust, region: [0, 500, 1080, 1400], count: 18, colors: ["#ffe1d0"], alpha: 0.45, seed: 2}
       - id: s_draw
@@ -396,7 +396,7 @@ scenes:
             - {actor: shape, kind: rect, x: -200, y: -100, w: 1480, h: 2200, origin: top-left, fill: {radial: ["#8a7458", "#6a5640", "#3a2e22"]}}
             - {actor: particles, kind: dust, region: [0, 300, 1080, 1700], count: 60, colors: ["#5a4632", "#9a8466"], size: [4, 12], alpha: 0.8, seed: 11}
             - {actor: hand, pose: point, x: 1150, y: 1500, scale: 1.0, rot: -50, skin: "#1a1210", sleeve: "#1a1210", cuff: "#1a1210", opacity: 0.8, blur: 3,
-               anim: [{at: 0.05, dur: 0.6, x: 750, y: 860, ease: out}, {at: "@чертила", dur: 0.9, path: [[750, 860], [700, 1020], [540, 1070], [380, 1000], [330, 860], [400, 700], [540, 650], [700, 700], [750, 860]], ease: linear}]}
+               anim: [{at: "@чертила-0.17", dur: 0.6, x: 750, y: 860, ease: out}, {at: "@чертила", dur: 0.9, path: [[750, 860], [700, 1020], [540, 1070], [380, 1000], [330, 860], [400, 700], [540, 650], [700, 700], [750, 860]], ease: linear}]}
             - {actor: shape, kind: circle, x: 540, y: 860, r: 210, fill: "none", stroke: "#f6e2b0", sw: 12, at: "@чертила", enter: draw, enter_dur: 0.9, glow: {color: "#ffd27a", r: 20, a: 0.9}}
             - {actor: shape, kind: circle, x: 540, y: 860, r: 196, fill: "#140e0a", at: "@чёрным-0.05", enter: {type: grow, dur: 0.5}}
             - {<<: *title, text: "ТЕНЬ ПРЕДУПРЕЖДАЕТ", at: "@чёрным-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}

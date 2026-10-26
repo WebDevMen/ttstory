@@ -62,6 +62,32 @@ def _motion_rel(obj, start):
     return obj
 
 
+def _stale_anims(layers, start, path=""):
+    """Plain-number `at` in a draw item's anim steps and value tracks is ABSOLUTE video time. In a shot that starts later,
+    a step written as `at: 0` / `at: 0.1` has already finished before the shot is on screen (a walk-in that never happens).
+    Returns the offending items; compile prints a warning (docs/DRAW.md §5)."""
+    out = []
+    for i, it in enumerate(layers or []):
+        if not isinstance(it, dict):
+            continue
+        name = f"{path}{it.get('id') or it.get('actor')}[{i}]"
+        keys = []
+        for st in it.get("anim") or []:
+            if isinstance(st, dict) and isinstance(st.get("at"), (int, float)) and not isinstance(st.get("at"), bool):
+                keys.append((st["at"], st.get("dur", 0.5), "anim"))
+        for k, v in it.items():
+            if k in ("anim", "children", "at", "until") or not isinstance(v, list):
+                continue
+            for key in v:
+                if isinstance(key, dict) and isinstance(key.get("at"), (int, float)) and not isinstance(key.get("at"), bool) and key["at"] > 0 and ("v" in key or "to" in key):
+                    keys.append((key["at"], key.get("dur", 0), k))
+        for at, dur, what in keys:
+            if start > 0.5 and at + (dur or 0) < start - 0.05:
+                out.append(f"{name}.{what}: at {at} (+{dur} с) кончается раньше начала шота ({start:.2f} с)")
+        out += _stale_anims(it.get("children"), start, name + ".")
+    return out
+
+
 def run(pid):
     p = load_project(pid)
     v = p["voice"]
@@ -176,6 +202,8 @@ def run(pid):
         sh, ctx = x.pop("raw"), (x["start"], x["end"])
         if sh.get("draw") is not None:                             # code-drawn shot (engine/hud/draw)
             d = deep_merge(draw_defaults, sh["draw"])
+            for msg in _stale_anims(d.get("layers"), x["start"]):
+                print(f"  ! {x['id']}: {msg} — числа в at абсолютные (секунды ролика): используйте \"@слово\" или \"@{x['scene']}.start\"")
             raw_cam = d.pop("camera", None)
             d = refs.deep(d, x["scene"], ctx)
             d["camera"] = camera(raw_cam, x, ctx)

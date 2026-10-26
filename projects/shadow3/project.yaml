@@ -1,0 +1,542 @@
+# «Без тени», часть 3/3 — «Затмение». 100% code-drawn (method draw) from projects/shadow3/script.yaml (v2, fiction mode).
+# Series plan: projects/shadow1/series.md. Actors: library medieval.js (+ eclipse, shield, hourglass, star_stone drink/crack)
+# + person with medieval outfits. Coordinates: screen px 1080x1920. Times: "@word".
+# Light: grey-blue darkness of the eclipse, the last bonfires, then ONE white beam (the brightest thing in the series),
+# then warm dawn; the last frame repeats the first frame of part 1.
+
+title: "Без тени. Часть 3: Затмение"
+
+voice: {voice: ru-RU-SvetlanaNeural, rate: "+14%", pitch: "+0Hz", tail: 1.4}
+
+theme:
+  preset: minimal
+  accent: "#e8eef7"
+  captions:
+    style: clean
+    top: 1480
+    size: 62
+    max_chars: 20
+
+post: {vignette: 0.34, chromatic: 0, grain: 0.03}
+
+draw:
+  palette: {gold: "#ffcf6a", fire: "#ffb347", ink: "#3a2416", beam: "#f4f8ff"}
+
+# ------------------------------------------------------------------ shared pieces
+x-title: &title {actor: text, x: 540, y: 420, size: 100, width: 980, lines: 2, color: "#ffffff", stroke: {w: 10, color: "#0c0e16"}, shadow: "0 0 34px rgba(200,220,255,.6)", space: screen}
+x-tag: &tag {actor: timetag, x: 540, y: 200, size: 36, color: gold, space: screen}
+
+x-look-marta: &marta {age: student, outfit: dress, hair: braid, hair_color: "#b8481e", skin: light}
+x-look-hans: &hans {age: adult, outfit: smith, hair: short, hair_color: "#3a2418", beard: true, skin: mid, hollow: true}
+x-look-tomas: &tomas {age: kid, outfit: tunic, hair: short, hair_color: "#e2c070", color: "#7a8a5a", skin: light, hollow: true}
+x-look-godfrid: &godfrid {age: adult, outfit: knight, hair: short, hair_color: "#d0d0d0", beard: "#dadada", skin: light}
+
+x-sky-eclipse: &sky_eclipse {actor: sky, x: -200, w: 1480, hour: 21, par: 0, sun: false, moon: false, horizon: 930, clouds: 1, seed: 7, colors: ["#0c1020", "#1e2638", "#3a4256"]}
+x-eclipse: &eclipse_full {actor: eclipse, x: 700, y: 330, r: 90, cover: 1, par: 0}
+x-forest-dark: &forest_dark {actor: forest, x: 540, y: 905, w: 2100, h: 150, hill: 120, color: "#1a2030", seed: 3, par: 0.2}
+x-ground-dark-far: &ground_dark_far {actor: ground, x: -520, y: 890, w: 2120, h: 1100, color: ["#1a1e2a", "#12151e"], par: 0.2}
+x-shade: &shade {actor: living_shadow, color: "#05050a", glow: {color: "#9a8cff", r: 10, a: 0.45}}
+x-vsh: &vsh {actor: cast_shadow, angle: 128, len: 1.0, flat: 0.42, alpha: 0.5, color: "#1a1410", soft: 2.5}
+
+audio:
+  music:
+    key: D
+    mode: minor
+    bpm: 92
+    gain: -15
+    sections:
+      - {at: 0, style: dark, chords: [Dm, Bb, Gm, A]}
+      - {at: "@context.start", style: tension}
+      - {at: "@problem.start", style: dark}
+      - {at: "@escalation.start", style: epic}
+      - {at: "@rule.start", style: pulse, chords: [Dm, Bb, F, C]}
+      - {at: "@lead.start", style: tension}
+      - {at: "@light.start", style: epic, chords: [Bb, C, Dm, F]}
+      - {at: "@return.start", style: calm}
+      - {at: "@cta.start", style: drone, chords: [Dm, Bb, F, A]}
+  duck: 0.6
+
+scenes:
+
+  # ------------------------------------------------------------------ 1. HOOK — тени не боятся огня
+  - id: hook
+    accent: "#e8eef7"
+    text: "Когда погасло солнце, тени перестали бояться огня. А Марте нужно было выйти из круга."
+    caption_marks: {"перестали бояться огня": "#ff6a3d"}
+    shots:
+      - id: h_eclipse
+        ambience: [{sound: wind, gain: -20}, {sound: fire, gain: -20}]
+        look: {bloom: [0.7, 0.3]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.05, y: 760}, {t: end, z: 1.0, y: 1060}]}
+          layers:
+            - *sky_eclipse
+            - {actor: stars, region: [0, 0, 1080, 800], count: 60, size: 2}
+            - {actor: eclipse, x: 700, y: 330, r: 90, cover: [{at: 0, v: 0.9}, {at: "@погасло", v: 1, dur: 0.5}], par: 0}
+            - *forest_dark
+            - *ground_dark_far
+            - {actor: chapel, x: 300, y: 1040, scale: 0.6, lit: 0.6, brightness: 0.55, par: 0.6}
+            - {actor: cottage, x: 880, y: 1040, scale: 0.5, seed: 8, floors: 2, thatch: false, brightness: 0.5, par: 0.6}
+            - {actor: ground, x: -520, y: 1025, w: 2120, h: 1000, color: ["#22201e", "#161412"], par: 0.6}
+            - {actor: ground, x: -520, y: 1080, w: 2120, h: 900, color: ["#2e2620", "#1a1612"]}
+            - {actor: light_pool, x: 540, y: 1260, r: 620, sy: 0.42, color: "#ff9a3a", a: 0.5, k: [{at: 0, v: 1}, {at: "@огня", v: 0.45, dur: 0.6}]}
+            - {actor: bonfire, x: 243, y: 1154, scale: 0.52, seed: 5, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {actor: bonfire, x: 540, y: 1110, scale: 0.5, seed: 6, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {actor: bonfire, x: 837, y: 1154, scale: 0.52, seed: 7, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {actor: bonfire, x: 120, y: 1260, scale: 0.6, seed: 4, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {actor: bonfire, x: 960, y: 1260, scale: 0.6, seed: 8, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {<<: *shade, x: 60, y: 1150, h: 440, alpha: 0.9, reach: 0.8, anim: [{at: "@тени", dur: 1.2, x: 300, y: 1240, ease: inOut}]}
+            - {<<: *shade, x: 1020, y: 1140, h: 420, alpha: 0.9, reach: 0.8, flip: true, anim: [{at: "@тени+0.2", dur: 1.2, x: 790, y: 1240, ease: inOut}]}
+            - {actor: person, x: 430, y: 1275, scale: 0.78, look: {age: adult, outfit: peasant_f, hair: bun}, face: [{at: 0, v: neutral}, {at: "@огня", v: surprised}]}
+            - {actor: person, x: 540, y: 1290, scale: 0.68, look: {age: kid, outfit: tunic, hair: short, hair_color: "#6a4a2a"}, face: [{at: 0, v: neutral}, {at: "@огня", v: sad}]}
+            - {actor: person, x: 650, y: 1270, scale: 0.76, look: *marta, face: [{at: 0, v: neutral}, {at: "@огня", v: determined}]}
+            - {actor: bonfire, x: 243, y: 1366, scale: 0.68, seed: 3, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {actor: bonfire, x: 540, y: 1410, scale: 0.72, seed: 2, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {actor: bonfire, x: 837, y: 1366, scale: 0.68, seed: 1, k: [{at: 0, v: 1}, {at: "@огня", v: 0.5, dur: 0.6}]}
+            - {<<: *tag, text: "ЧАСТЬ 3/3 · ЗАТМЕНИЕ", at: 0.05, enter: fade}
+            - {<<: *title, y: 780, size: 92, text: "ТЕНИ НЕ БОЯТСЯ ОГНЯ", at: "@огня-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+      - id: h_marta
+        start: "@Марте-0.22"
+        transition: {type: zoom}
+        draw:
+          camera: {keys: [{t: 0, z: 1.15, x: 540, y: 1000}, {t: end, z: 1.25, x: 480, y: 1000}]}
+          layers:
+            - *sky_eclipse
+            - {actor: eclipse, x: 300, y: 380, r: 80, cover: 1, par: 0}
+            - *forest_dark
+            - *ground_dark_far
+            - {actor: ground, x: -520, y: 1000, w: 2120, h: 1000, color: ["#2e2620", "#1a1612"]}
+            - {actor: light_pool, x: 760, y: 1240, r: 420, sy: 0.4, color: "#ff9a3a", a: 0.55}
+            - {actor: shape, kind: ellipse, x: 540, y: 1260, w: 760, h: 190, fill: "none", stroke: "rgba(255,180,90,0.7)", sw: 4, dash: "14 10"}
+            - {actor: bonfire, x: 820, y: 1210, scale: 0.6, seed: 4, k: 0.55}
+            - {<<: *shade, x: 150, y: 1180, h: 480, alpha: 0.9, reach: 1}
+            - {actor: person, id: marta, x: 560, y: 1290, scale: 1.0, look: *marta, face: determined, look_dx: [{at: 0, v: 0}, {at: "@круга", v: -1, dur: 0.4}],
+               pose: [{at: 0, v: together}, {at: "@выйти", v: point, dur: 0.4}], anim: [{at: "@выйти", dur: 0.8, dx: -60}]}
+            - {actor: bonfire, x: 260, y: 1400, scale: 0.7, seed: 3, k: 0.55}
+            - {actor: callout, target: "marta.top", x: 680, y: 600, title: "МАРТА", color: gold, size: 44, space: screen, at: "@Марте", enter: pop, sfx: false}
+    sfx:
+      - {sound: riser, at: "@hook.start", gain: -14}
+      - {sound: impact, at: "@огня", gain: -12}
+      - {sound: creature, at: "@тени", gain: -14}
+      - {sound: hiss, at: "@круга", gain: -14}
+
+  # ------------------------------------------------------------------ 2. SETUP — света слишком мало
+  - id: context
+    text: "Часть третья. Затмение. Костры шипят, но их света мало — тени идут сквозь круг."
+    shots:
+      - id: c_recap
+        transition: {type: whip_x}
+        captions_top: 1520
+        draw:
+          bg: "#120d0a"
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.04, y: 900}]}
+          layers:
+            - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 3}
+            - {actor: shape, kind: path, d: "M0,-32 L330,-40 L330,40 L0,32 Z", x: 540, y: 860, rot: 0, fill: "rgba(42,26,16,0.6)", blur: 2, opacity: [{at: 0, v: 0}, {at: "@Затмение", v: 1, dur: 0.5}]}
+            - {actor: shape, kind: path, d: "M0,-32 L330,-40 L330,40 L0,32 Z", x: 540, y: 860, rot: 90, fill: "rgba(42,26,16,0.6)", blur: 2, opacity: [{at: 0, v: 0}, {at: "@Затмение+0.1", v: 1, dur: 0.5}]}
+            - {actor: shape, kind: path, d: "M0,-32 L330,-40 L330,40 L0,32 Z", x: 540, y: 860, rot: 180, fill: "rgba(42,26,16,0.6)", blur: 2, opacity: [{at: 0, v: 0}, {at: "@Затмение+0.2", v: 1, dur: 0.5}]}
+            - {actor: shape, kind: path, d: "M0,-32 L330,-40 L330,40 L0,32 Z", x: 540, y: 860, rot: 270, fill: "rgba(42,26,16,0.6)", blur: 2, opacity: [{at: 0, v: 0}, {at: "@Затмение+0.3", v: 1, dur: 0.5}]}
+            - {actor: bonfire, x: 230, y: 900, scale: 0.42, k: [{at: 0, v: 1}, {at: "@Затмение", v: 0.4, dur: 0.5}]}
+            - {actor: bonfire, x: 540, y: 590, scale: 0.42, k: [{at: 0, v: 1}, {at: "@Затмение", v: 0.4, dur: 0.5}]}
+            - {actor: bonfire, x: 850, y: 900, scale: 0.42, k: [{at: 0, v: 1}, {at: "@Затмение", v: 0.4, dur: 0.5}]}
+            - {actor: bonfire, x: 540, y: 1210, scale: 0.42, k: [{at: 0, v: 1}, {at: "@Затмение", v: 0.4, dur: 0.5}]}
+            - {actor: shape, kind: circle, x: 540, y: 860, r: 46, fill: "#5a3e28"}
+            - {actor: shape, kind: ellipse, x: 540, y: 860, w: 150, h: 70, fill: "#5a3e28", opacity: 0.6}
+            - {actor: shape, kind: rect, x: 540, y: 900, w: 1010, h: 1120, fill: "#0c1020", opacity: [{at: 0, v: 0}, {at: "@Затмение", v: 0.45, dur: 0.6}]}
+            - {<<: *tag, text: "ЧАСТЬ 2 · ПРАВИЛА", at: "@Часть-0.05", enter: wipe_right, enter_dur: 0.5}
+      - id: c_ring
+        start: "@Костры-0.22"
+        transition: {type: dip}
+        ambience: [{sound: fire, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, y: 1080}, {t: end, z: 1.08, y: 1140}]}
+          layers:
+            - *sky_eclipse
+            - {actor: stars, region: [0, 0, 1080, 800], count: 60, size: 2}
+            - *eclipse_full
+            - *forest_dark
+            - *ground_dark_far
+            - {actor: chapel, x: 300, y: 1040, scale: 0.6, lit: 0.6, brightness: 0.55, par: 0.6}
+            - {actor: cottage, x: 880, y: 1040, scale: 0.5, seed: 8, floors: 2, thatch: false, brightness: 0.5, par: 0.6}
+            - {actor: ground, x: -520, y: 1025, w: 2120, h: 1000, color: ["#22201e", "#161412"], par: 0.6}
+            - {actor: ground, x: -520, y: 1080, w: 2120, h: 900, color: ["#2e2620", "#1a1612"]}
+            - {actor: light_pool, x: 540, y: 1260, r: 620, sy: 0.42, color: "#ff9a3a", a: 0.5, k: [{at: 0, v: 0.6}, {at: "@мало", v: 0.25, dur: 0.6}]}
+            - {actor: bonfire, x: 243, y: 1154, scale: 0.52, seed: 5, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: bonfire, x: 540, y: 1110, scale: 0.5, seed: 6, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: bonfire, x: 837, y: 1154, scale: 0.52, seed: 7, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: bonfire, x: 120, y: 1260, scale: 0.6, seed: 4, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: bonfire, x: 960, y: 1260, scale: 0.6, seed: 8, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: smoke, x: 243, y: 1120, w: 80, h: 380, color: "#5a5060", n: 8, blur: 7, speed: 30, alpha: 0.5, seed: 3}
+            - {actor: smoke, x: 837, y: 1120, w: 80, h: 380, color: "#5a5060", n: 8, blur: 7, speed: 30, alpha: 0.5, seed: 5}
+            - {<<: *shade, x: 330, y: 1120, h: 440, alpha: 0.9, reach: 1, anim: [{at: "@сквозь", dur: 1.0, x: 420, y: 1230, ease: inOut}]}
+            - {<<: *shade, x: 760, y: 1120, h: 430, alpha: 0.9, arms_up: 0.6, flip: true, anim: [{at: "@сквозь+0.15", dur: 1.0, x: 680, y: 1225, ease: inOut}]}
+            - {actor: person, x: 470, y: 1300, scale: 0.78, look: {age: adult, outfit: peasant_f, hair: bun}, face: sad}
+            - {actor: person, x: 560, y: 1310, scale: 0.68, look: {age: kid, outfit: tunic, hair: short, hair_color: "#6a4a2a"}, face: surprised}
+            - {actor: person, x: 640, y: 1300, scale: 0.8, look: {age: adult, outfit: tunic, hair: side, beard: true}, face: determined}
+            - {actor: bonfire, x: 243, y: 1366, scale: 0.68, seed: 3, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: bonfire, x: 540, y: 1410, scale: 0.72, seed: 2, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {actor: bonfire, x: 837, y: 1366, scale: 0.68, seed: 1, k: [{at: 0, v: 0.55}, {at: "@мало", v: 0.35, dur: 0.5}]}
+            - {<<: *title, y: 640, size: 92, text: "СВЕТА СЛИШКОМ МАЛО", at: "@мало-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+    sfx:
+      - {sound: noise_sweep, at: "@Затмение", gain: -14}
+      - {sound: hiss, at: "@шипят", gain: -14}
+      - {sound: kick, at: "@мало", gain: -12}
+      - {sound: creature, at: "@сквозь", gain: -12}
+
+  # ------------------------------------------------------------------ 3. PROBLEM — камень пьёт свет
+  - id: problem
+    text: "В лесу пустые выкопали камень. Он поднялся над ямой и пил свет. Пламя факелов гнулось к нему, как трава под ветром."
+    shots:
+      - id: p_rise
+        transition: {type: whip_x}
+        captions_top: auto
+        ambience: [{sound: rumble, gain: -16}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.18, y: 1080}, {t: end, z: 1.25, y: 1000}]}
+          layers:
+            - *sky_eclipse
+            - {actor: stars, region: [0, 0, 1080, 800], count: 60, size: 2}
+            - {actor: eclipse, x: 820, y: 360, r: 80, cover: 1, par: 0}
+            - {actor: forest, x: 540, y: 1010, w: 2100, h: 260, hill: 40, color: "#141a24", seed: 9, par: 0.3}
+            - {actor: ground, x: -520, y: 995, w: 2120, h: 1000, color: ["#161a22", "#101318"], par: 0.3}
+            - {actor: ground, x: -520, y: 1150, w: 2120, h: 900, color: ["#2a2220", "#1a1614"]}
+            - {actor: crater, x: 540, y: 1430, w: 1000, depth: 230, color: "#3a2e26", glow: 0.25}
+            - {actor: star_stone, id: stone, x: 540, y: [{at: 0, v: 1310}, {at: "@поднялся", v: 1050, dur: 1.4, ease: inOut}], r: 70, drink: [{at: 0, v: 0}, {at: "@поднялся+0.8", v: 0.6, dur: 0.6}], rim: "#7a4aff"}
+            - {actor: particles, kind: dust, region: [400, 1150, 700, 1350], count: 30, colors: ["#6a5440"], size: [4, 9], alpha: 0.7, at: "@поднялся", seed: 6}
+            - {actor: person, view: side, x: 150, y: 1220, scale: 0.72, look: *hans, hold: shovel, hold_rot: 150, face: neutral, brightness: 0.7}
+            - {actor: person, view: side, x: 290, y: 1205, scale: 0.62, look: *tomas, face: neutral, brightness: 0.7}
+            - {actor: person, view: side, flip: true, x: 820, y: 1210, scale: 0.7, look: {age: adult, outfit: peasant_f, hair: bun, hollow: true}, hold: shovel, hold_rot: 150, face: neutral, brightness: 0.7}
+            - {actor: person, view: side, flip: true, x: 950, y: 1220, scale: 0.72, look: {age: adult, outfit: tunic, hair: short, hollow: true}, hold: shovel, hold_rot: 150, face: neutral, brightness: 0.7}
+            - {actor: callout, target: "stone", x: 540, y: 640, title: "ВОТ ЧТО ОНИ КОПАЛИ", color: gold, size: 42, space: screen, at: "@выкопали", enter: pop, sfx: false}
+      - id: p_drink
+        start: "@пил-0.22"
+        transition: {type: zoom}
+        captions_top: 1520
+        look: {bloom: [0.7, 0.3]}
+        draw:
+          bg: "#0a0c14"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.1}]}
+          layers:
+            - {actor: shape, kind: rect, x: -200, y: -100, w: 1480, h: 2200, origin: top-left, fill: {radial: ["#2a2a44", "#141624", "#08090e"]}}
+            - {actor: torch, x: 160, y: 1350, len: 300, scale: 1.2, rot: 14, halo: 200, lean: [{at: 0, v: 0}, {at: "@Пламя", v: 1.2, dur: 0.6}]}
+            - {actor: torch, x: 930, y: 1360, len: 300, scale: 1.2, rot: -14, halo: 200, lean: [{at: 0, v: 0}, {at: "@Пламя", v: -1.2, dur: 0.6}]}
+            - {actor: torch, x: 330, y: 1500, len: 260, scale: 1.1, rot: 8, halo: 180, lean: [{at: 0, v: 0}, {at: "@Пламя+0.15", v: 1.0, dur: 0.6}]}
+            - {actor: star_stone, x: 540, y: 820, r: 170, drink: [{at: 0, v: 0.6}, {at: "@пил", v: 1, dur: 0.4}], rim: "#7a4aff", pulse: {freq: 1.2, amp: 0.02}}
+            - {actor: particles, kind: embers, region: [100, 800, 1000, 1500], count: 30, seed: 7}
+            - {<<: *title, text: "КАМЕНЬ ПЬЁТ СВЕТ", at: "@пил-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+    sfx:
+      - {sound: groan, at: "@поднялся", gain: -12}
+      - {sound: noise_sweep, at: "@пил", gain: -14}
+      - {sound: hiss, at: "@Пламя", gain: -14}
+
+  # ------------------------------------------------------------------ 4. ESCALATION — он держал огонь
+  - id: escalation
+    text: "Сир Годфрид держал огонь последним. Держал, пока его тень не забрали. Но огонь не погас."
+    shots:
+      - id: e_knight
+        transition: {type: whip_x}
+        ambience: [{sound: fire, gain: -16}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, y: 1000}, {t: end, z: 1.12, x: 520, y: 980}]}
+          layers:
+            - *sky_eclipse
+            - *eclipse_full
+            - *forest_dark
+            - *ground_dark_far
+            - {actor: ground, x: -520, y: 1080, w: 2120, h: 900, color: ["#2e2620", "#1a1612"]}
+            - {actor: light_pool, x: 560, y: 1330, r: 460, sy: 0.5, color: "#ff9a3a", a: 0.55}
+            - {actor: bonfire, x: 700, y: 1330, scale: 0.7, seed: 3}
+            - {<<: *shade, x: 120, y: 1300, h: 520, alpha: 0.95, reach: 1}
+            - {<<: *shade, x: 960, y: 1290, h: 500, alpha: 0.95, arms_up: 0.8, flip: true}
+            # his own shadow on the ground is torn off and dragged away
+            - {<<: *vsh, x: 420, y: 1420, scale: 1.05, look: *godfrid, view: side, angle: 150, alpha: [{at: 0, v: 0.55}, {at: "@забрали", v: 0, dur: 0.6}], len: [{at: 0, v: 1}, {at: "@забрали", v: 0, dur: 0.6}]}
+            - {<<: *shade, x: 420, y: 1440, h: 380, alpha: [{at: 0, v: 0}, {at: "@забрали-0.1", v: 0.9, dur: 0.3}], lean: -20, anim: [{at: "@забрали", dur: 0.9, x: 80, ease: in}]}
+            - {actor: person, id: knight, view: side, x: 420, y: 1420, scale: 1.05, look: *godfrid, hold: torch, hold_rot: 140, hold_l: torch, hold_l_rot: 140, face: determined,
+               pose: [{at: 0, v: {a1: [70, 70], a2: [70, 70], l1: [14, 4], l2: [-14, 8]}}, {at: "@Держал", v: {a1: [120, 40], a2: [40, 90], l1: [14, 4], l2: [-14, 8]}, dur: 0.4}, {at: "@забрали", v: {a1: [90, 60], a2: [60, 80], l1: [14, 10], l2: [-14, 14], lean: 10}, dur: 0.4}],
+               glow: {color: "#ff9a3a", r: 16, a: 0.5}}
+            - {actor: particles, kind: embers, region: [300, 1000, 800, 1400], count: 26, seed: 5}
+            - {actor: callout, target: "knight.top", x: 420, y: 560, title: "СИР ГОДФРИД", color: gold, size: 44, space: screen, at: "@Годфрид", enter: pop, sfx: false}
+      - id: e_fall
+        start: "@Но-0.22"
+        transition: {type: dip}
+        draw:
+          camera: {keys: [{t: 0, z: 1.15, y: 1150}, {t: end, z: 1.25, y: 1120}]}
+          layers:
+            - *sky_eclipse
+            - *forest_dark
+            - *ground_dark_far
+            - {actor: ground, x: -520, y: 1080, w: 2120, h: 900, color: ["#2e2620", "#1a1612"]}
+            - {actor: light_pool, x: 600, y: 1300, r: 460, sy: 0.5, color: "#ff9a3a", a: [{at: 0, v: 0.4}, {at: "@погас", v: 0.8, dur: 0.3}]}
+            - {actor: bonfire, x: 760, y: 1320, scale: 0.7, seed: 3, k: [{at: 0, v: 0.7}, {at: "@погас", v: 1.3, dur: 0.3}]}
+            - {actor: torch, x: 560, y: 1380, len: 200, rot: 6, halo: 160, k: [{at: 0, v: 1}, {at: "@погас", v: 1.3, dur: 0.3}]}
+            - {actor: person, view: side, x: 420, y: 1420, scale: 1.05, look: *godfrid, face: [{at: 0, v: determined}, {at: "@огонь", v: sleep}],
+               pose: [{at: 0, v: {a1: [40, 40], a2: [60, 40], l1: [14, 10], l2: [-14, 14], lean: 10}}, {at: "@огонь", v: {a1: [10, 20], a2: [60, 20], l1: [80, 90], l2: [-10, 100], lean: 30, sit: 0.6}, dur: 0.5}]}
+            - {<<: *title, text: "ОН ДЕРЖАЛ ОГОНЬ", at: "@погас-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+    sfx:
+      - {sound: whoosh, at: "@Годфрид", gain: -14}
+      - {sound: groan, at: "@забрали", gain: -12}
+      - {sound: boom, at: "@погас", gain: -10}
+
+  # ------------------------------------------------------------------ 5. RULE — затмение, луч, зеркало
+  - id: rule
+    text: "Ансельм успел крикнуть главное. Полное затмение — не дольше семи с половиной минут. Потом бьёт первый луч. А зеркало вернёт его под тем же углом."
+    shots:
+      - id: r_timer
+        transition: {type: whip_x}
+        captions_top: 1520
+        draw:
+          bg: "#120d0a"
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.05, y: 900}]}
+          layers:
+            - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 9}
+            - {actor: eclipse, x: 540, y: 760, r: 150, cover: [{at: 0, v: 0.6}, {at: "@Полное", v: 1, dur: 0.8, ease: inOut}]}
+            - {actor: hourglass, x: 820, y: 1170, scale: 1.0, flow: [{at: 0, v: 0}, {at: "@крикнуть", v: 1, dur: 4.0, ease: linear}], at: "@Ансельм", enter: drop}
+            - {actor: hand, pose: point, x: 1050, y: 1500, scale: 0.6, rot: -40, skin: "#e2b08a", sleeve: "#6e665c", cuff: "#5e574e", at: "@Ансельм", enter: fade, anim: [{at: "@Ансельм", dur: 0.6, x: 960, y: 1360}]}
+            - {actor: badge, x: 540, y: 1260, title: "НЕ ДОЛЬШЕ 7,5 МИНУТ", style: solid, color: gold, size: 50, space: screen, at: "@семи", enter: pop, sfx: false}
+      - id: r_ring
+        start: "@Потом-0.22"
+        transition: {type: zoom}
+        captions_top: 1520
+        look: {bloom: [0.6, 0.45]}
+        draw:
+          bg: "#120d0a"
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.1, y: 820}]}
+          layers:
+            - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 9}
+            - {actor: eclipse, x: 540, y: 760, r: 150, cover: [{at: 0, v: 1}, {at: "@первый", v: 0.96, dur: 0.4}], from: 160, ring: [{at: 0, v: 0}, {at: "@первый", v: 1, dur: 0.3}]}
+            - {actor: shape, kind: line, points: [[400, 720], [130, 1260]], stroke: beam, sw: 10, at: "@луч", enter: draw, enter_dur: 0.4, glow: {color: "#ffffff", r: 18, a: 1}}
+            - {actor: callout, target: [400, 720], x: 540, y: 1260, title: "ПЕРВЫЙ ЛУЧ", color: gold, size: 44, space: screen, at: "@луч", enter: pop, sfx: false}
+      - id: r_mirror
+        start: "@зеркало-0.22"
+        transition: {type: dip}
+        captions_top: 1520
+        draw:
+          bg: "#120d0a"
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.04, y: 900}]}
+          layers:
+            - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 4}
+            - {actor: shape, kind: line, points: [[150, 420], [540, 1120]], stroke: "#c0882a", sw: 8, at: "@зеркало", enter: draw, enter_dur: 0.4}
+            - {actor: shape, kind: line, points: [[540, 1120], [880, 510]], stroke: "#c0882a", sw: 8, at: "@углом-0.5", enter: draw, enter_dur: 0.4}
+            - {actor: shape, kind: line, points: [[540, 1120], [540, 700]], stroke: "#7a5a3a", sw: 3, dash: "8 8"}
+            - {actor: shape, kind: arc, x: 540, y: 1120, r: 110, start: -90, end: -61, stroke: gold, sw: 6, fill: "none", at: "@углом", enter: draw}
+            - {actor: shape, kind: arc, x: 540, y: 1120, r: 110, start: -119, end: -90, stroke: gold, sw: 6, fill: "none", at: "@углом", enter: draw}
+            - {actor: shield, x: 540, y: 1160, r: 110, shine: 1, sy: 0.45}
+            - {actor: star_stone, x: 900, y: 480, r: 60}
+            - {actor: badge, x: 540, y: 1310, title: "УГОЛ ПАДЕНИЯ = УГОЛ ОТРАЖЕНИЯ", style: solid, color: gold, size: 34, space: screen, at: "@углом", enter: pop, sfx: false}
+    sfx:
+      - {sound: click, at: "@Ансельм", gain: -14}
+      - {sound: kick, at: "@семи", gain: -12}
+      - {sound: sparkle, at: "@первый", gain: -12}
+      - {sound: chime, at: "@углом", gain: -14}
+
+  # ------------------------------------------------------------------ 6. TWIST — щит и тень ведут к камню
+  - id: lead
+    text: "Марта сорвала со стены отцовский щит — Ганс начищал его до блеска. Тень повела её к камню. Она не охотилась. Она ждала первого луча."
+    shots:
+      - id: t_shield
+        transition: {type: whip_x}
+        draw:
+          camera: {keys: [{t: 0, z: 1.1, x: 460, y: 1000}, {t: end, z: 1.2, x: 520, y: 1020}]}
+          layers:
+            - *sky_eclipse
+            - *eclipse_full
+            - *forest_dark
+            - *ground_dark_far
+            - {actor: forge, x: 400, y: 1330, scale: 1.6, brightness: 0.6}
+            - {actor: ground, x: -520, y: 1310, w: 2120, h: 800, color: ["#2e2620", "#1a1612"]}
+            - {actor: light_pool, x: 900, y: 1250, r: 460, sy: 0.6, color: "#ff9a3a", a: 0.5}
+            - {actor: bonfire, x: 960, y: 1360, scale: 0.6, seed: 2, k: 0.6}
+            - {actor: shield, id: shld, x: [{at: 0, v: 650}, {at: "@сорвала+0.1", v: 700, dur: 0.6, ease: out}], y: [{at: 0, v: 900}, {at: "@сорвала+0.1", v: 1170, dur: 0.6, ease: out}], r: 95, shine: [{at: 0, v: 0}, {at: "@блеска", v: 1, dur: 0.3}], glow: {color: "#ffd9a0", r: 14, a: 0.6}}
+            - {actor: person, id: marta, x: 760, y: 1360, scale: 0.95, view: side, flip: true, look: *marta, face: determined,
+               pose: [{at: 0, v: {a1: [4, 6], a2: [-4, 8], l1: [2, 0], l2: [-2, 0]}}, {at: "@сорвала-0.3", v: {a1: [100, 10], a2: [110, 10], l1: [6, 0], l2: [-6, 0]}, dur: 0.3}, {at: "@сорвала+0.3", v: {a1: [50, 60], a2: [50, 60], l1: [2, 0], l2: [-2, 0]}, dur: 0.4}]}
+            - {actor: callout, target: "shld", x: 420, y: 560, title: "ЩИТ КУЗНЕЦА", color: gold, size: 44, space: screen, at: "@щит", enter: pop, sfx: false}
+      - id: t_forest
+        start: "@Тень-0.22"
+        transition: {type: whip_x}
+        ambience: [{sound: wind, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, x: 500, y: 1000, z: 1.0}, {t: end, x: 600, y: 1000, z: 1.06}]}
+          layers:
+            - {actor: sky, x: -200, w: 1480, hour: 21, par: 0, sun: false, moon: false, horizon: 1100, clouds: 1, seed: 2, colors: ["#0c1020", "#1e2638", "#3a4256"]}
+            - {actor: eclipse, x: 820, y: 330, r: 80, cover: 1, par: 0}
+            - {actor: light_pool, x: 1050, y: 1150, r: 520, sy: 0.5, color: "#9a7aff", a: 0.45, par: 0.3}
+            - {actor: forest, x: 540, y: 1120, w: 2100, h: 300, hill: 60, color: "#121820", seed: 6, par: 0.3}
+            - {actor: ground, x: -520, y: 1100, w: 2120, h: 900, color: ["#121820", "#0c1016"], par: 0.3}
+            - {actor: tree, kind: pine, h: 560, x: 120, y: 1230, color: "#161e28", par: 0.6, seed: 1}
+            - {actor: tree, kind: pine, h: 620, x: 520, y: 1230, color: "#161e28", par: 0.6, seed: 2}
+            - {actor: tree, kind: pine, h: 500, x: 900, y: 1230, color: "#161e28", par: 0.6, seed: 3}
+            - {actor: ground, x: -520, y: 1215, w: 2120, h: 900, color: ["#1c2028", "#12151b"], par: 0.6}
+            - {actor: ground, x: -520, y: 1330, w: 2120, h: 700, color: ["#2a2420", "#1a1612"]}
+            # her shadow glides ahead along the ground — a guide, not a hunter
+            - {<<: *shade, x: 420, y: 1340, h: 420, alpha: 0.85, lean: 14, reach: 1, anim: [{at: "@Тень-0.22", dur: 3.4, x: 900, ease: out}], arms_up: [{at: "@Тень-0.22", v: 0}, {at: "@ждала", v: 1, dur: 0.5}]}
+            - {actor: person, view: side, x: 80, y: 1345, scale: 0.92, look: *marta, walk: [{at: "@Тень-0.22", v: 3.0}, {at: "@ждала", v: 0}], anim: [{at: "@Тень-0.22", dur: 3.6, x: 700, ease: out}]}
+            - {actor: shield, x: 132, y: 1170, r: 50, sx: 0.5, anim: [{at: "@Тень-0.22", dur: 3.6, x: 752, ease: out}]}
+            - {actor: tree, kind: pine, h: 900, x: 260, y: 1980, color: "#06080c", par: 1.25, seed: 7}
+            - {actor: tree, kind: pine, h: 860, x: 1000, y: 1990, color: "#06080c", par: 1.25, seed: 8}
+            - {<<: *title, text: "ТЕНЬ ВЕДЁТ", at: "@повела-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+    sfx:
+      - {sound: metal_ring, at: "@сорвала", gain: -12}
+      - {sound: sparkle, at: "@блеска", gain: -14}
+      - {sound: footstep, at: "@повела", gain: -14}
+      - {sound: heartbeat, at: "@ждала", gain: -12}
+
+  # ------------------------------------------------------------------ 7. PAYOFF — луч в камень
+  - id: light
+    text: "Луч! Марта подняла щит. Свет ударил в камень — и тот треснул со звоном."
+    shots:
+      - id: l_beam
+        transition: {type: flash}
+        look: {bloom: [0.55, 0.5]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: "@ударил", z: 1.06, x: 600, y: 980}, {t: end, z: 1.1, x: 620, y: 990}], shakes: [{at: "@ударил", amp: 10, dur: 0.4}]}
+          layers:
+            - *sky_eclipse
+            - {actor: stars, region: [0, 0, 1080, 800], count: 50, size: 2}
+            - {actor: eclipse, x: 200, y: 300, r: 80, cover: [{at: 0, v: 1}, {at: "@Луч", v: 0.96, dur: 0.3}], from: 30, ring: [{at: 0, v: 0}, {at: "@Луч", v: 1, dur: 0.2}]}
+            - {actor: forest, x: 540, y: 1010, w: 2100, h: 260, hill: 40, color: "#141a24", seed: 9, par: 0.3}
+            - {actor: ground, x: -520, y: 995, w: 2120, h: 1000, color: ["#161a22", "#101318"], par: 0.3}
+            - {actor: ground, x: -520, y: 1150, w: 2120, h: 900, color: ["#2a2220", "#1a1614"]}
+            - {actor: crater, x: 640, y: 1430, w: 900, depth: 220, color: "#3a2e26", glow: 0.2}
+            - {actor: star_stone, id: stone, x: 700, y: 1000, r: 70, drink: 0.8, rim: "#7a4aff"}
+            # the beam: sun edge → shield → stone
+            - {actor: shape, kind: line, points: [[160, 330], [300, 1050]], stroke: beam, sw: 12, at: "@Луч+0.1", enter: draw, enter_dur: 0.3, glow: {color: "#ffffff", r: 22, a: 1}}
+            - {actor: shape, kind: line, points: [[300, 1050], [700, 1000]], stroke: beam, sw: 14, at: "@щит", enter: draw, enter_dur: 0.3, glow: {color: "#ffffff", r: 26, a: 1}}
+            - {actor: person, id: marta, view: side, x: 230, y: 1250, scale: 0.9, look: *marta, face: determined, pose: [{at: 0, v: {a1: [50, 60], a2: [50, 60], l1: [2, 0], l2: [-2, 0]}}, {at: "@подняла", v: {a1: [90, 30], a2: [90, 30], l1: [10, 0], l2: [-10, 0]}, dur: 0.3}]}
+            - {actor: shield, x: [{at: 0, v: 280}, {at: "@подняла", v: 300, dur: 0.3}], y: [{at: 0, v: 1130}, {at: "@подняла", v: 1050, dur: 0.3}], r: 55, sx: 0.55, shine: [{at: 0, v: 0}, {at: "@Луч", v: 1, dur: 0.2}], glow: {color: "#ffffff", r: 20, a: 0.9}}
+            - {actor: callout, target: [300, 1050], x: 540, y: 600, title: "ЩИТ КУЗНЕЦА = ЗЕРКАЛО", color: gold, size: 40, space: screen, at: "@щит", enter: pop, sfx: false}
+      - id: l_crack
+        start: "@треснул-0.22"
+        transition: {type: zoom}
+        captions_top: 1520
+        look: {bloom: [0.5, 0.6]}
+        draw:
+          bg: "#0a0c14"
+          camera: {keys: [{t: 0, z: 1.1}, {t: end, z: 0.95}], shakes: [{at: "@треснул", amp: 18, dur: 0.5}]}
+          layers:
+            - {actor: shape, kind: rect, x: -200, y: -100, w: 1480, h: 2200, origin: top-left, fill: {radial: ["#3a3a5a", "#14161e", "#08090e"]}}
+            - {actor: shape, kind: line, points: [[-100, 1500], [540, 860]], stroke: beam, sw: 22, glow: {color: "#ffffff", r: 30, a: 1}}
+            - {actor: star_stone, x: 540, y: 860, r: 190, crack: [{at: 0, v: 0}, {at: "@треснул", v: 1, dur: 0.5}], drink: [{at: 0, v: 1}, {at: "@треснул", v: 0, dur: 0.2}]}
+            - {actor: particles, kind: sparkles, region: [200, 500, 900, 1200], count: 30, at: "@треснул", seed: 4}
+            - {actor: shape, kind: rect, x: -200, y: -100, w: 1480, h: 2200, origin: top-left, fill: "#ffffff", opacity: [{at: 0, v: 0}, {at: "@звоном", v: 0.7, dur: 0.1}, {at: "@звоном+0.15", v: 0, dur: 0.5}]}
+            - {<<: *title, text: "ЛУЧ В КАМЕНЬ", at: "@треснул-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+    sfx:
+      - {sound: sparkle, at: "@Луч", gain: -12}
+      - {sound: noise_sweep, at: "@подняла", gain: -14}
+      - {sound: impact, at: "@ударил", gain: -12}
+      - {sound: boom, at: "@треснул", gain: -10}
+      - {sound: metal_ring, at: "@звоном", gain: -12}
+
+  # ------------------------------------------------------------------ 7b. REVEAL — тени вернулись
+  - id: return
+    text: "Тени рванули к хозяевам. Томас вдохнул — и открыл глаза. Под ним снова лежала тень."
+    shots:
+      - id: l_fly
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.12, y: 1080}, {t: end, z: 1.0, y: 1000}]}
+          layers:
+            - {actor: sky, x: -200, w: 1480, hour: [{at: 0, v: 21}, {at: "@хозяевам", v: 6.6, dur: 1.4}], par: 0, sun: false, moon: false, horizon: 930, clouds: 2, seed: 7}
+            - {actor: forest, x: 540, y: 1010, w: 2100, h: 260, hill: 40, color: "#2a3040", seed: 9, par: 0.3}
+            - {actor: ground, x: -520, y: 995, w: 2120, h: 1000, color: ["#2a2e38", "#1e222a"], par: 0.3}
+            - {actor: ground, x: -520, y: 1150, w: 2120, h: 900, color: ["#4a3e34", "#2e2620"]}
+            - {actor: crater, x: 540, y: 1430, w: 1000, depth: 230, color: "#4a3a2e"}
+            - {actor: particles, kind: sparkles, region: [400, 1150, 700, 1350], count: 20, seed: 3}
+            - {<<: *shade, x: 540, y: 1330, h: 300, alpha: 0.9, scale: 0.8, anim: [{at: "@рванули", dur: 0.7, path: [[540, 1330], [360, 1150], [180, 1230]], ease: in}, {at: "@рванули+0.7", dur: 0.2, opacity: 0}]}
+            - {<<: *shade, x: 540, y: 1330, h: 300, alpha: 0.9, scale: 0.8, anim: [{at: "@рванули+0.1", dur: 0.7, path: [[540, 1330], [650, 1130], [840, 1220]], ease: in}, {at: "@рванули+0.8", dur: 0.2, opacity: 0}]}
+            - {<<: *shade, x: 540, y: 1330, h: 300, alpha: 0.9, scale: 0.8, anim: [{at: "@рванули+0.2", dur: 0.7, path: [[540, 1330], [800, 1100], [960, 1230]], ease: in}, {at: "@рванули+0.9", dur: 0.2, opacity: 0}]}
+            - {<<: *vsh, x: 180, y: 1230, scale: 0.72, view: side, look: {age: adult, outfit: tunic, hair: short}, angle: 160, alpha: [{at: 0, v: 0}, {at: "@хозяевам", v: 0.5, dur: 0.3}]}
+            - {<<: *vsh, x: 840, y: 1220, scale: 0.7, view: side, flip: true, look: {age: adult, outfit: peasant_f, hair: bun}, angle: 160, alpha: [{at: 0, v: 0}, {at: "@хозяевам+0.1", v: 0.5, dur: 0.3}]}
+            - {<<: *vsh, x: 960, y: 1230, scale: 0.72, view: side, flip: true, look: {age: adult, outfit: tunic, hair: short}, angle: 160, alpha: [{at: 0, v: 0}, {at: "@хозяевам+0.2", v: 0.5, dur: 0.3}]}
+            - {actor: person, view: side, x: 180, y: 1230, scale: 0.72, look: {age: adult, outfit: tunic, hair: short, hollow: true}, face: [{at: 0, v: neutral}, {at: "@хозяевам", v: surprised}]}
+            - {actor: person, view: side, flip: true, x: 840, y: 1220, scale: 0.7, look: {age: adult, outfit: peasant_f, hair: bun, hollow: true}, face: [{at: 0, v: neutral}, {at: "@хозяевам", v: surprised}]}
+            - {actor: person, view: side, flip: true, x: 960, y: 1230, scale: 0.72, look: {age: adult, outfit: tunic, hair: short, hollow: true}, face: [{at: 0, v: neutral}, {at: "@хозяевам", v: surprised}]}
+            - {<<: *title, text: "ТЕНИ ВЕРНУЛИСЬ", at: "@хозяевам-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+      - id: l_tomas
+        start: "@Томас-0.22"
+        transition: {type: dip}
+        ambience: [{sound: birds, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.1, x: 540, y: 1000}, {t: end, z: 1.2, x: 520, y: 1040}]}
+          layers:
+            - {actor: sky, x: -200, w: 1480, hour: 6.8, par: 0, sun: [150, 860], horizon: 930, clouds: 3, seed: 12}
+            - {actor: forest, x: 540, y: 905, w: 2100, h: 170, hill: 110, color: "#5a5a66", seed: 21, par: 0.2}
+            - {actor: ground, x: -520, y: 890, w: 2120, h: 1100, color: ["#5a5a50", "#4a4a40"], par: 0.2}
+            - {actor: shape, kind: rect, x: 540, y: 905, w: 2100, h: 200, par: 0.25, fill: {linear: ["rgba(255,210,160,0)", "rgba(255,210,160,0.5)", "rgba(255,210,160,0)"], angle: 180}}
+            - {actor: ground, x: -520, y: 1050, w: 2120, h: 1000, color: ["#7a6a48", "#5a4c36"]}
+            - {<<: *vsh, x: 620, y: 1330, scale: 1.0, look: {<<: *hans, hollow: false}, alpha: [{at: 0, v: 0}, {at: "@вдохнул", v: 0.5, dur: 0.4}]}
+            - {<<: *vsh, x: 440, y: 1340, scale: 1.15, look: {<<: *tomas, hollow: false}, len: [{at: 0, v: 0}, {at: "@тень-0.3", v: 1, dur: 0.6}], alpha: [{at: 0, v: 0}, {at: "@тень-0.3", v: 0.55, dur: 0.4}]}
+            - {actor: person, x: 620, y: 1330, scale: 1.0, look: {<<: *hans, hollow: false}, pose: {a1: [7, 4], a2: [60, 90], l1: [2, 0], l2: [2, 0]}, face: [{at: 0, v: sad}, {at: "@глаза", v: happy}]}
+            - {actor: person, id: tomas, x: 440, y: 1340, scale: 1.15, look: {<<: *tomas, hollow: false}, face: [{at: 0, v: sleep}, {at: "@открыл", v: surprised}, {at: "@тень", v: happy}]}
+            - {actor: shape, kind: ellipse, x: 440, y: 1345, w: 260, h: 70, fill: "none", stroke: gold, sw: 4, dash: "10 8", at: "@Под", enter: grow, until: "@тень+0.4", exit: fade, glow: {color: "#ffcf6a", r: 12, a: 0.8}}
+            - {actor: particles, kind: dust, region: [0, 500, 1080, 1400], count: 18, colors: ["#fff1d0"], alpha: 0.5, seed: 2}
+    sfx:
+      - {sound: whoosh, at: "@рванули", gain: -12}
+      - {sound: breath, at: "@вдохнул", gain: -12}
+      - {sound: chime, at: "@тень", gain: -12}
+
+  # ------------------------------------------------------------------ 8. CTA / LOOP — найди в первой части
+  - id: cta
+    text: "Но тень Марты с тех пор отстаёт. На миг. Найди это в первой части."
+    shots:
+      - id: q_lag
+        transition: {type: dip}
+        ambience: [{sound: birds, gain: -20}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.12, y: 1060}, {t: end, z: 1.25, x: 500, y: 1080}]}
+          layers:
+            - {actor: sky, x: -200, w: 1480, hour: 7.3, par: 0, sun: [190, 860], horizon: 930, clouds: 3, seed: 4}
+            - {actor: forest, x: 540, y: 905, w: 2100, h: 150, hill: 120, color: "#7c8a8a", seed: 3, par: 0.2}
+            - {actor: ground, x: -520, y: 890, w: 2120, h: 1100, color: ["#8d9474", "#717858"], par: 0.2}
+            - {actor: shape, kind: rect, x: 540, y: 905, w: 2100, h: 200, par: 0.25, fill: {linear: ["rgba(255,230,200,0)", "rgba(255,226,190,0.5)", "rgba(255,230,200,0)"], angle: 180}}
+            - {actor: cottage, x: 90, y: 985, scale: 0.36, seed: 11, par: 0.45}
+            - {actor: chapel, x: 760, y: 985, scale: 0.44, par: 0.45}
+            - {actor: cottage, x: 1010, y: 985, scale: 0.34, seed: 12, floors: 1, par: 0.45}
+            - {actor: ground, x: -520, y: 965, w: 2120, h: 1000, color: ["#9a9070", "#7a7258"], par: 0.45}
+            - {actor: cottage, x: 120, y: 1060, scale: 0.72, seed: 3}
+            - {actor: cottage, x: 960, y: 1060, scale: 0.7, seed: 8, floors: 2, thatch: false}
+            - {actor: cobbles, x: -300, y: 1030, w: 1680, h: 950, color: "#7a7064"}
+            - {actor: well, x: 760, y: 1110, scale: 0.72}
+            # she stops — her shadow takes one more step, then turns its head to us
+            - {<<: *vsh, x: 260, y: 1280, scale: 0.95, view: side, look: *marta, walk: [{at: "@cta.start", v: 1.5}, {at: "@отстаёт", v: 0}], lag: 0.55, anim: [{at: "@cta.start", dur: 1.55, x: 520, ease: linear}]}
+            - {actor: person, id: marta, x: 260, y: 1280, scale: 0.95, view: side, look: *marta, walk: [{at: "@cta.start", v: 1.5}, {at: "@отстаёт", v: 0}], face: neutral, anim: [{at: "@cta.start", dur: 1.55, x: 520, ease: linear}]}
+            - {actor: particles, kind: dust, region: [0, 300, 1080, 1300], count: 22, colors: ["#fff1d0"], alpha: 0.5, seed: 13}
+            - {<<: *title, y: 640, size: 92, text: "НА МИГ", at: "@миг-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+      - id: q_find
+        start: "@Найди-0.22"
+        transition: {type: whip_x}
+        captions_top: 1520
+        draw:
+          bg: "#0c0e16"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - actor: group
+              x: 540
+              y: 900
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 700, h: 960, fill: "#1a1612", stroke: "#e8dcc0", sw: 10}
+                - {actor: shape, kind: rect, x: 0, y: -200, w: 680, h: 560, fill: {linear: ["#7ab0e6", "#cfe4f2"], angle: 180}}
+                - {actor: forest, x: 0, y: -10, w: 680, h: 70, hill: 50, color: "#7c8a8a", seed: 3}
+                - {actor: shape, kind: rect, x: 0, y: 230, w: 680, h: 460, fill: "#7a7064"}
+                - {actor: cottage, x: -250, y: 60, scale: 0.36, seed: 3}
+                - {actor: cottage, x: 250, y: 60, scale: 0.34, seed: 8, thatch: false}
+                - {actor: well, x: 0, y: 70, scale: 0.36}
+                - {actor: person, x: -200, y: 200, scale: 0.42, look: {age: adult, outfit: peasant_f, hair: bun}}
+                - {actor: person, x: -60, y: 200, scale: 0.42, look: {age: adult, outfit: tunic, hair: short}}
+                - {actor: person, x: 90, y: 200, scale: 0.42, look: {age: adult, outfit: tunic, hair: side, color: "#6a5a7a"}}
+                - {actor: person, x: 230, y: 200, scale: 0.42, look: {age: adult, outfit: tunic, hair: short, beard: true}}
+                - {actor: person, x: -120, y: 110, scale: 0.32, view: side, look: *marta}
+                - {actor: text, x: -250, y: -440, size: 34, font: mono, color: "#ffffff", bg: {color: "#1a1612", pad: 6, radius: 4}, text: "ЧАСТЬ 1"}
+                - {actor: text, x: 260, y: -440, size: 34, font: mono, color: "#ffffff", bg: {color: "#1a1612", pad: 6, radius: 4}, text: "0:0?"}
+            - actor: group
+              x: [{at: 0, v: 860}, {at: "@первой", v: 630, dur: 0.8, ease: inOut}]
+              y: [{at: 0, v: 1250}, {at: "@первой", v: 1010, dur: 0.8, ease: inOut}]
+              children:
+                - {actor: shape, kind: line, points: [[60, 60], [170, 170]], stroke: "#c9a46a", sw: 22, cap: round}
+                - {actor: shape, kind: circle, x: 0, y: 0, r: 90, fill: "rgba(255,255,255,0.15)", stroke: "#e8dcc0", sw: 12}
+            - {<<: *title, y: 330, size: 92, text: "НАЙДИ В ЧАСТИ 1", at: "@Найди-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
+            - {actor: badge, x: 540, y: 1430, title: "НА КАКОЙ СЕКУНДЕ?", style: solid, color: gold, size: 50, space: screen, at: "@части", enter: pop, sfx: false}
+    sfx:
+      - {sound: footstep, at: "@отстаёт", gain: -14}
+      - {sound: hiss, at: "@миг", gain: -12}
+      - {sound: click, at: "@первой", gain: -14}
+      - {sound: bell, at: "@части", gain: -12}
