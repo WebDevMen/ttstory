@@ -246,3 +246,6 @@ scenes:
             - {actor: astrolabe, x: 180, y: 1700, r: 90}
             - {actor: book, x: 470, y: 1740, w: 300}
             - {actor: parchment, x: 840, y: 1740, w: 360, h: 260}
+            - {actor: eclipse, x: 200, y: 380, r: 70, cover: 0.8}
+            - {actor: shield, x: 980, y: 1300, r: 70, shine: 1}
+            - {actor: hourglass, x: 1000, y: 1060, scale: 0.6, flow: 0.4}
