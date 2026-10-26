@@ -365,6 +365,43 @@ def _support(fr, items):
     return out
 
 
+def _static(pid):
+    """Checks on the compiled shot specs (no rendering): pointers that drift off their target while the camera moves,
+    moving meteors whose tail does not follow the motion, the old cartoon pointing hand."""
+    out = []
+    try:
+        tl = json.load(open(os.path.join(build_dir(pid), "timeline.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        return out
+    for sh in tl.get("shots", []):
+        dr = sh.get("draw") or {}
+        keys = (dr.get("camera") or {}).get("keys") or []
+        moving = any(k.get(a) != keys[0].get(a) for k in keys for a in ("x", "y", "z")) if keys else False
+
+        def walk(layers):
+            for it in layers or []:
+                yield it
+                yield from walk(it.get("children") or it.get("layers"))
+        for it in walk(dr.get("layers")):
+            a = it.get("actor")
+            if a == "callout" and isinstance(it.get("target"), list) and moving and it.get("space") == "screen":
+                out.append(("warn", "pointer", sh["id"], f"callout:{it.get('title')}", sh["start"], sh["end"],
+                            f"«{it.get('title')}»: цель линии задана числами экрана, а камера движется — линия уйдёт мимо объекта "
+                            f"или сквозь его контур; укажите якорь объекта: target: \"<id>.top\" / \"<id>.box:fx,fy\" (docs/DRAW.md §7.8)"))
+            if a == "meteor":
+                moves = any(("x" in st or "y" in st or "path" in st) for st in it.get("anim") or [])
+                oriented = any(st.get("path") and st.get("orient") for st in it.get("anim") or [])
+                if moves and not oriented:
+                    out.append(("warn", "motion", sh["id"], "meteor", sh["start"], sh["end"],
+                                "метеор движется без anim path + orient: хвост не следует за движением (может лететь хвостом вперёд); "
+                                "path: \"M…Q…\", orient: true, angle: 180, ease: in (docs/DRAW.md §7.8)"))
+            if a == "hand" and it.get("pose", "point") == "point":
+                out.append(("warn", "anatomy", sh["id"], "hand", sh["start"], sh["end"],
+                            "мультяшная рука hand/point читается как не-человеческая (палец-сосиска, странный мизинец) — "
+                            "для указующего жеста используйте human_hand"))
+    return out
+
+
 def run(pid, step=12):
     """Analyse build/<pid>/layout/frames.json (written by render_hud.cjs layout). Returns (errors, warnings, captions_changed)."""
     d = build_dir(pid, "layout")
@@ -401,7 +438,7 @@ def run(pid, step=12):
                 "frame": next(f for f in data["frames"] if f["shot"] == shot and f["t"] == seq[0][0]),
                 "msg": f"{lab} (par {par}) стоит на земле другого плана (par {spar}) и за шот уплывает относительно неё на "
                        f"{round(max(dys) - min(dys))} px — дайте плану свою полосу земли с тем же par (docs/DRAW.md §10.6)"}
-    for lvl, kind, shot, key, t0, t1, msg in _motion(d):
+    for lvl, kind, shot, key, t0, t1, msg in _static(pid) + list(_motion(d)):
         found[(lvl, kind, shot, key)] = {"level": lvl, "kind": kind, "shot": shot, "t0": t0, "t1": t1, "msg": msg, "n": 1, "boxes": []}
     issues = sorted(found.values(), key=lambda g: (g["t0"], g["level"] != "err"))
     errs = [g for g in issues if g["level"] == "err"]

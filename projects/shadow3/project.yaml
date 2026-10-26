@@ -221,6 +221,10 @@ scenes:
             - {actor: torch, x: 160, y: 1350, len: 300, scale: 1.2, rot: 14, halo: 200, lean: [{at: 0, v: 0}, {at: "@Пламя", v: 1.2, dur: 0.6}]}
             - {actor: torch, x: 930, y: 1360, len: 300, scale: 1.2, rot: -14, halo: 200, lean: [{at: 0, v: 0}, {at: "@Пламя", v: -1.2, dur: 0.6}]}
             - {actor: torch, x: 330, y: 1500, len: 260, scale: 1.1, rot: 8, halo: 180, lean: [{at: 0, v: 0}, {at: "@Пламя+0.15", v: 1.0, dur: 0.6}]}
+            # the flames are pulled toward the stone: tips bend to it (lean), and streams of fire flow from each flame into it
+            - {actor: light_stream, x: 0, y: 0, from: [266, 930], to: [470, 860], bend: -40, width: 18, seed: 1, k: [{at: 0, v: 0}, {at: "@Пламя", v: 1, dur: 0.8, ease: out}]}
+            - {actor: light_stream, x: 0, y: 0, from: [824, 940], to: [610, 860], bend: 40, width: 18, seed: 2, k: [{at: 0, v: 0}, {at: "@Пламя", v: 1, dur: 0.8, ease: out}]}
+            - {actor: light_stream, x: 0, y: 0, from: [384, 1150], to: [500, 960], bend: -30, width: 14, seed: 3, k: [{at: 0, v: 0}, {at: "@Пламя+0.15", v: 1, dur: 0.8, ease: out}]}
             - {actor: star_stone, x: 540, y: 820, r: 170, drink: [{at: 0, v: 0.6}, {at: "@пил", v: 1, dur: 0.4}], rim: "#7a4aff", pulse: {freq: 1.2, amp: 0.02}}
             - {actor: particles, kind: embers, region: [100, 800, 1000, 1500], count: 30, seed: 7}
             - {<<: *title, text: "КАМЕНЬ ПЬЁТ СВЕТ", at: "@пил-0.05", reveal: {by: word, mode: slam, stagger: 0.12}}
@@ -291,7 +295,7 @@ scenes:
             - {actor: parchment, x: 540, y: 900, w: 1010, h: 1120, seed: 9}
             - {actor: eclipse, x: 540, y: 760, r: 150, cover: [{at: 0, v: 0.6}, {at: "@Полное", v: 1, dur: 0.8, ease: inOut}]}
             - {actor: hourglass, x: 820, y: 1170, scale: 1.0, flow: [{at: 0, v: 0}, {at: "@крикнуть", v: 1, dur: 4.0, ease: linear}], at: "@Ансельм", enter: drop}
-            - {actor: hand, pose: point, x: 1050, y: 1500, scale: 0.6, rot: -40, skin: "#e2b08a", sleeve: "#6e665c", cuff: "#5e574e", at: "@Ансельм", enter: fade, anim: [{at: "@Ансельм", dur: 0.6, x: 960, y: 1360}]}
+            - {actor: human_hand, x: 1050, y: 1500, scale: 0.6, rot: -40, skin: "#e2b08a", sleeve: "#6e665c", cuff: "#5e574e", at: "@Ансельм", enter: fade, anim: [{at: "@Ансельм", dur: 0.6, x: 960, y: 1360}]}
             - {actor: badge, x: 540, y: 1260, title: "НЕ ДОЛЬШЕ 7,5 МИНУТ", style: solid, color: gold, size: 50, space: screen, at: "@семи", enter: pop, sfx: false}
       - id: r_ring
         start: "@Потом-0.22"

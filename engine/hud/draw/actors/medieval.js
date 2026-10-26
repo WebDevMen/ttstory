@@ -407,6 +407,7 @@ export const star_stone = {
         ck.setAttribute("opacity", Math.min(1, crack * 1.5).toFixed(3));
         fl.setAttribute("opacity", Math.max(0, crack * 2 - 1).toFixed(3));
       },
+      anchor(name) { return { top: [c, c - r], bottom: [c, c + r], center: [c, c] }[name] ?? null; },
     };
   },
 };
@@ -416,14 +417,37 @@ export const star_stone = {
 export const meteor = {
   origin: "center",
   create(p, H) {
-    const L = p.len ?? 520, r = p.r ?? 26, a = p.angle ?? 210, id = H.uid("met"), W = L + r * 4;
-    const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff3c0"/><stop offset="0.2" stop-color="#ffb347"/><stop offset="1" stop-color="#ff5a1a" stop-opacity="0"/></linearGradient>
+    // head at the origin; the tail points along `angle` (deg, 0 = +x). With an anim path and `orient: true` keep angle 180:
+    // the item then turns with its velocity and the tail always trails behind the head.
+    const L = p.len ?? 520, r = p.r ?? 26, a = p.angle ?? 180, id = H.uid("met"), W = 2 * (L + r * 4), c = W / 2, n = p.sparks ?? 16;
+    const rnd = H.rng(p.seed ?? 3), sp = Array.from({ length: n }, () => ({ ph: rnd(), side: rnd() - 0.5, s: 0.5 + rnd() * 0.8, v: 0.8 + rnd() * 0.6 }));
+    const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff3c0"/><stop offset="0.18" stop-color="#ffb347"/><stop offset="0.6" stop-color="#ff6a1a" stop-opacity="0.45"/><stop offset="1" stop-color="#ff5a1a" stop-opacity="0"/></linearGradient>
+      <linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a7a70" stop-opacity="0.55"/><stop offset="1" stop-color="#5a5260" stop-opacity="0"/></linearGradient>
       <radialGradient id="${id}h"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="#ffd27a"/><stop offset="1" stop-color="#ff7a24" stop-opacity="0"/></radialGradient></defs>
-      <g transform="translate(${W / 2},${W / 2}) rotate(${a})">
-        <path class="tl" d="M0,${-r} L${L},-3 L${L},3 L0,${r} Z" fill="url(#${id})"/>
-        <circle r="${r * 3.2}" fill="url(#${id}h)" opacity="0.8"/><circle r="${r * 0.7}" fill="#ffffff"/></g>`, W, W);
-    const tl = svg.querySelector(".tl");
-    return { el: svg, w: W, h: W, update(t) { tl.setAttribute("opacity", (0.85 + 0.15 * Math.sin(t * 30)).toFixed(3)); } };
+      <g transform="translate(${c},${c}) rotate(${a})">
+        <path class="sm" fill="url(#${id}s)" style="filter:blur(6px)"/><path class="tl" fill="url(#${id})"/><path class="tc" fill="#fff6d8" opacity="0.8"/>
+        ${sp.map(() => `<circle class="sp" fill="#ffd27a"/>`).join("")}
+        <circle class="gl" r="${r * 3.2}" fill="url(#${id}h)"/><circle r="${r * 0.72}" fill="#ffffff"/></g>`, W, W);
+    const tl = svg.querySelector(".tl"), tc = svg.querySelector(".tc"), sm = svg.querySelector(".sm"), gl = svg.querySelector(".gl"), sps = [...svg.querySelectorAll(".sp")];
+    // tapering tail with a slight wobble: wide at the head, a thread at the end
+    const tail = (len, wd, t, s) => {
+      const q = [0.25, 0.5, 0.75, 1].map((k) => [len * k, H.noise(t, s + k * 5, 3) * wd * 0.35 * k]);
+      return `M0,${-wd} C${q[0][0]},${-wd * 0.8 + q[0][1]} ${q[1][0]},${-wd * 0.45 + q[1][1]} ${q[2][0]},${-wd * 0.18 + q[2][1]} L${q[3][0]},${q[3][1]} L${q[2][0]},${wd * 0.18 + q[2][1]} C${q[1][0]},${wd * 0.45 + q[1][1]} ${q[0][0]},${wd * 0.8 + q[0][1]} 0,${wd} Z`;
+    };
+    return {
+      el: svg, w: W, h: W,
+      update(t, it) {
+        const k = it.v("tail", 1), len = L * k, fl = 0.88 + 0.12 * H.noise(t, 1, 9);
+        tl.setAttribute("d", tail(len, r * fl, t, 1)); tc.setAttribute("d", tail(len * 0.45, r * 0.42, t, 4));
+        sm.setAttribute("d", tail(len * 1.25, r * 1.5, t * 0.5, 7));
+        gl.setAttribute("opacity", (0.7 + 0.3 * fl).toFixed(3));
+        sp.forEach((q, i) => {   // sparks peel off the head and fall back along the tail, cooling
+          const f = (q.ph + t * 1.6 * q.v) % 1, e = sps[i];
+          e.setAttribute("cx", (f * len * 0.9).toFixed(1)); e.setAttribute("cy", (q.side * r * (1 + f * 3)).toFixed(1));
+          e.setAttribute("r", (r * 0.22 * q.s * (1 - f)).toFixed(2)); e.setAttribute("opacity", (k * (1 - f)).toFixed(3));
+        });
+      },
+    };
   },
 };
 
@@ -457,7 +481,8 @@ export const fire = {
   create(p, H) {
     const w = p.w ?? 160, h = p.h ?? 200, n = p.tongues ?? 5, rnd = H.rng(p.seed ?? 2), id = H.uid("fire");
     const tg = Array.from({ length: n }, (_, i) => ({ x: w * (0.15 + 0.7 * (n > 1 ? i / (n - 1) : 0.5)) + (rnd() - 0.5) * 16, hk: 0.4 + rnd() * 0.6, wk: 0.1 + rnd() * 0.1, s: rnd() * 9 }));
-    const tongue = (x, hh, ww) => `M${x - ww},${h} C${x - ww},${h - hh * 0.45} ${x - ww * 0.2},${h - hh * 0.6} ${x},${h - hh} C${x + ww * 0.25},${h - hh * 0.6} ${x + ww},${h - hh * 0.45} ${x + ww},${h} Z`;
+    // base stays on the fuel; sway / lean move only the upper part and the tip (tx = tip offset)
+    const tongue = (x, hh, ww, tx = 0) => `M${x - ww},${h} C${x - ww},${h - hh * 0.45} ${x - ww * 0.2 + tx * 0.5},${h - hh * 0.6} ${x + tx},${h - hh} C${x + ww * 0.25 + tx * 0.5},${h - hh * 0.6} ${x + ww},${h - hh * 0.45} ${x + ww},${h} Z`;
     const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffe7a0"/>
         <stop offset="0.45" stop-color="#ff8a24"/><stop offset="1" stop-color="#d1300c" stop-opacity="0.2"/></linearGradient></defs>
       <ellipse class="gl" cx="${w / 2}" cy="${h - 10}" rx="${w * 0.9}" ry="${h * 0.35}" fill="#ff7a24" opacity="0.25" style="filter:blur(16px)"/>
@@ -469,8 +494,8 @@ export const fire = {
         const K = it.v("k", 1), lean = it.v("lean", 0);
         tg.forEach((q, i) => {
           const f = (0.82 + 0.18 * H.noise(t, q.s, 2.2)) * K, sw = H.noise(t, q.s + 3, 1.2) * 8 + lean * h * q.hk * f;
-          els[i].setAttribute("d", tongue(q.x + sw * 0.3, h * q.hk * f, w * q.wk));
-          core[i].setAttribute("d", tongue(q.x + sw * 0.15, h * q.hk * f * 0.45, w * q.wk * 0.5));
+          els[i].setAttribute("d", tongue(q.x, h * q.hk * f, w * q.wk, sw * 0.6));
+          core[i].setAttribute("d", tongue(q.x, h * q.hk * f * 0.45, w * q.wk * 0.5, sw * 0.3));
         });
         gl.setAttribute("opacity", ((0.26 + 0.08 * H.noise(t, 5, 3)) * K).toFixed(3));
       },
@@ -540,13 +565,17 @@ export const torch = {
     const flG = svg.querySelector(".fl"), hl = svg.querySelector(".hl");
     const tg = [[0, 1, 0.3], [-9, 0.7, 1.7], [9, 0.75, 3.1]];
     const els = tg.map(() => H.el("path", { fill: "#ff9a2a" }, flG)), core = H.el("path", { fill: "#fff0b8" }, flG);
-    const tongue = (x, hh, ww) => `M${x - ww},96 C${x - ww},${96 - hh * 0.45} ${x - ww * 0.2},${96 - hh * 0.6} ${x},${96 - hh} C${x + ww * 0.25},${96 - hh * 0.6} ${x + ww},${96 - hh * 0.45} ${x + ww},96 Z`;
+    // the flame sits on the torch head: lean (track, -1.5..1.5) bends the upper part and the tip sideways and stretches it,
+    // the base never leaves the head
+    const tongue = (x, hh, ww, tx = 0) => `M${x - ww},96 C${x - ww},${96 - hh * 0.45} ${x - ww * 0.2 + tx * 0.45},${96 - hh * 0.6} ${x + tx},${96 - hh} C${x + ww * 0.25 + tx * 0.45},${96 - hh * 0.6} ${x + ww},${96 - hh * 0.45} ${x + ww},96 Z`;
     return {
       el: svg, w, h,
       update(t, it) {
         const K = it.v("k", 1), lean = it.v("lean", 0);
-        tg.forEach(([dx, hk, s], i) => { const f = (0.8 + 0.2 * H.noise(t, s, 3)) * K; els[i].setAttribute("d", tongue(w / 2 + dx + lean * 30 + H.noise(t, s + 2, 2) * 4, 80 * hk * f, 15)); });
-        core.setAttribute("d", tongue(w / 2 + lean * 14, 40 * K * (0.85 + 0.15 * H.noise(t, 9, 3)), 8));
+        const st = 1 + Math.abs(lean) * 0.25;
+        tg.forEach(([dx, hk, s], i) => { const f = (0.8 + 0.2 * H.noise(t, s, 3)) * K, hh = 80 * hk * f * st; els[i].setAttribute("d", tongue(w / 2 + dx, hh, 15, lean * hh * 0.9 + H.noise(t, s + 2, 2) * 4)); });
+        const ch = 40 * K * (0.85 + 0.15 * H.noise(t, 9, 3)) * st;
+        core.setAttribute("d", tongue(w / 2, ch, 8, lean * ch * 0.7));
         if (hl) hl.setAttribute("opacity", (K * (0.85 + 0.15 * H.noise(t, 4, 4))).toFixed(3));
       },
       anchor(name) { return name === "flame" ? [w / 2, 60] : null; },
@@ -789,13 +818,30 @@ export const village_map = {
 export const sword = {
   origin: [60, 330],
   create(p, H) {
-    const w = 120, h = 360, id = H.uid("swd");
+    // trail: a fading wedge swept by the blade over the last `trail_s` seconds (from the rot track), so it always lies
+    // behind the blade and only shows while it moves fast; `trail` (track/number) scales its opacity
+    const w = 120, h = 360, id = H.uid("swd"), R = 300, R0 = 70, N = 28, span = p.trail_s ?? 0.12;
     const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa2b0"/><stop offset="0.5" stop-color="#eef2f8"/><stop offset="1" stop-color="#8a92a0"/></linearGradient></defs>
-      <path class="tr" d="M60,330 m0,-300 a300,300 0 0,1 260,150" stroke="rgba(230,240,255,0.5)" stroke-width="26" fill="none" stroke-linecap="round" opacity="0"/>
+      <g class="tr" style="filter:blur(3px)"><path fill="#e6f0ff"/><path fill="#e6f0ff"/><path fill="#ffffff"/></g>
       <path d="M50,250 L52,30 L60,4 L68,30 L70,250 Z" fill="url(#${id})"/><path d="M60,20 V245" stroke="#7a8290" stroke-width="2"/>
       <rect x="16" y="248" width="88" height="14" rx="5" fill="#8a7a50"/><rect x="52" y="262" width="16" height="70" rx="5" fill="#4a3020"/><circle cx="60" cy="340" r="11" fill="#8a7a50"/>`, w, h);
-    const tr = svg.querySelector(".tr");
-    return { el: svg, w, h, update(t, it) { tr.setAttribute("opacity", it.v("trail", 0).toFixed(3)); } };
+    const layers = [...svg.querySelectorAll(".tr path")], part = [1, 0.6, 0.3], ri = R0 + (R - R0) * 0.4;
+    const pt = (d, r) => { const q = (d * Math.PI) / 180; return `${(60 + r * Math.sin(q)).toFixed(1)},${(330 - r * Math.cos(q)).toFixed(1)}`; };
+    return {
+      el: svg, w, h,
+      update(t, it) {
+        const now = it.v("rot", 0, t), amp = it.v("trail", 1, t);
+        const d = Array.from({ length: N + 1 }, (_, i) => it.v("rot", 0, t - (span * i) / N) - now);
+        const gate = amp * H.clamp(Math.abs(d[N]) / 25);       // no trail while the blade stands still or moves slowly
+        // one smooth swept band (outer edge = the tip's path), three nested layers: densest right behind the blade
+        layers.forEach((e, j) => {
+          const n = Math.max(1, Math.round(N * part[j])), outer = [], inner = [];
+          for (let i = 0; i <= n; i++) { outer.push(pt(d[i], R - (i / N) * 40)); inner.push(pt(d[i], ri + (i / N) * 30)); }
+          e.setAttribute("d", `M${outer.join(" L")} L${inner.reverse().join(" L")} Z`);
+          e.setAttribute("opacity", (gate * [0.18, 0.2, 0.25][j]).toFixed(3));
+        });
+      },
+    };
   },
 };
 
@@ -837,6 +883,78 @@ export const hourglass = {
         top.setAttribute("d", f < 0.99 ? `M${36 + f * 30},${ty} L${104 - f * 30},${ty} Q100,95 74,118 L66,118 Q40,95 ${36 + f * 30},${ty} Z` : "");
         bot.setAttribute("d", `M34,${h - 20} L106,${h - 20} Q100,${by + 20} 70,${by} Q40,${by + 20} 34,${h - 20} Z`);
         str.setAttribute("d", f > 0.01 && f < 0.99 ? `M70,120 V${h - 22}` : "");
+      },
+    };
+  },
+};
+
+// ------------------------------------------------------------------ human_hand: a natural right hand pointing with the index finger
+// (back of the hand to the viewer, index finger up, three fingers curled into the palm, thumb along the side, wrist and sleeve
+// below). Origin = the index fingertip, so x/y/anim move the fingertip; rot tilts the whole arm. Props: skin, sleeve, cuff.
+// Proportions: palm ≈ 4 finger widths, index ≈ 0.85 of the palm length.
+export const human_hand = {
+  origin: [130, 40],
+  create(p, H) {
+    const w = 300, h = 760, skin = H.col(p.skin ?? "#e2b08a"), dk = H.shade(skin, -0.2), lt = H.shade(skin, 0.14);
+    const nail = H.mixc ? H.mixc(skin, "#ffffff", 0.35) : lt, sleeve = H.col(p.sleeve ?? "#5a3a22"), cuff = H.col(p.cuff ?? H.shade(sleeve, -0.2));
+    const id = H.uid("hh");
+    const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${lt}"/><stop offset="0.55" stop-color="${skin}"/><stop offset="1" stop-color="${dk}"/></linearGradient>
+        <linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${H.shade(sleeve, 0.12)}"/><stop offset="1" stop-color="${H.shade(sleeve, -0.25)}"/></linearGradient></defs>
+      <path d="M112,500 L262,500 L292,${h} L84,${h} Z" fill="url(#${id}s)"/>
+      <path d="M128,420 L246,420 L250,500 L124,500 Z" fill="url(#${id})"/>
+      <!-- curled middle, ring and little fingers: knuckles above the back of the hand -->
+      <ellipse cx="180" cy="236" rx="27" ry="25" fill="${skin}"/><ellipse cx="223" cy="246" rx="24" ry="22" fill="${skin}"/><ellipse cx="258" cy="264" rx="19" ry="18" fill="${dk}"/>
+      <!-- back of the hand -->
+      <path d="M104,240 C104,222 124,214 146,218 L240,236 C266,242 278,262 274,290 L266,384 C260,424 232,444 196,446 L148,446 C116,444 98,420 98,388 Z" fill="url(#${id})"/>
+      <path d="M180,232 Q182,252 178,268 M223,244 Q224,262 220,276 M258,262 Q258,276 254,288" stroke="${dk}" stroke-width="3" fill="none" opacity=".45"/>
+      <path d="M172,226 Q182,220 192,228 M216,238 Q225,232 233,240 M252,258 Q259,254 265,262" stroke="${lt}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <path d="M150,262 Q158,340 164,420 M186,272 Q190,350 192,420 M220,282 Q218,350 216,416" stroke="${dk}" stroke-width="3" fill="none" opacity=".18"/>
+      <!-- index finger: three phalanges, nail at the tip -->
+      <path d="M110,240 L110,64 Q110,40 131,40 Q152,40 152,64 L156,240 Z" fill="url(#${id})"/>
+      <path d="M118,52 Q131,44 144,52 L143,80 Q131,75 119,80 Z" fill="${nail}" opacity=".85"/>
+      <path d="M116,112 Q131,117 146,112 M116,176 Q132,182 148,176" stroke="${dk}" stroke-width="3" fill="none" opacity=".5"/>
+      <!-- thumb along the side, pointing up -->
+      <path d="M132,446 C100,436 80,398 80,346 C80,312 90,292 104,292 C117,293 120,312 118,338 C116,362 122,392 140,414 Z" fill="url(#${id})"/>
+      <path d="M86,316 Q94,300 108,304 L110,326 Q98,322 88,330 Z" fill="${nail}" opacity=".8"/>
+      <path d="M90,372 Q102,378 114,372" stroke="${dk}" stroke-width="3" fill="none" opacity=".4"/>
+      <path d="M118,338 C116,362 122,392 140,414" stroke="${dk}" stroke-width="3" fill="none" opacity=".35"/>
+      <!-- cuff -->
+      <rect x="106" y="484" width="162" height="40" rx="12" fill="${cuff}"/>`, w, h);
+    return { el: svg, w, h };
+  },
+};
+
+// ------------------------------------------------------------------ light_stream: fire / light flowing from one point to another
+// (flames drawn toward a stone, a soul pulled away). from, to: [x, y] in the item's coordinates (place the item at 0,0),
+// bend (px, sideways sag of the path), k (track 0..1: how much of the stream flows), color, n (number of blobs), width
+export const light_stream = {
+  origin: [0, 0],
+  create(p, H) {
+    const [x0, y0] = p.from ?? [0, 0], [x1, y1] = p.to ?? [400, 0], n = p.n ?? 22, wd = p.width ?? 16, bend = p.bend ?? 60;
+    const c = H.col(p.color ?? "#ffb04a"), rnd = H.rng(p.seed ?? 6), id = H.uid("ls");
+    const len = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / len, ny = (x1 - x0) / len;
+    const cx = (x0 + x1) / 2 + nx * bend, cy = (y0 + y1) / 2 + ny * bend;
+    const at = (f) => [(1 - f) ** 2 * x0 + 2 * (1 - f) * f * cx + f * f * x1, (1 - f) ** 2 * y0 + 2 * (1 - f) * f * cy + f * f * y1];
+    const bl = Array.from({ length: n }, () => ({ ph: rnd(), s: 0.5 + rnd() * 0.8, j: (rnd() - 0.5) * 2, v: 0.8 + rnd() * 0.5 }));
+    const svg = H.svg(`<defs><radialGradient id="${id}"><stop offset="0" stop-color="#fff2c8"/><stop offset="0.4" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>
+      <path class="rb" d="M${x0},${y0} Q${cx},${cy} ${x1},${y1}" stroke="${c}" stroke-width="${wd}" fill="none" stroke-linecap="round" style="filter:blur(${wd * 0.6}px)"/>
+      ${bl.map(() => `<circle fill="url(#${id})"/>`).join("")}`, 2, 2);
+    const rb = svg.querySelector(".rb"), els = [...svg.querySelectorAll("circle")];
+    return {
+      el: svg, w: 2, h: 2,
+      update(t, it) {
+        const k = it.v("k", 1);
+        // the ribbon grows from the source toward the target, then the blobs keep flowing along it
+        rb.setAttribute("stroke-dasharray", `${(k * len * 1.3).toFixed(1)} ${len * 3}`);
+        rb.setAttribute("opacity", (0.5 * Math.min(1, k * 2)).toFixed(3));
+        bl.forEach((q, i) => {
+          const f = (q.ph + t * 0.9 * q.v) % 1, e = els[i];
+          if (f > k) { e.setAttribute("opacity", 0); return; }
+          const [x, y] = at(f), sw = Math.sin(f * Math.PI) * q.j * wd * 1.2;
+          e.setAttribute("cx", (x + nx * sw).toFixed(1)); e.setAttribute("cy", (y + ny * sw).toFixed(1));
+          e.setAttribute("r", (wd * 1.4 * q.s * (1 - f * 0.6)).toFixed(1));
+          e.setAttribute("opacity", (Math.min(1, f * 6) * (1 - f * 0.5) * Math.min(1, k * 2)).toFixed(3));
+        });
       },
     };
   },

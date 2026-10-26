@@ -394,7 +394,11 @@ export class Item {
   toScreen(lx, ly) { const q = this.screenMatrix().transformPoint(new DOMPoint(lx, ly)); return [q.x, q.y]; }
   anchor(name, args) {
     if (!name) return this.toScreen(this.origin[0], this.origin[1]);
-    const pt = this.inst.anchor ? this.inst.anchor(name, args, this) : null;
+    let pt = this.inst.anchor ? this.inst.anchor(name, args, this) : null;
+    // generic box anchors for any actor: a callout can point at the edge of an outline instead of through it
+    const BOX = { top: [0.5, 0], bottom: [0.5, 1], left: [0, 0.5], right: [1, 0.5], center: [0.5, 0.5] };
+    if (!pt && BOX[name] && this.w && this.h) pt = [BOX[name][0] * this.w, BOX[name][1] * this.h];
+    if (!pt && name === "box" && this.w && this.h) pt = [(args?.[0] ?? 0.5) * this.w, (args?.[1] ?? 0.5) * this.h];   // "id.box:fx,fy"
     if (!pt) throw new Error(`actor '${this.spec.actor}' (${this.id}) has no anchor '${name}'`);
     return this.toScreen(pt[0], pt[1]);
   }
