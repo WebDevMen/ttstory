@@ -705,3 +705,139 @@ export const living_shadow = {
     };
   },
 };
+
+// ------------------------------------------------------------------ eclipse: the sun and the moon's disc sliding over it (origin center)
+// r (sun radius), cover (track 0..1: 0 — moon off to the side, 1 — full eclipse), from (deg: where the moon comes from),
+// ring (track 0..1: «diamond ring» flash on the edge where the light returns), corona (auto when covered)
+export const eclipse = {
+  origin: "center",
+  create(p, H) {
+    const r = p.r ?? 120, W = r * 7, c = W / 2, id = H.uid("ecl"), rnd = H.rng(p.seed ?? 3);
+    const rays = Array.from({ length: 28 }, (_, i) => { const a = (i / 28) * 6.283 + rnd() * 0.2, L = r * (1.5 + rnd() * 1.4); return `<path d="M${c + Math.cos(a) * r * 1.02},${c + Math.sin(a) * r * 1.02} L${c + Math.cos(a) * L},${c + Math.sin(a) * L}" stroke="#eef4ff" stroke-width="${2 + rnd() * 5}" stroke-linecap="round"/>`; }).join("");
+    const svg = H.svg(`<defs><radialGradient id="${id}s"><stop offset="0" stop-color="#fff8dc"/><stop offset="0.7" stop-color="#ffd27a"/><stop offset="1" stop-color="#ffb347"/></radialGradient>
+      <radialGradient id="${id}g"><stop offset="0" stop-color="#fff2c0" stop-opacity="0.75"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${id}r"><stop offset="0" stop-color="#ffffff"/><stop offset="0.3" stop-color="#ffffff" stop-opacity="0.8"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></radialGradient>
+      <mask id="${id}m"><rect width="${W}" height="${W}" fill="#fff"/><circle class="mm" r="${r * 1.02}" fill="#000"/></mask></defs>
+      <circle class="gl" cx="${c}" cy="${c}" r="${r * 3}" fill="url(#${id}g)"/>
+      <g class="co" style="filter:blur(3px)">${rays}<circle cx="${c}" cy="${c}" r="${r * 1.35}" fill="#e8f0ff" opacity="0.55"/></g>
+      <circle cx="${c}" cy="${c}" r="${r}" fill="url(#${id}s)" mask="url(#${id}m)"/>
+      <circle class="mo" r="${r * 1.02}" fill="#0a0c14"/>
+      <circle class="dr" r="${r * 0.9}" fill="url(#${id}r)" opacity="0"/>`, W, W);
+    const mm = svg.querySelector(".mm"), mo = svg.querySelector(".mo"), co = svg.querySelector(".co"), gl = svg.querySelector(".gl"), dr = svg.querySelector(".dr");
+    const a0 = ((p.from ?? 200) * Math.PI) / 180;
+    return {
+      el: svg, w: W, h: W,
+      update(t, it) {
+        const k = H.clamp(it.v("cover", 0)), d = (1 - k) * r * 2.3;
+        const mx = c + Math.cos(a0) * d, my = c + Math.sin(a0) * d;
+        mm.setAttribute("cx", mx); mm.setAttribute("cy", my); mo.setAttribute("cx", mx); mo.setAttribute("cy", my);
+        const full = H.clamp((k - 0.93) / 0.07);
+        co.setAttribute("opacity", (full * (0.85 + 0.15 * Math.sin(t * 2))).toFixed(3));
+        gl.setAttribute("opacity", (1 - full * 0.9).toFixed(3));
+        const ring = it.v("ring", 0), ra = a0 + Math.PI;
+        dr.setAttribute("cx", c + Math.cos(ra) * r * 0.98); dr.setAttribute("cy", c + Math.sin(ra) * r * 0.98);
+        dr.setAttribute("opacity", ring.toFixed(3)); dr.setAttribute("r", (r * (0.4 + ring * 0.9)).toFixed(1));
+      },
+    };
+  },
+};
+
+// ------------------------------------------------------------------ village_map: parchment map of the village seen from above (origin center)
+// w, h, out (track 0..1: share of house lights gone out), stain (track 0..1: black shadow stains spread along the streets)
+export const village_map = {
+  origin: "center",
+  create(p, H) {
+    const w = p.w ?? 900, h = p.h ?? 900, rnd = H.rng(p.seed ?? 6), id = H.uid("vm"), ink = "#5a3e28";
+    let s = `<defs><radialGradient id="${id}" cx="0.5" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#e6d6b0"/><stop offset="1" stop-color="#b89c6c"/></radialGradient></defs>
+      <rect width="${w}" height="${h}" rx="10" fill="url(#${id})"/>
+      <path d="M${w * 0.08},${h * 0.5} Q${w * 0.5},${h * 0.42} ${w * 0.92},${h * 0.52} M${w * 0.5},${h * 0.08} Q${w * 0.46},${h * 0.5} ${w * 0.52},${h * 0.92} M${w * 0.15},${h * 0.2} Q${w * 0.4},${h * 0.3} ${w * 0.5},${h * 0.46} M${w * 0.85},${h * 0.82} Q${w * 0.6},${h * 0.7} ${w * 0.52},${h * 0.56}"
+        stroke="#c8b088" stroke-width="34" fill="none" stroke-linecap="round"/>
+      <path d="M0,${h * 0.86} Q${w * 0.3},${h * 0.8} ${w * 0.6},${h * 0.92} T${w},${h * 0.9}" stroke="#7a98b0" stroke-width="18" fill="none" opacity="0.7"/>
+      <circle cx="${w * 0.5}" cy="${h * 0.49}" r="${w * 0.045}" fill="none" stroke="${ink}" stroke-width="4"/>
+      <path d="M${w * 0.47},${h * 0.32} h${w * 0.06} v${w * 0.06} h-${w * 0.06} Z M${w * 0.5},${h * 0.3} v-${w * 0.04} M${w * 0.485},${h * 0.285} h${w * 0.03}" stroke="${ink}" stroke-width="4" fill="#cdb48a"/>`;
+    const houses = [];
+    for (let i = 0; i < 46; i++) {
+      let x, y, ok = false;
+      for (let k = 0; k < 20 && !ok; k++) { x = w * (0.08 + rnd() * 0.84); y = h * (0.08 + rnd() * 0.74); ok = Math.hypot(x - w * 0.5, y - h * 0.49) > w * 0.09 && houses.every((q) => Math.hypot(q[0] - x, q[1] - y) > 44); }
+      if (!ok) continue;
+      const hw = 26 + rnd() * 14, hh = 20 + rnd() * 10, a = (rnd() - 0.5) * 30;
+      houses.push([x, y, rnd()]);
+      s += `<g transform="translate(${x.toFixed(0)},${y.toFixed(0)}) rotate(${a.toFixed(0)})"><rect x="${-hw / 2}" y="${-hh / 2}" width="${hw}" height="${hh}" fill="#cdb48a" stroke="${ink}" stroke-width="3"/><path d="M${-hw / 2},0 H${hw / 2}" stroke="${ink}" stroke-width="2"/></g>`;
+    }
+    s += `<g class="st"></g>`;
+    s += houses.map(([x, y]) => `<circle class="lt" cx="${x}" cy="${y - 2}" r="9" fill="#ffc867"/>`).join("");
+    const svg = H.svg(s, w, h);
+    const lts = [...svg.querySelectorAll(".lt")], stG = svg.querySelector(".st");
+    const order = houses.map((q, i) => [q[2], i]).sort((a, b) => a[0] - b[0]).map((q) => q[1]);
+    const blobs = Array.from({ length: 14 }, () => { const e = H.el("ellipse", { fill: "#100a08", opacity: 0.85 }, stG); return { e, x: w * (0.1 + rnd() * 0.8), y: h * (0.1 + rnd() * 0.72), r: 20 + rnd() * 30, ph: rnd() * 6 }; });
+    return {
+      el: svg, w, h,
+      update(t, it) {
+        const out = it.v("out", 0), stain = it.v("stain", 0);
+        order.forEach((idx, j) => { const off = j / order.length < out; lts[idx].setAttribute("fill", off ? "#3a2a1e" : "#ffc867"); lts[idx].setAttribute("opacity", off ? 0.8 : 0.85 + 0.15 * Math.sin(t * 6 + j)); });
+        blobs.forEach((b, i) => {
+          const k = H.clamp(stain * 1.3 - i / blobs.length * 0.3);
+          b.e.setAttribute("cx", (b.x + Math.sin(t * 0.8 + b.ph) * 14).toFixed(1)); b.e.setAttribute("cy", (b.y + Math.cos(t * 0.7 + b.ph) * 10).toFixed(1));
+          b.e.setAttribute("rx", (b.r * k * 1.4).toFixed(1)); b.e.setAttribute("ry", (b.r * k).toFixed(1));
+        });
+      },
+    };
+  },
+};
+
+// ------------------------------------------------------------------ sword: a long sword (origin = grip), swing via rot; trail (track 0..1: motion arc)
+export const sword = {
+  origin: [60, 330],
+  create(p, H) {
+    const w = 120, h = 360, id = H.uid("swd");
+    const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa2b0"/><stop offset="0.5" stop-color="#eef2f8"/><stop offset="1" stop-color="#8a92a0"/></linearGradient></defs>
+      <path class="tr" d="M60,330 m0,-300 a300,300 0 0,1 260,150" stroke="rgba(230,240,255,0.5)" stroke-width="26" fill="none" stroke-linecap="round" opacity="0"/>
+      <path d="M50,250 L52,30 L60,4 L68,30 L70,250 Z" fill="url(#${id})"/><path d="M60,20 V245" stroke="#7a8290" stroke-width="2"/>
+      <rect x="16" y="248" width="88" height="14" rx="5" fill="#8a7a50"/><rect x="52" y="262" width="16" height="70" rx="5" fill="#4a3020"/><circle cx="60" cy="340" r="11" fill="#8a7a50"/>`, w, h);
+    const tr = svg.querySelector(".tr");
+    return { el: svg, w, h, update(t, it) { tr.setAttribute("opacity", it.v("trail", 0).toFixed(3)); } };
+  },
+};
+
+// ------------------------------------------------------------------ shield: round shield polished like a mirror (origin center)
+// r, color (rim), shine (track 0..1: bright highlight sweep), boss
+export const shield = {
+  origin: "center",
+  size_m: { w: 0.7 },
+  create(p, H) {
+    const r = p.r ?? 120, W = r * 2 + 20, c = W / 2, id = H.uid("shd"), rim = H.col(p.color ?? "#8a6a3a");
+    const svg = H.svg(`<defs><radialGradient id="${id}" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#f4f6fa"/><stop offset="0.5" stop-color="#b8c0cc"/><stop offset="1" stop-color="#6a7280"/></radialGradient>
+      <clipPath id="${id}c"><circle cx="${c}" cy="${c}" r="${r * 0.9}"/></clipPath></defs>
+      <circle cx="${c}" cy="${c}" r="${r}" fill="${rim}"/><circle cx="${c}" cy="${c}" r="${r * 0.9}" fill="url(#${id})"/>
+      <g clip-path="url(#${id}c)"><rect class="sh" x="${c - r}" y="${c - r * 1.4}" width="${r * 0.35}" height="${r * 2.8}" fill="#ffffff" opacity="0" transform="rotate(25 ${c} ${c})"/></g>
+      <circle cx="${c}" cy="${c}" r="${r * 0.16}" fill="${H.shade(rim, 0.2)}"/>
+      ${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * 6.283; return `<circle cx="${c + Math.cos(a) * r * 0.95}" cy="${c + Math.sin(a) * r * 0.95}" r="4" fill="${H.shade(rim, 0.35)}"/>`; }).join("")}`, W, W);
+    const sh = svg.querySelector(".sh");
+    return {
+      el: svg, w: W, h: W,
+      update(t, it) { const k = it.v("shine", 0); sh.setAttribute("opacity", (k * 0.8).toFixed(3)); sh.setAttribute("x", (c - r + ((t * 0.8) % 1) * r * 2).toFixed(1)); },
+    };
+  },
+};
+
+// ------------------------------------------------------------------ hourglass (origin center): flow (track 0..1: sand moved to the bottom)
+export const hourglass = {
+  origin: "center",
+  create(p, H) {
+    const w = 140, h = 240, wood = H.col(p.wood ?? "#5a3a22"), sand = H.col(p.sand ?? "#e8c27a");
+    const svg = H.svg(`<rect x="0" y="0" width="${w}" height="18" rx="5" fill="${wood}"/><rect x="0" y="${h - 18}" width="${w}" height="18" rx="5" fill="${wood}"/>
+      <rect x="8" y="14" width="10" height="${h - 28}" fill="${wood}"/><rect x="${w - 18}" y="14" width="10" height="${h - 28}" fill="${wood}"/>
+      <path d="M30,18 L110,18 Q110,90 74,120 Q110,150 110,${h - 18} L30,${h - 18} Q30,150 66,120 Q30,90 30,18 Z" fill="rgba(200,220,240,0.25)" stroke="#d8e4ee" stroke-width="3"/>
+      <path class="top" fill="${sand}"/><path class="bot" fill="${sand}"/><path class="str" stroke="${sand}" stroke-width="3"/>`, w, h);
+    const top = svg.querySelector(".top"), bot = svg.querySelector(".bot"), str = svg.querySelector(".str");
+    return {
+      el: svg, w, h,
+      update(t, it) {
+        const f = H.clamp(it.v("flow", 0)), ty = 40 + f * 72, by = h - 22 - (1 - (1 - f)) * 80;
+        top.setAttribute("d", f < 0.99 ? `M${36 + f * 30},${ty} L${104 - f * 30},${ty} Q100,95 74,118 L66,118 Q40,95 ${36 + f * 30},${ty} Z` : "");
+        bot.setAttribute("d", `M34,${h - 20} L106,${h - 20} Q100,${by + 20} 70,${by} Q40,${by + 20} 34,${h - 20} Z`);
+        str.setAttribute("d", f > 0.01 && f < 0.99 ? `M70,120 V${h - 22}` : "");
+      },
+    };
+  },
+};
