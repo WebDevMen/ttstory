@@ -2,6 +2,7 @@
 
   script formats [name]                          formats, hook types, devices, roles, sounds (the knowledge base)
   script new <id> --topic "…" [--format f] [--duration 60] [--platforms tiktok,reels,shorts] [--wishes "…"]
+                 [--genre fiction] [--series "Имя" --part 2 --of 3 --prev id --next id]   (вымысел, серии)
                                                  skeleton projects/<id>/script.yaml for the chosen format
   script check <id> [--tts]                      timeline + every finding + readiness score (exit code 1 if not ready)
   script render <id> [--tts]                     full script document → projects/<id>/script.md
@@ -73,6 +74,14 @@ def cmd_formats(a):
             print(f"    {st['role']:<11} {int(st['share'] * 100):>3}%  {st['purpose']}")
         print(f"  обязательные роли: {', '.join(f.get('required') or [])}")
         print(f"  крючки: {', '.join(f.get('hooks') or [])}\n  финалы: {', '.join(f.get('endings') or [])}\n  визуал: {f.get('visuals', '')}")
+        if f.get("fiction"):
+            K = model.kb("story")
+            print("\n  АРХЕТИПЫ УГЛОВ (research.angles[].archetype — ≥ 3 разных)")
+            for k, v in K["archetypes"].items():
+                print(f"    {k:<18} {v['name']}: {v['about']}")
+            print("\n  ПРАВИЛА ДРАМАТУРГИИ (docs/SCRIPTING.md §14)")
+            for r in K["rules"]:
+                print(f"    - {r}")
         return
     print("\nФОРМАТЫ (python3 vg.py script formats <имя> — подробно)")
     for k, f in fm.items():
@@ -100,7 +109,11 @@ def cmd_new(a):
     if not model.ID_RE.match(a.id):
         sys.exit("id проекта — латиница/цифры/_ (например blackout)")
     plats = [p.strip() for p in a.platforms.split(",") if p.strip()]
-    path = scaffold.run(a.id, a.topic, a.format, a.duration, plats, a.wishes or "", a.style, a.voice, a.rate, force=a.force)
+    series = None
+    if a.series:
+        series = {"name": a.series, "part": a.part, "of": a.of, "prev": a.prev, "next": a.next}
+    path = scaffold.run(a.id, a.topic, a.format, a.duration, plats, a.wishes or "", a.style, a.voice, a.rate, force=a.force,
+                        genre=a.genre, series=series)
     print(f"  создан {os.path.relpath(path, ROOT)} — формат «{model.formats()[a.format]['name']}», цель {a.duration} с")
     print(f"  дальше: исследование → заполнить TODO → python3 vg.py script check {a.id}")
 
@@ -140,7 +153,10 @@ def add_parser(sub):
     x.add_argument("--format", default="explainer", choices=list(model.formats()))
     x.add_argument("--duration", type=int, default=60); x.add_argument("--platforms", default="tiktok,reels,shorts")
     x.add_argument("--wishes"); x.add_argument("--style", default="draw", choices=["draw", "motion", "plates", "mixed"])
-    x.add_argument("--voice"); x.add_argument("--rate"); x.add_argument("--force", action="store_true"); x.set_defaults(fn=cmd_new)
+    x.add_argument("--voice"); x.add_argument("--rate"); x.add_argument("--force", action="store_true")
+    x.add_argument("--genre", choices=["nonfiction", "fiction"], help="fiction — вымысел: библия истории story: (docs/SCRIPTING.md §14)")
+    x.add_argument("--series", help="название серии (вымысел из нескольких частей)"); x.add_argument("--part", type=int, default=1)
+    x.add_argument("--of", type=int, default=3); x.add_argument("--prev"); x.add_argument("--next"); x.set_defaults(fn=cmd_new)
     x = ss.add_parser("check"); x.add_argument("id"); x.add_argument("--tts", action="store_true"); x.set_defaults(fn=cmd_check)
     x = ss.add_parser("render"); x.add_argument("id"); x.add_argument("--tts", action="store_true"); x.set_defaults(fn=cmd_render)
     x = ss.add_parser("project"); x.add_argument("id"); x.add_argument("--force", action="store_true"); x.set_defaults(fn=cmd_project)

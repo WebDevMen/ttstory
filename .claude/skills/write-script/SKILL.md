@@ -30,6 +30,18 @@ python3 vg.py script new <id> --topic "…" --format <format> --duration 60 [--p
 ```
 The skeleton has the format's beats with a speech-seconds/word budget per beat and every field as `TODO` (each TODO is an error). Blocks may be split/added/reordered; required roles must stay.
 
+## 2a. Fiction: invented stories, mysticism, sci-fi, series (docs/SCRIPTING.md §14)
+
+When the story is invented (a mystery, a fantasy world, an apocalypse that never happened, a series of episodes) set `meta.genre: fiction` — scaffold with `script new <id> --format fiction` (or keep another format and add `genre: fiction`), for a series add `--series "Name" --part N --of M --prev id --next id`. `vg.py script formats fiction` prints the archetypes and the dramaturgy rules. Then:
+
+- **Think like a screenwriter of good short sci-fi** (Black Mirror, Love Death & Robots, The Twilight Zone): one strong idea taken to the end, heroes who pay for their choices, honest world rules, no grand epithet where an object, a sound or a number can be shown.
+- **Angles = archetypes with a paradox.** Try ≥ 3 different `research.angles[].archetype` (`what_if rule_break inhuman_pov conceptual_bridge fourth_wall unreliable time_loop role_swap inheritance`), each with a `paradox`. Never pick a lecture angle (overview, N facts, history of…).
+- **Story bible `story:`** — `premise` («Что если …?»), `paradox`, 2–4 `world_rules` (each shown on screen in a reward beat, `shown_in`; grounded in a real fact when possible — `basis: f2`), ≥ 2 `characters` with `want` and `fear` (the hero named in the voice-over), `twists` with `setup` strictly before `payoff`, `stakes` climbing personal → family → community → world, `series` for episodes (equal lengths ±6%, every part but the last ends on a cliffhanger and names the next part, from part 2 on `answers` the previous cliff).
+- **Hook:** `speculative` / `anomaly` / `visual_shock` / `result_first` / `stakes`; the first frame shows a visual anomaly readable without sound. Lecture hooks (question, list_promise, contrarian, callout) as primary are warned.
+- **Voice-over texture:** show, don't tell (a detail instead of «очень страшно»), sensory details (sound, smell, cold/heat, light) in ≥ 3 beats, no clichés or «AI words» (the checker lists them: `engine/script/data/story.yaml`). The `rule` beat shows the mechanism as an experiment the viewer could repeat.
+- **Ending:** a twist / cliffhanger / reveal right before the CTA; the best ending sends the viewer to rewatch (an easter egg planted in the first frame).
+- Real facts still matter: they make the world rules believable (physics of light, customs of the era). Facts are optional in fiction, but every one used needs a source.
+
 ## 3. Hook lab
 
 8+ variants of 4+ types (`imagine pov stakes question shock_fact contrarian curiosity_gap list_promise challenge callout result_first visual_shock`), each with `vo`, `on_screen`, `visual` (first frame without sound) and an honest `score`/`why` against: stops the thumb, clear, promises, concrete, relevant, strong first frame. `primary` = the first words of beat 1; `ab` = 2 alternatives. First sentence ≤ ~3 s (8–12 words) with the main keyword; no greetings.
@@ -71,4 +83,5 @@ Read the rendered `script.md` once end to end as a viewer would (does every 10�
 - YAML: quote strings containing `: ` and list items containing commas (`["понять, что будет", …]`) — otherwise they silently split.
 - `at` words are matched after lowercasing and stripping punctuation (`ё` = `е`); a word that appears twice needs `#2`. Hyphenated words cannot be referenced — reference a neighbor word.
 - The estimate can differ from real TTS by a few tenths of a second per beat; verify short shots and the hook end with `--tts`.
+- Fiction: the checker's `[show]`, `[cliche]`, `[sensory]`, `[story]`, `[series]` findings are real story problems — fix the text, never game the lists (e.g. by swapping a cliché for its synonym).
 - Facts from one country/one source: phrase carefully ("до десяти часов", "выше девятого этажа — насосы") and mark `confidence: medium`.

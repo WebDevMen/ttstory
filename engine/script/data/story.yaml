@@ -1,0 +1,60 @@
+# Fiction knowledge base: invented stories — mysticism, sci-fi, fantasy, horror-lite, series of episodes.
+# Used when a script has `meta.genre: fiction` (or the `fiction` format). Rules: docs/SCRIPTING.md §14.
+# The checker (engine/script/story.py) reads every list below; edit them here, not in code.
+
+# Angle archetypes for invented stories: every fiction script tries ≥ 3 different ones (research.angles[].archetype)
+# and the chosen angle names its paradox (research.angles[].paradox).
+archetypes:
+  what_if: {name: "Что если…", about: "Одно правило мира меняется — и доводится до предела. Не «как работают тени», а «что если тень уходит от хозяина»."}
+  rule_break: {name: "Слом закона", about: "Знакомый закон (свет, время, память, гравитация) вдруг работает иначе — и у нового закона есть строгая логика."}
+  inhuman_pov: {name: "Нечеловеческий взгляд", about: "Рассказ от лица предмета, существа, ИИ, тени, гена, артефакта — зритель видит мир чужими глазами."}
+  conceptual_bridge: {name: "Мост-метафора", about: "Сложная или чужая механика объясняется через бытовую ситуацию зрителя (свеча на столе → дверь для тени)."}
+  fourth_wall: {name: "Четвёртая стена", about: "Зритель — участник: эксперимент, симуляция, «ты уже в этой истории» (пасхалка, которую надо найти)."}
+  unreliable: {name: "Ненадёжный рассказчик", about: "То, что рассказывают, — не вся правда; поворот переворачивает смысл уже сказанного."}
+  time_loop: {name: "Петля времени", about: "Финал возвращает к началу с новым смыслом; пересмотр — часть сюжета."}
+  role_swap: {name: "Смена ролей", about: "Угроза оказывается защитой, спаситель — источником беды, охотник — дичью."}
+  inheritance: {name: "Наследство / проклятие", about: "Предмет, место или дар с правилом, за нарушение которого платят."}
+# angles that turn a story into a lecture — warned about in fiction
+lecture_angles: ["обзор", "история создания", "интересных факт", "фактов о", "топ", "что такое"]
+
+# levels of stakes, in order — a fiction script should climb them (story.stakes)
+stakes_levels: [personal, family, community, world]
+
+# endings that pay off a fiction video (role of the last beat before the cta)
+ending_roles: [twist, cliffhanger, reveal, payoff]
+
+# hook types that rarely work for an invented story (a lecture opener): warned when chosen as primary
+weak_fiction_hooks: [question, list_promise, contrarian, callout]
+
+# AI/clerical clichés: warned in every script; fiction clichés: warned in fiction scripts
+cliches:
+  common: ["уникальн", "невероятн", "захватывающ", "удивительн", "в заключение", "давайте разберёмся", "стоит отметить",
+           "не секрет, что", "ни для кого не секрет", "в современном мире", "играет важную роль", "окунёмся"]
+  fiction: ["в мире, где", "в мире где", "древнее зло", "таинственн", "загадочн", "мистическ", "леденящ", "кровь стынет",
+            "кровь в жилах", "всё изменилось навсегда", "никто не знал, что", "тьма сгущалась", "ужасающ", "представьте себе",
+            "с тех пор всё", "судьба распорядилась", "невообразим"]
+
+# «tell» words: name a feeling or a verdict instead of showing it — replace with a concrete detail (show, don't tell)
+tell_words: ["очень", "страшн", "жутк", "ужасн", "опасн", "красив", "грустн", "печальн", "пугающ", "зловещ", "необычн", "странн"]
+
+# sensory details: sound, smell, touch, temperature, light — a fiction script needs them in several beats
+sensory_words: ["звон", "звук", "скрип", "шорох", "шёпот", "шепот", "тишин", "треск", "стук", "гул", "хруст", "крик", "вой",
+                "запах", "пахн", "дым", "гарь", "холод", "холодн", "тёпл", "тепл", "горяч", "жар", "лёд", "мокр", "липк",
+                "свет", "блик", "тень", "отблеск", "мерца", "темнот", "огон", "пламя", "искр", "вкус", "кожей", "дрож", "пульс"]
+
+# words that announce a world rule being explained — a rule beat should *show* it on screen (a diagram, an experiment)
+rule_cues: ["правило", "закон", "значит", "поэтому", "потому", "если", "когда", "работает"]
+
+# dramaturgy rules printed by `vg.py script formats fiction` and checked where possible
+rules:
+  - "Премиса — одно предложение «Что если …» с парадоксом внутри. Если её нельзя сказать одной фразой, истории нет."
+  - "У мира 2–4 правила, и они не меняются. Каждое правило показано на экране (схема, опыт, последствие), а развязка следует из них — никакого нового чуда в финале."
+  - "У каждого героя есть желание и страх; у главного — выбор, который чего-то стоит."
+  - "Каждый поворот подготовлен: деталь-«ружьё» видна раньше (setup), выстрел — позже (payoff). Поворот без подготовки — обман, поворот без выстрела — пустой."
+  - "Ставки растут: личное → семья → община → мир. Каждый блок хуже или интереснее предыдущего."
+  - "Покажи, а не расскажи: не «было страшно», а «свеча погасла сама — и пламя наклонилось к стене». Цифра, звук, запах, температура вместо оценки."
+  - "Сенсорные детали в нескольких блоках: звук, запах, холод/жар, свет. Без них вымысел звучит как пересказ."
+  - "Без клише и «ИИ-слов» (уникальный, невероятный, в мире, где…, древнее зло, таинственный): конкретный образ сильнее эпитета."
+  - "Первый кадр — визуальная аномалия или конфликт, понятный без звука (человек на солнце без тени, небо не того цвета)."
+  - "Финал — поворот или обрыв, который меняет смысл увиденного или открывает следующую часть; лучший финал отправляет пересматривать."
+  - "Серия: части равной длины и одной структуры; каждая заканчивается обрывом и вопросом с ответом одним словом; ответ — в начале следующей части."

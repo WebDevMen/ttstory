@@ -19,11 +19,13 @@ ROLE_DEVICES = {
     "step": ["visual_proof", "progress"], "mistake": ["contrast", "sound_hit"], "escalation": ["stakes_raise", "progress"],
     "twist": ["twist", "sound_hit"], "proof": ["visual_proof", "number_reveal"], "reveal": ["mini_payoff", "visual_proof"],
     "payoff": ["mini_payoff", "callback"], "recap": ["save_trigger", "text_reinforcement"], "cta": ["comment_bait"],
-    "loop": ["loop_ending", "rewatch_trigger"],
+    "loop": ["loop_ending", "rewatch_trigger"], "rule": ["visual_proof", "mini_payoff", "save_trigger"],
+    "cliffhanger": ["cliffhanger", "twist", "open_loop"],
 }
 ROLE_MUSIC = {"hook": "drone", "context": "drone", "setup": "drone", "stakes": "tension", "problem": "tension",
               "point": "pulse", "step": "pulse", "mistake": "tension", "escalation": "tension", "twist": "sub",
-              "proof": "pulse", "reveal": "epic", "payoff": "epic", "recap": "pulse", "cta": "calm", "loop": "drone"}
+              "proof": "pulse", "reveal": "epic", "payoff": "epic", "recap": "pulse", "cta": "calm", "loop": "drone",
+              "rule": "pulse", "cliffhanger": "silence"}
 
 
 def q(v):
@@ -59,7 +61,7 @@ def hook_type_plan(fmt, n=8):
     return [order[i % len(order)] for i in range(n)] if len(order) >= 4 else (order * n)[:n]
 
 
-def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="draw", voice=None, rate=None):
+def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="draw", voice=None, rate=None, genre=None, series=None):
     fmts = model.formats()
     if fmt_id not in fmts:
         raise SystemExit(f"unknown format '{fmt_id}' — python3 vg.py script formats")
@@ -77,6 +79,7 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="dra
     first_reward = next((i for i, s in enumerate(st) if s["role"] in ("reveal", "payoff", "twist")), len(st) - 1)
     cta_id = next((ids[i] for i, s in enumerate(st) if s["role"] == "cta"), ids[-1])
     words_total = sum(b[1] for b in bud)
+    fiction = genre == "fiction" or bool(fmt.get("fiction"))
 
     L = []
     w = L.append
@@ -104,6 +107,8 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="dra
     w(f"  format: {fmt_id}                 # {fmt['name']} · все форматы: python3 vg.py script formats")
     w(f"  style: {style}                      # draw (своя графика кодом, по умолчанию) | motion (ИИ-иллюстрации + моушн-графика) | plates (AI-кадры) | mixed")
     w(f"  voice: {{voice: {vo['voice']}, rate: {q(vo['rate'])}, pitch: {q(vo['pitch'])}}}")
+    if fiction:
+        w("  genre: fiction                   # вымысел: библия истории (story:), правила вымысла — docs/SCRIPTING.md §14")
     w("  status: draft                    # draft → checked → approved")
     w("")
     w("brief:")
@@ -123,15 +128,47 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="dra
     w("")
     w("research:")
     w(f"  summary: {q(TODO)}               # 2–4 предложения: что важно знать о теме")
-    w("  facts:                           # ≥ 5 фактов; source — URL; confidence: high | medium | low")
-    for i in range(1, 6):
-        w(f"    - {{id: f{i}, text: {q(TODO)}, source: {q(TODO)}, confidence: high}}")
-    w("  angles:                          # ≥ 3 угла подачи; score 1–10; why — почему сработает или нет")
-    for i in range(1, 4):
-        w(f"    - {{id: a{i}, text: {q(TODO)}, score: 0, why: {q(TODO)}}}")
+    if fiction:
+        w("  facts:                           # опора вымысла: реальная физика, обычай, предмет эпохи — делает правила мира убедительными; source — URL")
+        for i in range(1, 3):
+            w(f"    - {{id: f{i}, text: {q(TODO)}, source: {q(TODO)}, confidence: high}}")
+        arch = list(model.kb("story")["archetypes"])
+        w(f"  angles:                          # ≥ 3 разных архетипа: {' | '.join(arch)}; paradox — противоречие, которое держит интерес")
+        for i, a in enumerate(["what_if", "rule_break", "inhuman_pov", "role_swap"], 1):
+            w(f"    - {{id: a{i}, archetype: {a}, text: {q(TODO)}, paradox: {q(TODO)}, score: 0, why: {q(TODO)}}}")
+    else:
+        w("  facts:                           # ≥ 5 фактов; source — URL; confidence: high | medium | low")
+        for i in range(1, 6):
+            w(f"    - {{id: f{i}, text: {q(TODO)}, source: {q(TODO)}, confidence: high}}")
+        w("  angles:                          # ≥ 3 угла подачи; score 1–10; why — почему сработает или нет")
+        for i in range(1, 4):
+            w(f"    - {{id: a{i}, text: {q(TODO)}, score: 0, why: {q(TODO)}}}")
     w("  chosen_angle: a1")
     w("  insights: []                     # что спорно, что удивляет, какие вопросы задают зрители")
     w("")
+    if fiction:
+        rule_beat = next((ids[i] for i, x in enumerate(st) if x["role"] in ("rule", "proof", "reveal")), ids[min(3, len(ids) - 1)])
+        tw_beat = next((ids[i] for i, x in enumerate(st) if x["role"] in ("twist", "cliffhanger")), ids[-2])
+        w("story:                             # библия истории — docs/SCRIPTING.md §14")
+        w(f"  premise: {q('Что если TODO?')}     # одно предложение: одно изменённое правило мира, доведённое до предела")
+        w(f"  paradox: {q(TODO)}               # противоречие внутри премисы")
+        w(f"  genre: {q(TODO)}                 # мистика | фантастика | фэнтези | лёгкий хоррор …")
+        w("  world_rules:                     # 2–4 правила, неизменные; shown_in — блок, где правило показано на экране; basis — факт fN или «вымысел»")
+        w(f"    - {{id: r1, rule: {q(TODO)}, shown_in: {rule_beat}, basis: f1}}")
+        w(f"    - {{id: r2, rule: {q(TODO)}, shown_in: {rule_beat}}}")
+        w("  characters:                      # ≥ 2: у каждого желание и страх; первый — главный герой (назван в тексте)")
+        for i in (1, 2):
+            w(f"    - {{id: c{i}, name: {q(TODO)}, role: {q(TODO)}, want: {q(TODO)}, fear: {q(TODO)}, look: {q(TODO)}, arc: {q(TODO)}}}")
+        w("  twists:                          # подготовка (setup) раньше выстрела (payoff)")
+        w(f"    - {{id: t1, what: {q(TODO)}, setup: {ids[min(1, len(ids) - 1)]}, payoff: {tw_beat}}}")
+        w("  stakes:                          # личное → семья → община → мир")
+        w(f"    - {{beat: {ids[min(2, len(ids) - 1)]}, level: personal}}")
+        w(f"    - {{beat: {tw_beat}, level: community}}")
+        if series:
+            w(f"  series: {{name: {q(series.get('name') or TODO)}, part: {series.get('part', 1)}, of: {series.get('of', 3)}"
+              + (f", prev: {series['prev']}" if series.get("prev") else "") + (f", next: {series['next']}" if series.get("next") else "")
+              + (f", answers: {q(TODO)}" if series.get("part", 1) > 1 else "") + f", cliff: {q(TODO)}}}")
+        w("")
     w("hooks:                             # ≥ 8 вариантов ≥ 4 типов; типы: python3 vg.py script formats")
     w("  variants:")
     for i, t in enumerate(hook_type_plan(fmt), 1):
@@ -203,11 +240,11 @@ def build(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="dra
     return "\n".join(L) + "\n"
 
 
-def run(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="draw", voice=None, rate=None, force=False):
+def run(pid, topic, fmt_id, duration=60, platforms=None, wishes="", style="draw", voice=None, rate=None, force=False, genre=None, series=None):
     path = model.script_path(pid)
     if os.path.exists(path) and not force:
         raise SystemExit(f"{os.path.relpath(path)} already exists (--force to overwrite)")
-    text = build(pid, topic, fmt_id, duration, platforms, wishes, style, voice, rate)
+    text = build(pid, topic, fmt_id, duration, platforms, wishes, style, voice, rate, genre, series)
     os.makedirs(project_dir(pid), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)

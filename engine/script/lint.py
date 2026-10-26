@@ -5,7 +5,7 @@ Thresholds are deliberately strict: a script that passes with 0 errors and few w
 """
 import re
 
-from . import model, timing
+from . import model, story, timing
 from ..common import norm_word
 
 NUM_WORDS = re.compile(r"\b(ноль|один|одна|одно|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|"
@@ -22,6 +22,8 @@ def _sentences(text):
 def run(s, pid=None, tts=False):
     iss = model.Issues()
     refs = model.validate(s, iss)
+    story.normalize(s, iss)
+    fiction = story.is_fiction(s)
     meta, brief = s.get("meta") or {}, s.get("brief") or {}
     dur = meta.get("duration", 60)
     target = float(dur) if isinstance(dur, (int, float)) and not isinstance(dur, bool) else 60.0
@@ -134,7 +136,7 @@ def run(s, pid=None, tts=False):
             iss.warn("tts", w, "латиница в тексте диктора — напишите кириллицей, как произносится")
         if filled and re.search(r"\b[А-ЯЁ]{2,}\b", vo):
             iss.warn("tts", w, "аббревиатура в тексте диктора — проверьте произношение или раскройте")
-        if filled and (re.search(r"\d", vo) or NUM_WORDS.search(vo)) and not b.get("facts") and roles.get(b.get("role"), {}).get("reward"):
+        if filled and not fiction and (re.search(r"\d", vo) or NUM_WORDS.search(vo)) and not b.get("facts") and roles.get(b.get("role"), {}).get("reward"):
             iss.warn("facts", w, "в тексте есть числа, но блок не ссылается на факты (facts: [...]) — проверьте источник")
         for f in b.get("facts") or []:
             ff = refs["facts"].get(f)
@@ -271,7 +273,7 @@ def run(s, pid=None, tts=False):
         pos = lambda bid: idx.get(bid, 0)
     else:
         pos = lambda bid: by_id[bid]["start"] / max(1, total) if bid in by_id else 0
-    late = [b for b in beats if b.get("role") in ("payoff", "reveal", "twist", "recap") and pos(b.get("id")) >= 0.45]
+    late = [b for b in beats if b.get("role") in ("payoff", "reveal", "twist", "recap", "cliffhanger") and pos(b.get("id")) >= 0.45]
     if not late:
         iss.error("retention", "beats", "нет развязки/раскрытия/поворота/сводки во второй половине — нечем наградить за досмотр")
     loops = s.get("loops") or []
@@ -319,7 +321,7 @@ def run(s, pid=None, tts=False):
         asks = len(set(m.group(0).lower()[:5] for m in ASKS.finditer(txt)))
         if asks > 2:
             iss.warn("engage", f"beats.{cta['beat']}", "слишком много просьб в призыве — оставьте одну главную")
-    if beats and beats[-1].get("role") not in ("cta", "loop", "payoff", "recap"):
+    if beats and beats[-1].get("role") not in ("cta", "loop", "payoff", "recap", "cliffhanger"):
         iss.warn("ending", f"beats.{beats[-1].get('id')}", "ролик заканчивается не призывом/петлёй/развязкой")
 
     # ------------------------------------------------------------------ research
@@ -327,7 +329,10 @@ def run(s, pid=None, tts=False):
     facts = [f for f in res.get("facts") or [] if isinstance(f, dict)]
     real = [f for f in facts if f.get("source") and "TODO" not in f"{f.get('text')} {f.get('source')}"]
     M["facts"] = len(real)
-    if len(real) < 4:
+    if fiction:
+        if not real:
+            iss.info("research", "research.facts", "вымысел без опорных фактов: правила мира держатся только на внутренней логике — реальная деталь (физика, обычай, предмет эпохи) делает их убедительнее")
+    elif len(real) < 4:
         iss.warn("research", "research.facts", f"фактов с источниками: {len(real)} — нужно ≥ 4 (тема должна быть изучена)")
     for f in facts:
         if not f.get("source"):
@@ -342,6 +347,12 @@ def run(s, pid=None, tts=False):
         iss.warn("research", "research.angles", "рассмотрите ≥ 3 угла подачи темы и выберите лучший")
     if not res.get("chosen_angle"):
         iss.warn("research", "research.chosen_angle", "не выбран угол подачи")
+
+    # ------------------------------------------------------------------ story (fiction) and texture of the text
+    story.texture(s, iss, beats, fiction)
+    if fiction:
+        story.check(s, iss, M, beats, by_id, total, draft, pid, tts=tts)
+    M["fiction"] = fiction
 
     # ------------------------------------------------------------------ packaging
     pk = s.get("package") or {}

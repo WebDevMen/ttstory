@@ -164,14 +164,58 @@ def run(s, iss, M, tl, pid):
     if angles:
         w("### Углы подачи")
         w("")
-        o += table(["", "Угол", "Оценка", "Почему"],
-                   [["★" if a.get("id") == res.get("chosen_angle") else a.get("id"), a.get("text"), a.get("score"), a.get("why")] for a in angles])
+        arch = model.kb("story")["archetypes"]
+        if any(a.get("archetype") for a in angles):
+            o += table(["", "Угол", "Архетип", "Парадокс", "Оценка", "Почему"],
+                       [["★" if a.get("id") == res.get("chosen_angle") else a.get("id"), a.get("text"), arch.get(a.get("archetype"), {}).get("name", a.get("archetype") or ""),
+                         a.get("paradox") or "", a.get("score"), a.get("why")] for a in angles])
+        else:
+            o += table(["", "Угол", "Оценка", "Почему"],
+                       [["★" if a.get("id") == res.get("chosen_angle") else a.get("id"), a.get("text"), a.get("score"), a.get("why")] for a in angles])
         w("")
     if res.get("insights"):
         w("### Инсайты")
         w("")
         o += [f"- {x}" for x in res["insights"]]
         w("")
+
+    # ------------------------------------------------------------------ 2a. story bible (fiction)
+    st = s.get("story") if isinstance(s.get("story"), dict) else None
+    if st:
+        w("## Библия истории")
+        w("")
+        se = st.get("series") or {}
+        if se:
+            w(f"**Серия «{se.get('name', '')}», часть {se.get('part')}/{se.get('of')}**"
+              + (f" · отвечает на: {se['answers']}" if se.get("answers") else "") + (f" · обрыв: {se['cliff']}" if se.get("cliff") else ""))
+            w("")
+        w(f"- **Премиса:** {st.get('premise', '—')}")
+        w(f"- **Парадокс:** {st.get('paradox', '—')}")
+        if st.get("genre"):
+            w(f"- **Жанр:** {st['genre']}")
+        w("")
+        if st.get("world_rules"):
+            w("### Правила мира")
+            w("")
+            o += table(["#", "Правило", "Показано в блоке", "Опора"],
+                       [[r.get("id"), r.get("rule"), r.get("shown_in") or "—", r.get("basis") or "вымысел"] for r in st["world_rules"]])
+            w("")
+        if st.get("characters"):
+            w("### Персонажи")
+            w("")
+            o += table(["Кто", "Роль", "Хочет", "Боится", "Вид", "Арка"],
+                       [[c.get("name"), c.get("role"), c.get("want"), c.get("fear"), c.get("look"), c.get("arc")] for c in st["characters"]])
+            w("")
+        if st.get("twists"):
+            w("### Повороты: подготовка → выстрел")
+            w("")
+            o += table(["#", "Поворот", "Подготовка", "Выстрел"],
+                       [[t.get("id"), t.get("what"), t.get("setup"), t.get("payoff")] for t in st["twists"]])
+            w("")
+        if st.get("stakes"):
+            names = {"personal": "личное", "family": "семья", "community": "община", "world": "мир"}
+            w("**Ставки:** " + " → ".join(f"{x.get('beat')}: {names.get(x.get('level'), x.get('level'))}" for x in st["stakes"]))
+            w("")
 
     # ------------------------------------------------------------------ 3. hooks
     hk = s.get("hooks") or {}

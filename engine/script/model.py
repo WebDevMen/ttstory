@@ -13,7 +13,7 @@ _KB = {}
 
 
 def kb(name):
-    """formats | hooks | devices | platforms"""
+    """formats | hooks | devices | platforms | story"""
     if name not in _KB:
         with open(os.path.join(DATA, f"{name}.yaml"), encoding="utf-8") as f:
             _KB[name] = load_yaml(f)
@@ -212,7 +212,7 @@ def _number(iss, obj, where, *keys):
 def normalize(s, iss):
     """Wrong types → schema errors + safe values, so that every later rule can trust the shapes."""
     meta = _as(iss, s, "meta", dict, "")
-    _text(iss, meta, "meta", "title", "topic", "wishes", "language", "format", "style", "primary_platform", "status")
+    _text(iss, meta, "meta", "title", "topic", "wishes", "language", "format", "style", "primary_platform", "status", "genre")
     _strs(iss, meta, "platforms", "meta")
     voice = _as(iss, meta, "voice", dict, "meta")
     _text(iss, voice, "meta.voice", "voice", "rate", "pitch")
@@ -229,7 +229,7 @@ def normalize(s, iss):
     for i, f in enumerate(_dicts(iss, res, "facts", "research")):
         _text(iss, f, f"research.facts[{i}]", "id", "text", "source", "confidence")
     for i, a in enumerate(_dicts(iss, res, "angles", "research")):
-        _text(iss, a, f"research.angles[{i}]", "id", "text", "why")
+        _text(iss, a, f"research.angles[{i}]", "id", "text", "why", "archetype", "paradox")
         _number(iss, a, f"research.angles[{i}]", "score")
     _as(iss, res, "insights", list, "research")
     hk = _as(iss, s, "hooks", dict, "")
@@ -311,6 +311,8 @@ def validate(s, iss):
     dur = meta.get("duration", 60)
     if not isinstance(dur, (int, float)) or not 10 <= dur <= 180:
         iss.error("schema", "meta.duration", "длительность — число секунд от 10 до 180")
+    if meta.get("genre") and meta["genre"] not in ("fiction", "nonfiction"):
+        iss.error("schema", "meta.genre", "genre: nonfiction (по умолчанию: факты, объяснения) | fiction (вымысел: мистика, фантастика, серии)")
     if meta.get("style", "draw") not in STYLES:
         iss.error("schema", "meta.style", "style: " + " | ".join(STYLES))
 
