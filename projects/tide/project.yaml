@@ -212,7 +212,7 @@ scenes:
     shots:
       - id: p_freeze
         transition: {type: glitch, dur: 0.3}
-        ambience: [{sound: rain, gain: -14, until: "@замирают"}]
+        ambience: [{sound: rain, gain: -16}]
         draw:
           camera: {keys: [{t: 0, z: 1.15, x: 540, y: 1100}, {t: "@замирают", z: 1.25, x: 540, y: 1080}, {t: end, z: 1.3, x: 540, y: 900}]}
           layers:
