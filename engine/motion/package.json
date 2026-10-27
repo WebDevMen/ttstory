@@ -1,0 +1,32 @@
+{
+  "name": "ttstory-motion",
+  "private": true,
+  "type": "module",
+  "description": "Motion graphics engine for TTStory: Remotion (React) scenes rendered frame by frame into build/<id>/drawn/<shot>/",
+  "scripts": {
+    "studio": "remotion studio src/index.ts"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/kurale": "^5.3.0",
+    "@fontsource/manrope": "^5.3.0",
+    "@fontsource/rubik": "^5.3.0",
+    "@fontsource/unbounded": "^5.3.0",
+    "@remotion/bundler": "^4.0.538",
+    "@remotion/cli": "^4.0.538",
+    "@remotion/layout-utils": "^4.0.538",
+    "@remotion/lottie": "^4.0.538",
+    "@remotion/noise": "^4.0.538",
+    "@remotion/paths": "^4.0.538",
+    "@remotion/renderer": "^4.0.538",
+    "@remotion/shapes": "^4.0.538",
+    "@remotion/transitions": "^4.0.538",
+    "@types/react": "^18.3.12",
+    "lottie-web": "^5.12.2",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.538",
+    "typescript": "^5.6.3"
+  }
+}

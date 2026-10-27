@@ -1,0 +1,2 @@
+- topojson-client 3.1.0 — ISC license (topojson-client.LICENSE).
+- countries-50m.json and countries-110m.json from world-atlas 2.0.2 — ISC license (world-atlas.LICENSE); geometry from Natural Earth (public domain).

@@ -943,6 +943,47 @@ def auto_hud_sounds(tl):
     return ev
 
 
+DRAW_ENTER_SOUND = {           # enter preset -> (sound, gain dB, params)
+    "pop": ("pop", -17, {"f": 620}), "grow": ("pop", -17, {"f": 520}), "zoom": ("pop", -18, {"f": 700}), "spin": ("pop", -18, {"f": 820}),
+    "rise": ("pop", -19, {"f": 560}), "grow_x": ("blip", -22, {"f": 900, "d": 0.12, "f2": 1600}), "grow_y": ("blip", -22, {"f": 600, "d": 0.14, "f2": 1300}),
+    "stamp": ("kick", -12, {"d": 0.35}), "drop": ("kick", -13, {"d": 0.3}),
+    "slide_up": ("whoosh", -20, {"d": 0.35, "f0": 400, "f1": 3500}), "slide_down": ("whoosh", -20, {"d": 0.35, "f0": 400, "f1": 3500}),
+    "slide_left": ("whoosh", -20, {"d": 0.35, "f0": 400, "f1": 3500}), "slide_right": ("whoosh", -20, {"d": 0.35, "f0": 400, "f1": 3500}),
+    "fly_left": ("whoosh", -17, {"d": 0.45}), "fly_right": ("whoosh", -17, {"d": 0.45}), "fly_up": ("whoosh", -17, {"d": 0.45}), "fly_down": ("whoosh", -17, {"d": 0.45}),
+    "draw": ("hiss", -26, {"d": 0.5, "f0": 5000, "f1": 2500}), "wipe_right": ("noise_sweep", -24, {"d": 0.4}), "wipe_left": ("noise_sweep", -24, {"d": 0.4}),
+    "wipe_up": ("noise_sweep", -24, {"d": 0.4}), "wipe_down": ("noise_sweep", -24, {"d": 0.4}),
+}
+
+
+def auto_draw_sounds(tl):
+    """Sounds for code-drawn items with `sfx`: true (by enter preset) | "sound" | {sound, gain, offset, ...params}."""
+    ev = []
+
+    def walk(items, shot):
+        for it in items or []:
+            sfx = it.get("sfx")
+            if sfx:
+                at = it.get("at")
+                at = shot["start"] if at is None else at
+                enter = it.get("enter")
+                enter = enter.get("type") if isinstance(enter, dict) else enter
+                name, gain, params = DRAW_ENTER_SOUND.get(enter, ("blip", -22, {"f": 1300, "d": 0.08}))
+                if isinstance(sfx, str):
+                    name, params = sfx, {}
+                elif isinstance(sfx, dict):
+                    sfx = dict(sfx)
+                    at += sfx.pop("offset", 0)
+                    name, gain = sfx.pop("sound", name), sfx.pop("gain", gain)
+                    params = {**(params if name == DRAW_ENTER_SOUND.get(enter, ("",))[0] else {}), **sfx}
+                _ev(ev, name, at, gain + it.get("sfx_gain", 0), **params)
+            walk(it.get("children"), shot)
+
+    for s in tl["shots"]:
+        if s.get("draw"):
+            walk(s["draw"].get("layers"), s)
+    return ev
+
+
 def auto_transition_sounds(tl):
     ev = []
     for i, s in enumerate(tl["shots"]):
@@ -1029,6 +1070,7 @@ def run(pid, stems=False):
         events += auto_hud_sounds(tl)
     if au["auto"].get("transitions", True):
         events += auto_transition_sounds(tl)
+    events += auto_draw_sounds(tl)
     for e in au["sfx"]:
         rep = e.get("repeat")
         if rep:

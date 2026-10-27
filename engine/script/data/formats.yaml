@@ -1,0 +1,228 @@
+# Script formats: proven structures for 30–90 s vertical videos. `vg.py script formats` prints this list.
+# structure: beats in order; share = rough part of the runtime; role = see `roles` below.
+# The checker uses `required` roles and the role order to validate a script written in this format.
+
+roles:
+  hook: {name: "Крючок", reward: false, about: "Первые 1–3 секунды: остановить палец. Сразу суть, ставки или загадка."}
+  context: {name: "Контекст", reward: false, about: "Минимум вводных, чтобы зритель понял ситуацию. Не дольше 4–6 с."}
+  setup: {name: "Завязка", reward: false, about: "Правила игры, условия эксперимента, «где мы и что происходит»."}
+  stakes: {name: "Ставки", reward: true, about: "Почему это важно лично зрителю: что он потеряет или получит."}
+  problem: {name: "Проблема", reward: true, about: "Боль или конфликт, который будем решать: конкретное событие — уже новая информация."}
+  point: {name: "Пункт", reward: true, about: "Одна мысль/факт/правило списка. Сам по себе маленькая награда."}
+  step: {name: "Шаг", reward: true, about: "Действие инструкции: что сделать, показано визуально."}
+  mistake: {name: "Ошибка", reward: true, about: "Неправильное действие и его последствие."}
+  escalation: {name: "Эскалация", reward: true, about: "Ситуация становится хуже/интереснее: новый уровень ставок."}
+  twist: {name: "Поворот", reward: true, about: "Неожиданность, которая меняет понимание."}
+  proof: {name: "Доказательство", reward: true, about: "Цифра, эксперимент, источник, визуальное доказательство."}
+  reveal: {name: "Раскрытие", reward: true, about: "Ответ на вопрос из крючка (закрытие главной петли)."}
+  payoff: {name: "Развязка", reward: true, about: "Итог, вывод, главный инсайт, ради которого смотрели."}
+  recap: {name: "Сводка", reward: true, about: "Короткое повторение пунктов (идеально для сохранений)."}
+  cta: {name: "Призыв", reward: false, about: "Один конкретный призыв: вопрос/выбор в комментарии, сохранить, часть 2."}
+  loop: {name: "Петля", reward: false, about: "Финальная фраза, которая перетекает в начало — ролик пересматривают."}
+  rule: {name: "Правило мира", reward: true, about: "Как устроена аномалия: одно правило вымышленного мира, показанное на экране (схема, опыт, последствие)."}
+  cliffhanger: {name: "Обрыв", reward: true, about: "Новый поворот или угроза в самом конце: ответ — в следующей части (серии) или в пересмотре."}
+
+formats:
+  what_if:
+    name: "Что будет, если…"
+    when: "Наука, выживание, гипотетические сценарии, «а если завтра…». Сильная интрига и эскалация."
+    structure:
+      - {role: hook, share: 0.06, purpose: "Сценарий в одной фразе + ставки («Представь: …»)."}
+      - {role: setup, share: 0.10, purpose: "Условия: где, когда, что именно случилось."}
+      - {role: escalation, share: 0.17, purpose: "Час/день 1 — первые последствия."}
+      - {role: escalation, share: 0.17, purpose: "Хуже: второй уровень последствий."}
+      - {role: twist, share: 0.15, purpose: "Неочевидное последствие, о котором не думают."}
+      - {role: payoff, share: 0.20, purpose: "Что в итоге / что делать — главный вывод."}
+      - {role: cta, share: 0.15, purpose: "Выбор или вопрос: «а ты бы…?»."}
+    required: [hook, escalation, payoff, cta]
+    hooks: [imagine, stakes, pov, question, shock_fact]
+    endings: [choice, question, cliffhanger]
+    visuals: "Таймер/метка времени (timetag), эскалация через свет/цвет неба (sky.hour), индикаторы (battery, meter), панорама мира."
+
+  survival_guide:
+    name: "Мануал: что делать, если…"
+    when: "Практические инструкции в стрессовой ситуации. Высокие сохранения и пересылки."
+    structure:
+      - {role: hook, share: 0.07, purpose: "Опасная ситуация от второго лица."}
+      - {role: stakes, share: 0.08, purpose: "Сколько времени/шансов и почему большинство ошибается."}
+      - {role: step, share: 0.15, purpose: "Действие 1 — самое важное."}
+      - {role: step, share: 0.15, purpose: "Действие 2."}
+      - {role: mistake, share: 0.18, purpose: "Ошибка №1, которую делают все (контраст)."}
+      - {role: step, share: 0.15, purpose: "Действие 3 / неожиданный лайфхак."}
+      - {role: recap, share: 0.10, purpose: "Сводка 3 действий (для сохранения)."}
+      - {role: cta, share: 0.12, purpose: "Сохрани / отправь тому, кто…"}
+    required: [hook, step, cta]
+    hooks: [stakes, imagine, pov, contrarian, callout]
+    endings: [save, choice, part2]
+    visuals: "Маркеры шагов, бейджи «ОШИБКА №1», чек-лист, контрастные цвета (красный — нельзя, зелёный — можно)."
+
+  myth_busting:
+    name: "Миф или правда"
+    when: "Распространённое заблуждение. Спорность = комментарии."
+    structure:
+      - {role: hook, share: 0.07, purpose: "Контринтуитивное утверждение: «Ты делаешь это неправильно»."}
+      - {role: context, share: 0.12, purpose: "Сам миф: как все думают и почему."}
+      - {role: proof, share: 0.22, purpose: "Доказательство с цифрой/экспериментом."}
+      - {role: reveal, share: 0.22, purpose: "Как на самом деле и почему."}
+      - {role: payoff, share: 0.20, purpose: "Что это меняет для зрителя."}
+      - {role: cta, share: 0.17, purpose: "«А ты знал? Пиши: да/нет»."}
+    required: [hook, proof, reveal, cta]
+    hooks: [contrarian, shock_fact, question, challenge]
+    endings: [question, choice]
+    visuals: "Штамп МИФ/ПРАВДА, перечёркивание (shape line draw), графики (chart), сравнение до/после."
+
+  listicle:
+    name: "Топ-N / N фактов / N правил"
+    when: "Подборки. Простая навигация, каждые 10–15 с новая награда. Число в хуке."
+    structure:
+      - {role: hook, share: 0.07, purpose: "Обещание с числом и интригой («третий вас удивит»)."}
+      - {role: point, share: 0.18, purpose: "Пункт 1 (сильный, но не самый)."}
+      - {role: point, share: 0.18, purpose: "Пункт 2."}
+      - {role: point, share: 0.20, purpose: "Пункт 3 — самый неожиданный (ради него досматривают)."}
+      - {role: recap, share: 0.17, purpose: "Сводка списком."}
+      - {role: cta, share: 0.20, purpose: "«Какой удивил больше всего?»."}
+    required: [hook, point, cta]
+    hooks: [list_promise, curiosity_gap, shock_fact, contrarian]
+    endings: [question, save]
+    visuals: "Маркер «ПРАВИЛО №N», счётчик пунктов, list/checklist в конце, смена цвета по пунктам."
+
+  explainer:
+    name: "Почему так? (объяснялка)"
+    when: "Наука, техника, «как это работает». Один вопрос — одно ясное объяснение."
+    structure:
+      - {role: hook, share: 0.07, purpose: "Вопрос-загадка, на который кажется, что знаешь ответ."}
+      - {role: context, share: 0.12, purpose: "Очевидный (неверный) ответ."}
+      - {role: proof, share: 0.20, purpose: "Почему очевидный ответ не работает."}
+      - {role: reveal, share: 0.26, purpose: "Настоящий механизм — визуально (схема, 3D, анимация)."}
+      - {role: payoff, share: 0.18, purpose: "Пример из жизни зрителя."}
+      - {role: cta, share: 0.17, purpose: "Вопрос на следующую тему / «а ты знал?»."}
+    required: [hook, reveal, cta]
+    hooks: [question, curiosity_gap, contrarian, shock_fact]
+    endings: [question, part2, loop]
+    visuals: "Схемы из shape/arrow (enter: draw), holo 3D, chart, карта, пошаговая сборка картинки."
+
+  story:
+    name: "История / кейс"
+    when: "Реальная история, драма, расследование. Эмоции и сопереживание."
+    structure:
+      - {role: hook, share: 0.07, purpose: "Самый острый момент истории (in medias res)."}
+      - {role: context, share: 0.12, purpose: "Кто, где, когда — коротко."}
+      - {role: problem, share: 0.15, purpose: "Конфликт."}
+      - {role: escalation, share: 0.20, purpose: "Всё хуже."}
+      - {role: twist, share: 0.18, purpose: "Неожиданный поворот."}
+      - {role: payoff, share: 0.15, purpose: "Чем кончилось + урок."}
+      - {role: cta, share: 0.13, purpose: "«Как бы ты поступил?»."}
+    required: [hook, problem, payoff, cta]
+    hooks: [result_first, stakes, curiosity_gap, imagine]
+    endings: [question, choice, cliffhanger]
+    visuals: "Персонажи с позами и мимикой, смена времени суток, метки времени, карта места событий."
+
+  fiction:
+    name: "Вымысел: мистика / фантастика"
+    fiction: true
+    when: "Придуманная история с поворотом: мистика, фантастика, фэнтези, лёгкий хоррор, серии из нескольких частей. Нужна библия истории (story:) — docs/SCRIPTING.md §14. Длина сюжетной части 90–150 с."
+    structure:
+      - {role: hook, share: 0.07, purpose: "Правило-предупреждение зрителю («Если …, у вас … Потом …») или аномалия в первом кадре: сразу цифра/срок и цена."}
+      - {role: setup, share: 0.12, purpose: "Сцена: где и когда; герой входит с паспортом (имя, возраст/кто он, одна деталь) и целью; «ружьё» будущего поворота."}
+      - {role: problem, share: 0.14, purpose: "Инцидент — сцена с репликами: что ломает норму прямо сейчас, личные ставки."}
+      - {role: rule, share: 0.16, purpose: "Правило мира, проверенное на человеке: кто нарушил/соблюдает, что случилось, с цифрой или сроком; схема на экране."}
+      - {role: escalation, share: 0.16, purpose: "Дилемма: два плохих варианта, спор героев короткими репликами, выбор с ценой."}
+      - {role: twist, share: 0.14, purpose: "Улика, посеянная раньше, щёлкает: смысл прошлых сцен меняется."}
+      - {role: cliffhanger, share: 0.11, purpose: "Новая угроза или вопрос в последней сцене — ответ в следующей части."}
+      - {role: cta, share: 0.10, purpose: "Вопрос-выбор зрителю по дилемме («А вы бы открыли?», «Кто должен был идти?») + следующая часть."}
+    required: [hook, rule, twist, cta]
+    hooks: [rule_warning, speculative, visual_shock, result_first, stakes, imagine]
+    endings: [cliffhanger, twist, choice]
+    visuals: "Аномалия, видимая без звука; правило мира — схемой (пергамент, разрез, опыт); персонажи с позами и мимикой; свет и цвет ведут ставки; финальный кадр перекликается с первым."
+
+  day_in_life:
+    name: "Один день из жизни …"
+    when: "Культура, профессии, страны (как «японская школа»). Таймлайн с метками времени."
+    structure:
+      - {role: hook, share: 0.10, purpose: "Самый шокирующий контраст с привычным."}
+      - {role: point, share: 0.14, purpose: "Утро — первая остановка."}
+      - {role: point, share: 0.14, purpose: "Вторая остановка."}
+      - {role: point, share: 0.16, purpose: "Третья (кульминационная) остановка."}
+      - {role: reveal, share: 0.14, purpose: "Ответ на вопрос из крючка."}
+      - {role: point, share: 0.12, purpose: "Вечер / итог дня."}
+      - {role: cta, share: 0.10, purpose: "«Хотел бы так?» — выбор."}
+    required: [hook, point, cta]
+    hooks: [shock_fact, contrarian, pov, question]
+    endings: [choice, question]
+    visuals: "Маркер времени в каждой сцене (HUD marker), sky.hour от утра к ночи, персонажи, интерьеры."
+
+  comparison:
+    name: "X против Y / там и тут"
+    when: "Сравнение стран, эпох, вещей, профессий. Спор = комментарии."
+    structure:
+      - {role: hook, share: 0.08, purpose: "Неожиданный результат сравнения."}
+      - {role: point, share: 0.20, purpose: "Критерий 1: X vs Y."}
+      - {role: point, share: 0.20, purpose: "Критерий 2."}
+      - {role: twist, share: 0.20, purpose: "Критерий 3 — переворачивает счёт."}
+      - {role: payoff, share: 0.16, purpose: "Вердикт."}
+      - {role: cta, share: 0.16, purpose: "«А ты за кого?»."}
+    required: [hook, point, payoff, cta]
+    hooks: [contrarian, question, shock_fact, challenge]
+    endings: [choice, question]
+    visuals: "Разделённый экран (две группы слева/справа), счёт, chart bar, флаги/карта."
+
+  how_to:
+    name: "Как сделать …"
+    when: "Обучение, лайфхаки, рецепты. Сохранения."
+    structure:
+      - {role: hook, share: 0.08, purpose: "Результат или боль сразу."}
+      - {role: step, share: 0.18, purpose: "Шаг 1."}
+      - {role: step, share: 0.18, purpose: "Шаг 2."}
+      - {role: mistake, share: 0.18, purpose: "Где все ошибаются."}
+      - {role: step, share: 0.16, purpose: "Шаг 3 / секрет."}
+      - {role: payoff, share: 0.10, purpose: "Готовый результат."}
+      - {role: cta, share: 0.12, purpose: "«Сохрани, чтобы не потерять»."}
+    required: [hook, step, cta]
+    hooks: [result_first, contrarian, callout, list_promise]
+    endings: [save, part2]
+    visuals: "Нумерация шагов, checklist, крупные планы предметов (prop), стрелки (arrow, sketch)."
+
+  mistakes:
+    name: "N ошибок, которые …"
+    when: "Здоровье, деньги, быт, учёба. Узнаваемость + польза."
+    structure:
+      - {role: hook, share: 0.08, purpose: "«Ты делаешь это каждый день — и зря»."}
+      - {role: mistake, share: 0.20, purpose: "Ошибка 1 + последствие."}
+      - {role: mistake, share: 0.20, purpose: "Ошибка 2."}
+      - {role: mistake, share: 0.22, purpose: "Ошибка 3 — самая неочевидная."}
+      - {role: recap, share: 0.15, purpose: "Как правильно — сводка."}
+      - {role: cta, share: 0.15, purpose: "«Какую совершал ты?»."}
+    required: [hook, mistake, cta]
+    hooks: [contrarian, callout, shock_fact, challenge]
+    endings: [question, save]
+    visuals: "Красные бейджи ОШИБКА №N, перечёркивание, зелёный чек-лист «как надо»."
+
+  quiz:
+    name: "Проверь себя / угадай"
+    when: "Интерактив: зритель отвечает в голове и пишет результат. Высокие комментарии и пересмотры."
+    structure:
+      - {role: hook, share: 0.08, purpose: "Вызов: «Только 3% ответят правильно»."}
+      - {role: point, share: 0.20, purpose: "Вопрос 1 + таймер + ответ."}
+      - {role: point, share: 0.20, purpose: "Вопрос 2."}
+      - {role: point, share: 0.24, purpose: "Вопрос 3 — сложный."}
+      - {role: reveal, share: 0.13, purpose: "Подсчёт: сколько у тебя?"}
+      - {role: cta, share: 0.15, purpose: "«Напиши свой результат»."}
+    required: [hook, point, cta]
+    hooks: [challenge, question, curiosity_gap]
+    endings: [question, loop]
+    visuals: "Таймер (clock/meter), варианты A/B/C (HUD choices), подсветка правильного, счёт."
+
+  timeline:
+    name: "Как менялось … / история за 60 секунд"
+    when: "История вещей, городов, профессий. Динамика эпох."
+    structure:
+      - {role: hook, share: 0.08, purpose: "Самый неожиданный факт из прошлого."}
+      - {role: point, share: 0.18, purpose: "Эпоха 1."}
+      - {role: point, share: 0.18, purpose: "Эпоха 2."}
+      - {role: twist, share: 0.20, purpose: "Перелом."}
+      - {role: payoff, share: 0.20, purpose: "Сегодня — и что дальше."}
+      - {role: cta, share: 0.16, purpose: "Вопрос о будущем."}
+    required: [hook, point, payoff, cta]
+    hooks: [shock_fact, question, result_first]
+    endings: [question, part2]
+    visuals: "Год крупно (text count), смена палитры по эпохам, карта, chart line."

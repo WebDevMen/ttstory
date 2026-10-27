@@ -231,3 +231,9 @@ b, .acc { color: rgb(var(--accent)); font-weight: inherit; }
 .cap-outline_pop .w { font-family: var(--font-caption); font-weight: 900; font-size: var(--cap-size, 70px); line-height: 1.1; color: rgb(var(--cap)); paint-order: stroke fill;
   -webkit-text-stroke: 12px #000; text-shadow: 6px 6px 0 #000; }
 .cap-outline_pop .w.on { color: #fff; }
+.cap-clean .w { font-family: var(--font-caption); font-weight: 900; font-size: var(--cap-size, 66px); line-height: 1.12; letter-spacing: -.5px; color: #fff;
+  paint-order: stroke fill; -webkit-text-stroke: 10px rgba(22,18,40,.92); text-shadow: 0 6px 0 rgba(22,18,40,.35), 0 10px 26px rgba(0,0,0,.45); margin: 0 15px; }
+.cap-clean .w.on, .cap-clean .w.past { color: rgb(var(--cap)); }
+/* words marked in the scene's caption_marks keep their color in every style */
+#caption .w.mk, #caption .w.mk.on, #caption .w.mk.past { color: rgb(var(--mk)); }
+.cap-box_word .w.mk.on { background: rgb(var(--mk)); color: #111; }

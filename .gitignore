@@ -1,7 +1,8 @@
 build/
-models/
+/models/
 .venv/
 node_modules/
 __pycache__/
 *.pyc
 out/*.part*
+out/*.mp4

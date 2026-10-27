@@ -1,0 +1,13 @@
+/* Base styles of the draw stage. Items are absolutely positioned and moved with matrices (transform-origin 0 0);
+   actors draw in their own local pixel space starting at (0, 0). Project overrides: projects/<id>/draw.css */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+body { font-family: "Montserrat", "Noto Color Emoji", sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+#root, .stage { position: absolute; inset: 0; overflow: hidden; }
+.layer, .di { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.dfx { position: absolute; left: 0; top: 0; }
+.emoji { display: inline-block; width: 1em; height: 1em; vertical-align: -0.12em; }
+b { font-weight: inherit; color: var(--accent-c, #ffd36b); }
+.mk { color: rgb(var(--mk)); }
+.d-text { white-space: pre-line; }
+.d-text .u { display: inline-block; white-space: pre; }

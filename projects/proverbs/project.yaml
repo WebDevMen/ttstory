@@ -1,0 +1,346 @@
+# «Пословицы-тормоза». Illustrated video: AI keyframes (plates/, Figma AI, one style bible) with 2.5D parallax
+# + motion graphics (engine/motion, Remotion): titles, proverb cards, counters, bars — laid out by the engine, no hand coordinates.
+# Script: projects/proverbs/script.yaml. Times: "@word" or seconds from the shot start.
+
+title: "Пословицы-тормоза"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz", tail: 1.6}
+
+theme:
+  preset: minimal
+  accent: "255,207,74"
+  captions:
+    style: clean
+    top: 1250
+    size: 62
+    max_chars: 18
+    hide:
+      - {from: "@twist/законы-0.1", until: "@twist.end"}
+      - {from: "@cta/Какая-0.1", until: "@cta/тебя.end"}
+
+post: {vignette: 0.26, chromatic: 0.0004, grain: 0.02}
+
+# defaults for every motion shot
+motion: {palette: night}
+
+audio:
+  music:
+    key: E
+    mode: minor
+    bpm: 100
+    gain: -15
+    sections:
+      - {at: 0, style: pulse, chords: [Em, C, G, D]}
+      - {at: "@measure.start", style: tension}
+      - {at: "@twist.start", style: tension, chords: [Em, Am, C, B]}
+      - {at: "@regret.start", style: epic, chords: [C, D, Em, G]}
+  duck: 0.6
+
+# style bible for plates (Figma AI, gemini-3.1-flash-image, 1152x2048):
+#   "... Style: premium editorial flat illustration, bold simple shapes, subtle grain texture, soft gradients, limited palette of
+#    deep indigo, cream, amber and folk red, like a modern animated explainer film. No text, no letters, no UI, no watermark."
+#   Composition rule: subject in the lower two thirds, the top third empty for titles.
+
+x-dust: &dust {type: particles, mode: drift, region: [0, 200, 1296, 1900], depth: [0.2, 0.8], count: 50, size: [1.2, 3], color: [1, 0.9, 0.7], alpha: 0.3}
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK
+  - id: hook
+    accent: "255,207,74"
+    caption_marks: {"пословицы": "255,207,74"}
+    text: "Три пословицы из детства тихо держат тебя на месте. Третью ты слышал сто раз."
+    shots:
+      - id: h_weight
+        plate: hook
+        captions_top: 1470
+        camera:
+          keys: [{t: 0, z: 1.0, x: 648, y: 1000}, {t: end, z: 1.07, x: 648, y: 1030}]
+          sway: {x: 3, y: 3, roll: 0.25, freq: 0.12}
+          parallax: {px: 10, py: 4, freq: 0.12, k: [0, 0.05]}
+        effects:
+          - *dust
+          - {type: glow, at: [648, 920], depth: 0.5, sigma: 260, color: [1, 0.8, 0.45], intensity: 0.1, pulse: {freq: 0.4, amp: 0.3}}
+        look: {bloom: [0.78, 0.3, [1, 0.92, 0.8]], grade: {contrast: 0.1, sat: 1.05}}
+        ambience: [{sound: room, gain: -22}]
+        motion:
+          scrim: {side: top, k: 0.75, h: 34}
+          align: top
+          blocks:
+            - {type: title, text: "3 пословицы, которые **тормозят**", at: 0.2, size: xl, lines: 2}
+      - id: h_voices
+        start: "@третью-0.15"
+        transition: {type: whip_x, flash: 0.08}
+        motion:
+          backdrop: {pattern: folk, glow: 1.1}
+          camera: {zoom: [1.0, 1.06], shakes: [{at: "@сто", amp: 10}]}
+          blocks:
+            - {type: kicker, text: "слышал с детства", icon: Ear, at: 0}
+            - {type: proverb, text: "Семь раз отмерь — один раз отрежь", at: 0.05, rot: -2}
+            - {type: number, value: 100, from: 1, prefix: "×", at: "@сто-0.1", dur: 0.55, size: 200}
+    sfx:
+      - {sound: impact, at: 0.1, gain: -13}
+      - {sound: boom, at: "@держат", gain: -14}
+      - {sound: whoosh, at: "@третью-0.1", gain: -15}
+      - {sound: kick, at: "@сто", gain: -11}
+
+  # ------------------------------------------------------------------ 2. №1 — выше головы
+  - id: jump
+    accent: "182,255,59"
+    caption_marks: {"пятьдесят девять сантиметров": "182,255,59"}
+    text: "Первая: «выше головы не прыгнешь». Швед Стефан Хольм ростом метр восемьдесят один взял два сорок. Это на пятьдесят девять сантиметров выше головы."
+    shots:
+      - id: j_plank
+        transition: {type: whip_x, flash: 0.08}
+        motion:
+          backdrop: {pattern: folk}
+          blocks:
+            - {type: kicker, text: "Пословица №1", at: "@Первая-0.1"}
+            - {type: proverb, text: "Выше головы не прыгнешь", at: "@Первая", size: l}
+            - {type: card, icon: PersonStanding, title: "Стефан Хольм", text: "Швеция · рост 1,81 м", at: "@Хольм-0.1", color: pos}
+      - id: j_jump
+        plate: jumper
+        start: "@взял-0.2"
+        transition: {type: zoom, dur: 0.3}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 648, y: 1150}, {t: end, z: 1.12, x: 660, y: 1050}]
+          parallax: {px: 12, py: 5, freq: 0.15, k: [0, 0.06]}
+        effects:
+          - {type: glow, at: [210, 600], depth: 0.2, sigma: 120, color: [1, 0.95, 0.8], intensity: 0.12}
+          - {type: glow, at: [1100, 620], depth: 0.2, sigma: 120, color: [1, 0.95, 0.8], intensity: 0.12}
+        look: {bloom: [0.75, 0.32, [1, 0.95, 0.85]], grade: {contrast: 0.1, sat: 1.06}}
+        ambience: [{sound: wind, gain: -24}]
+        motion:
+          scrim: {side: top, k: 0.65, h: 32}
+          align: top
+          blocks:
+            - {type: number, value: 2.40, from: 1.81, decimals: 2, suffix: " м", at: "@два-0.05", dur: 0.6, size: 170, label: "взял высоту"}
+      - id: j_gap
+        start: "@пятьдесят-0.2"
+        transition: {type: zoom, dur: 0.3}
+        motion:
+          backdrop: {pattern: rays, glow: 1.2}
+          camera: {zoom: [1.0, 1.05], shakes: [{at: "@сантиметров", amp: 12}]}
+          blocks:
+            - {type: number, value: 59, prefix: "+", suffix: "см", at: "@пятьдесят", dur: 0.7, color: pos, label: "выше собственной головы"}
+            - {type: proverb, text: "Выше головы не прыгнешь", size: m, rot: -2, crack: "@сантиметров", break: "@выше#2"}
+    sfx:
+      - {sound: impact, at: "@Первая", gain: -12}
+      - {sound: pop, at: "@Хольм", gain: -15}
+      - {sound: whoosh, at: "@взял", gain: -13}
+      - {sound: kick, at: "@сорок", gain: -11}
+      - {sound: riser, at: "@пятьдесят", gain: -16}
+      - {sound: creak, at: "@сантиметров", gain: -14}
+      - {sound: slam, at: "@выше#2", gain: -12}
+
+  # ------------------------------------------------------------------ 3. №2 — два зайца
+  - id: hares
+    accent: "182,255,59"
+    caption_marks: {"на треть реже": "182,255,59"}
+    text: "Вторая: «за двумя зайцами погонишься — ни одного не поймаешь». Но учёные посчитали: кто начинал своё дело, не бросая работу, прогорал на треть реже."
+    shots:
+      - id: z_chase
+        plate: hares
+        transition: {type: whip_x, flash: 0.08}
+        camera:
+          keys: [{t: 0, z: 1.06, x: 648, y: 1300}, {t: end, z: 1.0, x: 648, y: 1250}]
+          parallax: {px: 12, py: 4, freq: 0.12, k: [0, 0.06]}
+        effects:
+          - {type: glow, at: [930, 1300], depth: 0.2, sigma: 300, color: [1, 0.9, 0.7], intensity: 0.1}
+          - {type: particles, mode: drift, region: [0, 1300, 1296, 2200], depth: [0.6, 0.9], count: 40, size: [1.5, 3.5], color: [1, 0.95, 0.7], alpha: 0.4}
+        look: {bloom: [0.75, 0.3, [1, 0.95, 0.85]], grade: {contrast: 0.1}}
+        ambience: [{sound: wind, gain: -22}]
+        motion:
+          scrim: {side: top, k: 0.7, h: 36}
+          align: top
+          blocks:
+            - {type: kicker, text: "Пословица №2", at: "@Вторая-0.1"}
+            - {type: proverb, text: "За двумя зайцами погонишься — ни одного не поймаешь", at: "@Вторая", size: s}
+      - id: z_study
+        start: "@учёные-0.15"
+        transition: {type: zoom, dur: 0.3}
+        motion:
+          backdrop: {pattern: grid}
+          camera: {shakes: [{at: "@треть", amp: 8}]}
+          blocks:
+            - {type: kicker, text: "Риск закрыть своё дело", icon: TrendingDown, at: 0}
+            - type: bars
+              values: false
+              items:
+                - {label: "Ушёл с работы сразу", value: 100, color: neg, at: "@посчитали"}
+                - {label: "Совмещал с работой", value: 67, color: pos, at: "@работу-0.1"}
+            - {type: stamp, text: "−33% провалов", color: pos, at: "@треть-0.05", size: m}
+            - {type: source, text: "Raffiee & Feng, 2014 · США, 14 лет наблюдений", at: 0.3}
+    sfx:
+      - {sound: impact, at: "@Вторая", gain: -12}
+      - {sound: whoosh, at: "@зайцами", gain: -14}
+      - {sound: typing, at: "@посчитали", gain: -17}
+      - {sound: blip, at: "@работу", gain: -14}
+      - {sound: slam, at: "@треть", gain: -11}
+      - {sound: chime, at: "@реже", gain: -16}
+
+  # ------------------------------------------------------------------ 4. №3 — семь раз отмерь
+  - id: measure
+    accent: "182,255,59"
+    caption_marks: {"семьдесят процентов": "182,255,59"}
+    text: "Третья: «семь раз отмерь — один раз отрежь». Звучит мудро, но часто это повод не начинать вообще. Безос советует решать, когда знаешь семьдесят процентов."
+    shots:
+      - id: m_tape
+        plate: tailor
+        transition: {type: whip_x, flash: 0.08}
+        camera:
+          keys: [{t: 0, z: 1.0, x: 648, y: 1250}, {t: end, z: 1.12, x: 640, y: 1300}]
+          parallax: {px: 8, py: 3, freq: 0.1, k: [0, 0.05]}
+        effects:
+          - {type: glow, at: [1150, 1310], depth: 0.6, sigma: 200, color: [1, 0.75, 0.4], intensity: 0.12, pulse: {freq: 0.5, amp: 0.2}}
+          - *dust
+        look: {bloom: [0.75, 0.3, [1, 0.9, 0.75]], grade: {contrast: 0.1}}
+        ambience: [{sound: room, gain: -20}]
+        motion:
+          scrim: {side: top, k: 0.75, h: 36}
+          align: top
+          blocks:
+            - {type: kicker, text: "Пословица №3", at: "@Третья-0.1"}
+            - type: swap
+              items:
+                - {type: proverb, text: "Семь раз отмерь — один раз отрежь", at: "@Третья", size: s, until: "@мудро-0.1"}
+                - {type: number, value: 43, from: 7, prefix: "×", at: "@мудро", dur: 1.6, size: 150, label: "отмерено · отрезано: 0", color: neg}
+      - id: m_70
+        start: "@Безос-0.15"
+        transition: {type: zoom, dur: 0.3}
+        motion:
+          backdrop: {pattern: dots}
+          camera: {shakes: [{at: "@процентов", amp: 10}]}
+          blocks:
+            - {type: kicker, text: "Правило Джеффа Безоса", icon: Lightbulb, at: 0}
+            - {type: title, text: "Решай, когда знаешь **70%**", at: "@советует", size: l, lines: 2}
+            - {type: meter, label: "Информация", value: 70, at: "@решать", color: pos, mark: 70, mark_label: "РЕШАЙ", mark_at: "@семьдесят"}
+            - {type: source, text: "Письмо акционерам Amazon, 2016", at: 0.3}
+    sfx:
+      - {sound: impact, at: "@Третья", gain: -12}
+      - {sound: scrape, at: "@мудро", gain: -16}
+      - {sound: click, at: "@начинать", gain: -14}
+      - {sound: kick, at: "@Безос", gain: -13}
+      - {sound: riser, at: "@решать", gain: -16}
+      - {sound: slam, at: "@процентов", gain: -11}
+
+  # ------------------------------------------------------------------ 5. TWIST — пословицы спорят
+  - id: twist
+    accent: "255,207,74"
+    caption_marks: {"не законы": "255,207,74"}
+    text: "И главное: пословицы спорят сами с собой. «Тише едешь — дальше будешь». Но «куй железо, пока горячо». Это не законы, а советы под ситуацию."
+    shots:
+      - id: t_vs
+        transition: {type: glitch, dur: 0.25}
+        motion:
+          palette: dusk
+          backdrop: {pattern: folk}
+          camera: {zoom: [1.0, 1.05], shakes: [{at: "@куй", amp: 12}]}
+          blocks:
+            - {type: kicker, text: "Пословицы спорят", icon: Swords, at: 0.1}
+            - type: versus
+              vs_at: "@спорят"
+              a: {text: "Тише едешь — дальше будешь", icon: Snail, at: "@Тише-0.1", color: pos}
+              b: {text: "Куй железо, пока горячо", icon: Hammer, at: "@куй-0.1", color: accent}
+          particles:
+            - {kind: sparks, at: "@куй+0.05", region: [760, 1050, 960, 1150], count: 40, size: 9, colors: [accent, "#ff8a2e", "#ffffff"], speed: 700}
+      - id: t_rule
+        start: "@законы-0.2"
+        transition: {type: zoom, dur: 0.3}
+        motion:
+          palette: dusk
+          backdrop: {pattern: rays}
+          camera: {shakes: [{at: "@законы", amp: 12}]}
+          blocks:
+            - {type: stamp, text: "Не законы", at: "@законы-0.05", size: xl, color: accent}
+            - {type: title, text: "а советы **под ситуацию**", at: "@а", sync: true, size: m, lines: 2}
+    sfx:
+      - {sound: whoosh, at: "@главное", gain: -16}
+      - {sound: glitch, at: "@спорят", gain: -14}
+      - {sound: whoosh, at: "@Тише-0.1", gain: -13}
+      - {sound: metal_ring, at: "@куй", gain: -12}
+      - {sound: slam, at: "@законы", gain: -11}
+      - {sound: chime, at: "@ситуацию", gain: -15}
+
+  # ------------------------------------------------------------------ 6. PAYOFF — сожаления
+  - id: regret
+    accent: "255,207,74"
+    caption_marks: {"не попробовали": "255,207,74"}
+    text: "И вот что важно. Психологи выяснили: с годами люди жалеют не об ошибках. Они жалеют о том, чего так и не попробовали."
+    shots:
+      - id: r_bench
+        plate: bench
+        captions_top: 1470
+        transition: {type: dissolve, dur: 0.5}
+        camera:
+          keys: [{t: 0, z: 1.04, x: 648, y: 1250}, {t: end, z: 1.14, x: 660, y: 1330}]
+          parallax: {px: 8, py: 3, freq: 0.1, k: [0, 0.05]}
+        effects:
+          - {type: glow, at: [1060, 1020], depth: 0.4, sigma: 160, color: [1, 0.8, 0.45], intensity: 0.14, pulse: {freq: 0.6, amp: 0.15}}
+          - {type: particles, mode: fall_loop, shape: petal, count: 18, size: [8, 13], speed: [60, 120], sway: 60, drift: 20, color: [1, 0.62, 0.25], alpha: 0.9, soft: 0.6}
+        look: {bloom: [0.75, 0.3, [1, 0.9, 0.8]], grade: {contrast: 0.08}}
+        ambience: [{sound: wind, gain: -26}]
+        motion:
+          scrim: {side: top, k: 0.7, h: 34}
+          align: top
+          blocks:
+            - {type: kicker, text: "Психологи · 1995", icon: Brain, at: "@Психологи-0.1"}
+            - {type: title, text: "О чём жалеют **с годами**", at: "@годами-0.1", size: l, lines: 2}
+      - id: r_bars
+        start: "@ошибках-0.2"
+        transition: {type: zoom, dur: 0.3}
+        motion:
+          backdrop: {pattern: grid}
+          camera: {shakes: [{at: "@попробовали", amp: 8}]}
+          blocks:
+            - {type: kicker, text: "Спустя годы жалеют сильнее", at: 0}
+            - type: bars
+              values: false
+              items:
+                - {label: "О сделанных ошибках", value: 38, color: muted, at: "@ошибках"}
+                - {label: "О том, что не попробовал", value: 100, color: accent, at: "@попробовали-0.2"}
+            - {type: stamp, text: "Попробуй", color: pos, at: "@попробовали+0.35", size: l}
+            - {type: source, text: "Gilovich & Medvec, Psychological Review, 1995", at: 0.3}
+    sfx:
+      - {sound: chime, at: "@важно", gain: -16}
+      - {sound: pop, at: "@Психологи", gain: -16}
+      - {sound: blip, at: "@ошибках", gain: -15}
+      - {sound: kick, at: "@попробовали", gain: -11}
+      - {sound: slam, at: "@попробовали+0.35", gain: -14}
+
+  # ------------------------------------------------------------------ 7. CTA
+  - id: cta
+    accent: "255,207,74"
+    text: "Какая пословица тормозила тебя? Напиши её в комментарии — разберём её в следующем видео."
+    shots:
+      - id: c_free
+        plate: free
+        transition: {type: whip_x, flash: 0.1}
+        camera:
+          keys: [{t: 0, z: 1.06, x: 648, y: 1120}, {t: end, z: 1.0, x: 648, y: 1100}]
+          parallax: {px: 12, py: 5, freq: 0.15, k: [0, 0.06]}
+        effects:
+          - {type: glow, at: [648, 700], depth: 0.4, sigma: 320, color: [1, 0.8, 0.4], intensity: 0.16, pulse: {freq: 0.8, amp: 0.3}}
+          - {type: particles, mode: drift, region: [200, 300, 1100, 1300], depth: [0.3, 0.6], count: 60, size: [1.5, 4], color: [1, 0.85, 0.5], alpha: 0.6}
+        look: {bloom: [0.72, 0.38, [1, 0.9, 0.75]], grade: {contrast: 0.1, sat: 1.08}}
+        motion:
+          scrim: {side: top, k: 0.75, h: 30}
+          align: top
+          blocks:
+            - {type: title, text: "Какая пословица **тормозила** тебя?", at: 0.05, sync: true, size: l, lines: 2}
+      - id: c_comment
+        start: "@Напиши-0.15"
+        transition: {type: zoom, dur: 0.3}
+        motion:
+          backdrop: {pattern: folk, glow: 1.2}
+          blocks:
+            - {type: kicker, text: "Напиши в комментариях", icon: MessageCircle, at: 0}
+            - {type: comment, name: "ты", text: "Семь раз отмерь…", placeholder: "Добавить комментарий…", at: "@в", cps: 14, likes: "1 204", like_at: "@разберём"}
+            - {type: badge, text: "Разберём в следующем видео", icon: Sparkles, at: "@следующем-0.1", color: pos}
+          particles:
+            - {kind: confetti, at: "@разберём", region: [60, 0, 1020, 1200], count: 50, size: 16, colors: [accent, pos, neg, "#7a8cff"]}
+    sfx:
+      - {sound: boom, at: "@cta.start+0.1", gain: -14}
+      - {sound: whoosh, at: "@Напиши-0.1", gain: -15}
+      - {sound: typing, at: "@в", gain: -16}
+      - {sound: sparkle, at: "@разберём", gain: -14}
+      - {sound: pop, at: "@следующем", gain: -15}

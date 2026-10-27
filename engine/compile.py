@@ -4,6 +4,7 @@
 - recovers punctuation for captions
 - resolves every time reference ("@word", "@scene.end", "@cue:name", ...) to absolute seconds
 """
+import glob
 import json
 import os
 import subprocess
@@ -11,7 +12,7 @@ import subprocess
 import numpy as np
 import soundfile as sf
 
-from .common import Refs, build_dir, css_rgb, load_project, norm_word, project_dir, save_json
+from .common import Refs, build_dir, css_rgb, deep_merge, load_project, norm_word, project_dir, save_json
 
 SR = 48000
 
@@ -36,6 +37,62 @@ def _punct(text, words):
             k += 1
         out.append((pre[-1:] if pre and pre[-1] in "«(\"" else "", text[j:k].strip()))
         pos = k
+    return out
+
+
+def _auto_captions(pid):
+    """Caption bands picked by the layout audit (build/<id>/layout/captions.json): {shot id: top px}."""
+    f = os.path.join(build_dir(pid), "layout", "captions.json")
+    if not os.path.exists(f):
+        return {}
+    import json
+    return json.load(open(f, encoding="utf-8"))
+
+
+MOTION_TIME_KEYS = {"at", "until", "vs_at", "mark_at", "like_at", "strike", "crack", "break"}
+
+
+def _motion_rel(obj, start):
+    """Plain numbers in time keys of a motion spec are seconds from the shot start; '@refs' stay absolute."""
+    if isinstance(obj, dict):
+        return {k: (round(start + v, 3) if k in MOTION_TIME_KEYS and isinstance(v, (int, float)) and not isinstance(v, bool)
+                    else _motion_rel(v, start)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_motion_rel(v, start) for v in obj]
+    return obj
+
+
+def _flat(layers):
+    """A YAML anchor of a list of layers (`- *forge_inside`) arrives as a nested list: splice it into the shot's layers."""
+    out = []
+    for it in layers or []:
+        out.extend(_flat(it) if isinstance(it, list) else [it])
+    return out
+
+
+def _stale_anims(layers, start, path=""):
+    """Plain-number `at` in a draw item's anim steps and value tracks is ABSOLUTE video time. In a shot that starts later,
+    a step written as `at: 0` / `at: 0.1` has already finished before the shot is on screen (a walk-in that never happens).
+    Returns the offending items; compile prints a warning (docs/DRAW.md §5)."""
+    out = []
+    for i, it in enumerate(layers or []):
+        if not isinstance(it, dict):
+            continue
+        name = f"{path}{it.get('id') or it.get('actor')}[{i}]"
+        keys = []
+        for st in it.get("anim") or []:
+            if isinstance(st, dict) and isinstance(st.get("at"), (int, float)) and not isinstance(st.get("at"), bool):
+                keys.append((st["at"], st.get("dur", 0.5), "anim"))
+        for k, v in it.items():
+            if k in ("anim", "children", "at", "until") or not isinstance(v, list):
+                continue
+            for key in v:
+                if isinstance(key, dict) and isinstance(key.get("at"), (int, float)) and not isinstance(key.get("at"), bool) and key["at"] > 0 and ("v" in key or "to" in key):
+                    keys.append((key["at"], key.get("dur", 0), k))
+        for at, dur, what in keys:
+            if start > 0.5 and at + (dur or 0) < start - 0.05:
+                out.append(f"{name}.{what}: at {at} (+{dur} с) кончается раньше начала шота ({start:.2f} с)")
+        out += _stale_anims(it.get("children"), start, name + ".")
     return out
 
 
@@ -94,6 +151,19 @@ def run(pid):
     for i, s in enumerate(scenes):
         s["end"] = scenes[i + 1]["start"] if i + 1 < len(scenes) else duration
 
+    for sc in p["scenes"]:
+        for phrase, color in (sc.get("caption_marks") or {}).items():
+            seq = [norm_word(w) for w in str(phrase).split()]
+            ws = [w for w in words_out if w["scene"] == sc["id"]]
+            hit = False
+            for i in range(len(ws) - len(seq) + 1):
+                if [norm_word(w["text"]) for w in ws[i:i + len(seq)]] == seq:
+                    for w in ws[i:i + len(seq)]:
+                        w["mark"] = css_rgb(color)
+                    hit = True
+            if not hit:
+                print(f"  ! caption_marks: '{phrase}' not found in scene {sc['id']}")
+
     refs = Refs(words_out, scenes, duration=duration)
     # cues: scene-level first (scene context), then project-level
     for sc, s in zip(p["scenes"], scenes):
@@ -112,13 +182,13 @@ def run(pid):
         for i, sh in enumerate(lst):
             starts.append(s["start"] if i == 0 else refs.resolve(sh.get("start"), sc["id"], (s["start"], s["end"])))
         for i, sh in enumerate(lst):
-            shots.append({"raw": sh, "scene": sc["id"], "id": sh["id"], "plate": sh.get("plate", sh["id"]),
+            shots.append({"raw": sh, "scene": sc["id"], "id": sh["id"], "plate": None if sh.get("draw") is not None or (sh.get("motion") is not None and not sh.get("plate")) else sh.get("plate", sh["id"]),
                           "start": round(starts[i], 3), "end": round(starts[i + 1] if i + 1 < len(lst) else s["end"], 3)})
     refs.shots = {x["id"]: x for x in shots}
-    for x in shots:
-        sh, ctx = x.pop("raw"), (x["start"], x["end"])
-        dur = x["end"] - x["start"]
-        raw_cam = dict(sh.get("camera") or {})
+
+    def camera(raw, x, ctx):
+        """Camera spec with keys whose `t` is shot-relative ("end", "end-0.5" and "@refs" allowed)."""
+        raw_cam = dict(raw or {})
         raw_keys = raw_cam.pop("keys", None) or [{"t": 0}]
         cam = refs.deep(raw_cam, x["scene"], ctx)
         keys = []
@@ -126,14 +196,34 @@ def run(pid):
             k = dict(k)
             t = k.get("t", 0)
             if isinstance(t, str) and t.startswith("end"):          # "end", "end-0.5" (relative to shot end)
-                t = dur + float(t[3:] or 0)
+                t = ctx[1] - ctx[0] + float(t[3:] or 0)
             elif isinstance(t, str) and t.startswith("@"):          # absolute reference -> shot-relative
                 t = refs.resolve(t, x["scene"], ctx) - x["start"]
             k["t"] = float(t)
             keys.append(k)
         cam["keys"] = sorted(keys, key=lambda k: k["t"])
+        return cam
+
+    draw_defaults = p.get("draw") or {}
+    auto_caps = _auto_captions(pid)
+    for x in shots:
+        sh, ctx = x.pop("raw"), (x["start"], x["end"])
+        if sh.get("draw") is not None:                             # code-drawn shot (engine/hud/draw)
+            d = deep_merge(draw_defaults, sh["draw"])
+            d["layers"] = _flat(d.get("layers"))
+            for msg in _stale_anims(d.get("layers"), x["start"]):
+                print(f"  ! {x['id']}: {msg} — числа в at абсолютные (секунды ролика): используйте \"@слово\" или \"@{x['scene']}.start\"")
+            raw_cam = d.pop("camera", None)
+            d = refs.deep(d, x["scene"], ctx)
+            d["camera"] = camera(raw_cam, x, ctx)
+            x["draw"] = d
+            x["plate"] = None
+        if sh.get("motion") is not None:                           # motion-graphics shot (engine/motion, Remotion)
+            x["motion"] = refs.deep(_motion_rel(deep_merge(p.get("motion") or {}, sh["motion"]), x["start"]), x["scene"], ctx)
+            if not x["plate"]:                                      # full-frame graphics: the scene layer reads it like a draw shot
+                x["draw"] = {"engine": "motion", "camera": {"keys": [{"t": 0}]}, "layers": [], "depth": sh["motion"].get("depth", [0.1, 0.8])}
         x.update({
-            "camera": cam,
+            "camera": camera(sh.get("camera"), x, ctx),
             "masks": sh.get("masks") or {},
             "effects": refs.deep(sh.get("effects") or [], x["scene"], ctx),
             "look": sh.get("look") or {},
@@ -141,6 +231,11 @@ def run(pid):
             "anchors": sh.get("anchors") or {},
             "captions_top": sh.get("captions_top"),
         })
+        # captions_top: auto (or theme captions.top: auto) — the free band chosen by `vg.py layout` for this shot
+        cap_top = sh.get("captions_top", "auto" if (p["theme"].get("captions") or {}).get("top") == "auto" else None)
+        if cap_top == "auto":
+            x["captions_auto"] = True
+            x["captions_top"] = auto_caps.get(x["id"])
 
     # HUD instances
     hud = []
@@ -180,6 +275,8 @@ def run(pid):
             ambience[x["id"]] = amb
 
     theme = refs.deep(p["theme"], None, (0.0, duration))
+    if (theme.get("captions") or {}).get("top") == "auto":
+        theme["captions"]["top"] = 1250            # default band until the layout audit picks one per shot
     for sc, s in zip(p["scenes"], scenes):
         s["accent"] = css_rgb(sc.get("accent", theme["accent"]))
         s["clock"] = sc.get("clock")
@@ -193,6 +290,7 @@ def run(pid):
         "duration": duration, "frames": int(round(duration * fmt["fps"])),
         "scenes": scenes, "shots": shots, "cues": refs.cues, "words": words_out,
         "theme": theme, "post": p["post"], "hud": hud,
+        "draw_actors": sorted(f"/projects/{pid}/actors/{os.path.basename(f)}" for f in glob.glob(os.path.join(project_dir(pid), "actors", "*.js"))),
         "dim": refs.deep(p.get("dim") or [], None, (0.0, duration)),
         "audio": {"music": music, "sfx": sfx, "ambience": ambience, "auto": au.get("auto", {}), "duck": au.get("duck", 0.6),
                   "vo_gain": au.get("vo_gain", 0.0), "loudness": au.get("loudness", -14), "master": au.get("master", {})},
@@ -203,7 +301,10 @@ def run(pid):
     for s in scenes:
         print(f"  scene {s['id']:12s} {s['start']:6.2f} → {s['end']:6.2f}  (voice {s['vo_start']:.2f}–{s['vo_end']:.2f})")
     for x in shots:
-        print(f"    shot {x['id']:14s} {x['start']:6.2f} → {x['end']:6.2f}  ({x['end'] - x['start']:.2f}s, plate {x['plate']})")
+        src = f"plate {x['plate']}" if x["plate"] else f"draw: {len(x['draw'].get('layers') or [])} layers" if x["draw"].get("engine") != "motion" else ""
+        if x.get("motion") is not None:
+            src += (" + " if src else "") + f"motion: {len(x['motion'].get('blocks') or [])} blocks"
+        print(f"    shot {x['id']:14s} {x['start']:6.2f} → {x['end']:6.2f}  ({x['end'] - x['start']:.2f}s, {src})")
     if refs.cues:
         print("  cues: " + ", ".join(f"{k}={v:.2f}" for k, v in refs.cues.items()))
     return tl

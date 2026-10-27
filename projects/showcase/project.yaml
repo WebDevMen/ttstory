@@ -1,0 +1,107 @@
+# «Референсы»: the user's reference frames (night survival explainer) rebuilt with draw actors — dark palette,
+# glowing UI, mono time tag, karaoke captions. 100% code-drawn.
+title: "Три часа ночи"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+16%", pitch: "-3Hz", lead_in: 0.25, gap: 0.4, tail: 1.6}
+
+theme:
+  preset: scifi
+  accent: "255,214,70"
+  captions: {style: clean, top: 1180, size: 70, max_chars: 17}
+
+post: {vignette: 0.35, chromatic: 0, grain: 0.016}
+
+audio:
+  music:
+    key: D
+    bpm: 92
+    gain: -15
+    sections:
+      - {at: 0, style: drone, chords: [Dm]}
+      - {at: "@window.start", style: tension, chords: [Dm, Bb, Dm, A]}
+      - {at: "@battery.start", style: pulse, chords: [Dm, Bb, F, C]}
+  duck: 0.6
+
+draw:
+  palette: {night: "#080d1c", mauve: "#2a1726", win: "#f0b45a"}
+
+scenes:
+  - id: alert
+    accent: "255,214,70"
+    text: "Три часа ночи. Телефон разрывается: экстренное оповещение."
+    shots:
+      - id: a_phone
+        look: {bloom: [0.7, 0.35, [1, 0.6, 0.6]], grade: {contrast: 0.08, sat: 1.05}}
+        ambience: [{sound: city, gain: -24}, {sound: wind, gain: -26}]
+        draw:
+          bg: {type: radial, at: "50% 30%", stops: [[0, "#2a1020"], [0.55, "#0c1124"], [1, "#070b16"]]}
+          camera: {keys: [{t: 0, z: 1.0, y: 980}, {t: end, z: 1.07, y: 930}], shakes: [{at: "@разрывается", amp: 6, dur: 0.6}]}
+          layers:
+            - {actor: stars, count: 140, region: [0, 0, 1080, 1100], par: 0}
+            - {actor: skyline, x: 540, y: 1920, w: 1500, h: 700, color: "#2a1726", color2: "#1d1222", win: "#f0b45a", lit: 0.3, par: 0.6}
+            - {actor: shape, kind: ellipse, x: 540, y: 620, w: 900, h: 1100, fill: {radial: [[0, "rgba(255,40,70,0.35)"], [1, "rgba(255,40,70,0)"]]}, pulse: {amp: 0.04, freq: 1.2}}
+            - {actor: phone, screen: alert, x: 540, y: 620, w: 540, h: 880, time: "03:17", right: "SOS", title: "ЭКСТРЕННОЕ\nОПОВЕЩЕНИЕ", sub: "УРОВЕНЬ УГРОЗЫ: КРАСНЫЙ", at: "@Телефон-0.2", enter: slide_up, enter_dur: 0.6,
+               shakes: [{at: "@разрывается", amp: 10, dur: 0.5, rot: 2}, {at: "@оповещение", amp: 8, dur: 0.4, rot: 2}]}
+    sfx:
+      - {sound: alarm, at: "@разрывается", gain: -16, f1: 980, f2: 760, d: 0.12, n: 8}
+      - {sound: buzz, at: "@Телефон", gain: -18, f: 120, d: 0.3, n: 3}
+
+  - id: floor
+    accent: "63,224,208"
+    captions_top: 1420
+    text: Ты на седьмом этаже обычной панельки.
+    shots:
+      - id: f_building
+        transition: {type: glitch}
+        look: {bloom: [0.7, 0.3, [1, 0.9, 0.7]], grade: {contrast: 0.08, sat: 1.05}}
+        ambience: [{sound: wind, gain: -24}]
+        draw:
+          bg: ["#070b18", "#10162e"]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 470, y: 880}]}
+          layers:
+            - {actor: stars, count: 170, region: [0, 0, 1080, 1300], par: 0}
+            - {actor: skyline, x: 540, y: 1640, w: 1500, h: 780, color: "#121834", color2: "#0d1228", lit: 0.12, par: 0.5}
+            - {actor: building, id: home, x: 540, y: 1600, floors: 9, cols: 12, lit: 0.22, seed: 7, target: {floor: 7, col: 3, at: "@седьмом"}}
+            - {actor: callout, x: 300, y: 330, at: "@седьмом+0.1", enter: pop, target: "home.win:7,3", title: "7 ЭТАЖ", sub: "ПОДЪЕЗД 2 · ПАНЕЛЬКА", icon: "🚪", color: "#3fe0d0", size: 40, sfx: {sound: blip, gain: -16, f: 1500}}
+            - {actor: timetag, space: screen, x: 540, y: 240, text: "ДЕНЬ 1 — 03:18", at: "@start", enter: fade}
+
+  - id: window
+    accent: "255,214,70"
+    captions_top: 1300
+    caption_marks: {"ошибка номер один": "255,59,78"}
+    text: Первым делом ты включаешь свет. И это ошибка номер один — твоё окно видно за километр.
+    shots:
+      - id: w_grid
+        transition: {type: whip_x}
+        look: {bloom: [0.7, 0.35, [1, 0.8, 0.7]], grade: {contrast: 0.08, sat: 1.05}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: ["#06080f", "#0d0d16"]
+          camera: {keys: [{t: 0, z: 1.08}, {t: end, z: 1.0}], shakes: [{at: "@ошибка", amp: 8, dur: 0.4}]}
+          layers:
+            - {actor: window_grid, x: 540, y: 765, scale: 0.92, rows: 4, cols: 4, cell: [196, 214], gap: 24, seed: 4,
+               lit: [[1, 1], [1, 2], [1, 4], [2, 1], [2, 4], [3, 1], [3, 4], [4, 1], [4, 3], [4, 4]], you: {row: 2, col: 3, label: "ВЫ", at: "@включаешь+0.2"}}
+            - {actor: badge, x: 540, y: 1140, at: "@ошибка-0.05", enter: stamp, icon: "!", title: "ОШИБКА №1: ОКНО", sub: "ВИДНО ЗА 1 КМ", size: 44, glow: {color: "#ff3b4e", r: 20, a: 0.6}, sfx: {sound: buzz, gain: -12, f: 140, d: 0.14, n: 2}}
+            - {actor: timetag, space: screen, x: 540, y: 240, text: "ДЕНЬ 1 — 03:19", at: "@start", enter: fade}
+    sfx:
+      - {sound: click, at: "@включаешь+0.2", gain: -8}
+
+  - id: battery
+    accent: "255,214,70"
+    text: Заряд — двадцать пять процентов. Береги его, пока есть ток.
+    shots:
+      - id: b_battery
+        transition: {type: glitch}
+        look: {bloom: [0.7, 0.35, [1, 0.95, 0.6]], grade: {contrast: 0.08, sat: 1.05}}
+        ambience: [{sound: hum, gain: -26}]
+        draw:
+          bg: ["#070b18", "#111832"]
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: stars, count: 150, region: [0, 0, 1080, 1100], par: 0}
+            - {actor: skyline, x: 540, y: 1920, w: 1500, h: 760, color: "#1a1f3d", color2: "#121730", lit: 0.25, par: 0.6}
+            - {actor: battery, x: 540, y: 640, w: 560, h: 240, level: [{at: 0, v: 82}, {at: "@двадцать-0.2", v: 25, dur: 1.2, ease: inOutSine}], color: "#f5e663"}
+            - {actor: badge, x: 190, y: 960, style: outline, color: "#3fe0d0", title: "ТЕЛЕФОН", size: 30, at: "@Береги", enter: pop, sfx: {sound: blip, gain: -18, f: 1200}}
+            - {actor: badge, x: 540, y: 960, style: outline, color: "#3fe0d0", title: "ПАУЭРБАНК", size: 30, at: "@Береги+0.15", enter: pop, sfx: {sound: blip, gain: -18, f: 1400}}
+            - {actor: badge, x: 890, y: 960, style: outline, color: "#3fe0d0", title: "ФОНАРИК", size: 30, at: "@Береги+0.3", enter: pop, sfx: {sound: blip, gain: -18, f: 1600}}
+            - {actor: timetag, space: screen, x: 540, y: 240, text: "ДЕНЬ 1 — 03:21", at: "@start", enter: fade}

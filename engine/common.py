@@ -38,6 +38,7 @@ DEFAULTS = {
               "ambience": {}, "sfx": [], "auto": {"hud": True, "transitions": True, "boot": True},
               "duck": 0.6, "vo_gain": 0.0, "loudness": -14},
     "hud": [],
+    "draw": {},                   # defaults merged into every code-drawn shot (palette, bg, ...)
     "cues": {},
     "scenes": [],
 }
@@ -57,6 +58,20 @@ def project_dir(pid):
     return os.path.join(ROOT, "projects", pid)
 
 
+class YamlLoader(yaml.SafeLoader):
+    """SafeLoader with YAML 1.2 booleans: only true/false are booleans. YAML 1.1 also reads on/off/yes/no as booleans,
+    which silently turned keys like the streetlight's `on:` into `true:`."""
+
+
+YamlLoader.yaml_implicit_resolvers = {k: [(tag, rx) for tag, rx in v if tag != "tag:yaml.org,2002:bool"]
+                                      for k, v in yaml.SafeLoader.yaml_implicit_resolvers.items()}
+YamlLoader.add_implicit_resolver("tag:yaml.org,2002:bool", re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
+
+
+def load_yaml(f):
+    return yaml.load(f, Loader=YamlLoader)
+
+
 def build_dir(pid, *sub):
     d = os.path.join(ROOT, "build", pid, *sub)
     os.makedirs(d, exist_ok=True)
@@ -66,7 +81,7 @@ def build_dir(pid, *sub):
 def load_project(pid):
     path = os.path.join(project_dir(pid), "project.yaml")
     with open(path, encoding="utf-8") as f:
-        raw = yaml.safe_load(f) or {}
+        raw = load_yaml(f) or {}
     p = deep_merge(DEFAULTS, raw)
     p["id"] = pid
     ids = [s["id"] for s in p["scenes"]]
@@ -106,6 +121,8 @@ def rgb255(c):
     s = NAMED.get(s, s)
     if s.startswith("#"):
         s = s[1:]
+        if len(s) <= 4:
+            s = "".join(ch * 2 for ch in s[:3])
         return tuple(int(s[i:i + 2], 16) for i in (0, 2, 4))
     return tuple(int(float(x)) for x in s.split(","))
 

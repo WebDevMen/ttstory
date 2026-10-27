@@ -1,0 +1,161 @@
+# Test: three code-drawn post-apocalyptic frames (method draw — no AI images): a ruined high-rise, survivors, abandoned cars.
+# Project actors: actors/ruins.js (ruin, smoke, fire, rubble, car). Frames: vg.py preview apocalypse --shots
+#
+# Depth: every background plane has its own strip of ground with the SAME par, whose top edge sits above the bases of
+# that plane's buildings (they are sunk into it) — so nothing hangs in the air whatever the camera does. Planes, far → near:
+#   city (par 0.15, a whole distant city in haze) → ruins row (0.25) → far ruins (0.35) → main plane (1).
+# Further planes are lighter and closer to the sky colour (aerial perspective); a haze band softens the horizon.
+
+title: "Апокалипсис — три кадра"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+0%", lead_in: 0.3, gap: 0.6, tail: 1.2}
+
+theme:
+  preset: minimal
+  captions: {enabled: false}
+
+post: {vignette: 0.32, chromatic: 0, grain: 0.03}
+
+x-sky: &sky {actor: sky, x: -150, w: 1380, par: 0, colors: ["#1a0b0b", "#6a2414", "#d9662c"], stars: 0, clouds: 0, sun: [690, 1080], moon: false, horizon: 1250}
+x-ash: &ash {actor: particles, kind: snow, region: [0, 0, 1080, 1920], count: 70, size: [2, 5], speed: 50, colors: ["#b8aaa0", "#8d8079"], alpha: 0.6, seed: 4}
+x-embers: &embers {actor: particles, kind: embers, region: [0, 900, 1080, 1920], count: 40, colors: ["#ffb347", "#ff6a1a"], seed: 8}
+
+# plane 1 — a distant city in haze
+x-city: &city {actor: skyline, x: 540, w: 1800, h: 360, color: "#6e2a17", color2: "#7c321b", win: "#ffb060", cell: 12, lit: 0.02, par: 0.15}
+x-city-ground: &city_ground {actor: ground, x: -500, w: 2100, h: 900, color: ["#7a341c", "#3a1a12"], par: 0.15}
+x-city-smoke: &city_smoke {actor: smoke, w: 160, h: 900, color: "#5a3326", n: 14, blur: 8, speed: 25, drift: -0.25, par: 0.15}
+# plane 2 — a row of small ruins
+x-row: &row {actor: ruin, color: "#6a2e1b", rim: "#ffa060", burn: 0, scale: 0.24, cols: 5, par: 0.25}
+x-row-ground: &row_ground {actor: ground, x: -500, w: 2100, h: 900, color: ["#5a2616", "#2e140e"], par: 0.25}
+x-row-fire: &row_fire {actor: fire, w: 50, h: 34, tongues: 3, par: 0.25}
+# plane 3 — far ruins
+x-far: &far {actor: ruin, color: "#4a2219", rim: "#ff8a4a", burn: 0, par: 0.35}
+x-far-ground: &far_ground {actor: ground, x: -400, w: 1900, h: 800, color: ["#3a1a12", "#160a08"], par: 0.35}
+# haze over the horizon (between plane 2 and plane 3)
+x-haze: &haze {actor: shape, kind: rect, x: 540, w: 1900, h: 300, par: 0.3,
+               fill: {linear: ["rgba(217,102,44,0)", "rgba(200,92,40,0.45)", "rgba(150,64,30,0)"], angle: 180}}
+
+scenes:
+  - id: tower
+    text: Город.
+    shots:
+      - id: tower
+        draw:
+          bg: "#1a0b0b"
+          floor: 1580
+          camera: {keys: [{t: 0, z: 1.06, y: 1060}, {t: end, z: 1.1, y: 1050}]}
+          layers:
+            - *sky
+            - {<<: *city_smoke, x: 160, y: 1318, seed: 21}
+            - {<<: *city_smoke, x: 980, y: 1318, seed: 22, drift: -0.15}
+            - {<<: *city, y: 1330, seed: 5}
+            - {<<: *city_ground, y: 1316}
+            - {<<: *row, x: 60, y: 1352, floors: 11, seed: 31}
+            - {<<: *row, x: 250, y: 1352, floors: 8, seed: 32}
+            - {<<: *row, x: 780, y: 1352, floors: 10, seed: 33}
+            - {<<: *row, x: 1010, y: 1352, floors: 12, seed: 34}
+            - {<<: *row_ground, y: 1338}
+            - {<<: *row_fire, x: 380, y: 1342, seed: 2}
+            - {<<: *row_fire, x: 690, y: 1342, seed: 5}
+            - {<<: *haze, y: 1280}
+            - {<<: *far, x: 120, y: 1390, scale: 0.42, floors: 12, cols: 5, seed: 2}
+            - {<<: *far, x: 330, y: 1400, scale: 0.36, floors: 9, cols: 6, seed: 5}
+            - {<<: *far, x: 900, y: 1390, scale: 0.44, floors: 13, cols: 5, seed: 11}
+            - {actor: smoke, x: 860, y: 1180, w: 300, h: 700, color: "#3a2420", seed: 3, par: 0.35, speed: 40, drift: -0.2}
+            - {<<: *far_ground, y: 1372}
+            - {actor: ruin, id: tower, x: 560, y: floor, floors: 16, cols: 6, cell: [86, 84], seed: 7, burn: 0.07, break: 4.2}
+            - {actor: smoke, x: 600, y: 470, w: 420, h: 520, color: "#2a1d1a", seed: 6, speed: 45, drift: -0.45}
+            - {actor: fire, x: 600, y: 470, w: 150, h: 120, seed: 4}
+            - {actor: ground, x: -300, y: 1580, w: 1700, h: 400, color: ["#24120d", "#0b0605"]}
+            - {actor: rubble, x: 250, y: floor, w: 420, h: 150, seed: 3}
+            - {actor: rubble, x: 870, y: floor, w: 360, h: 120, seed: 12}
+            - {actor: rubble, x: 120, y: 2010, w: 560, h: 300, seed: 21, color: "#1a1210", par: 1.15}
+            - *embers
+            - *ash
+
+  - id: people
+    text: Люди.
+    shots:
+      - id: people
+        draw:
+          bg: "#1a0b0b"
+          floor: 1640
+          px_per_m: 250
+          camera: {keys: [{t: 0, z: 1.02, x: 560}, {t: end, z: 1.02, x: 520}]}
+          layers:
+            - *sky
+            - {<<: *city_smoke, x: 260, y: 1192, seed: 23}
+            - {<<: *city_smoke, x: 860, y: 1192, seed: 24, drift: -0.1}
+            - {<<: *city, y: 1205, seed: 8}
+            - {<<: *city_ground, y: 1190}
+            - {<<: *row, x: 90, y: 1227, floors: 10, seed: 41}
+            - {<<: *row, x: 380, y: 1227, floors: 7, seed: 42}
+            - {<<: *row, x: 720, y: 1227, floors: 9, seed: 43}
+            - {<<: *row, x: 1000, y: 1227, floors: 12, seed: 44}
+            - {<<: *row_ground, y: 1213}
+            - {<<: *row_fire, x: 250, y: 1217, seed: 3}
+            - {<<: *row_fire, x: 860, y: 1217, seed: 6}
+            - {<<: *haze, y: 1160}
+            - {<<: *far, x: 170, y: 1260, scale: 0.4, floors: 12, cols: 5, seed: 2}
+            - {<<: *far, x: 560, y: 1270, scale: 0.34, floors: 10, cols: 6, seed: 9}
+            - {<<: *far, x: 940, y: 1260, scale: 0.42, floors: 14, cols: 5, seed: 11}
+            - {actor: smoke, x: 560, y: 1050, w: 340, h: 720, color: "#3a2420", seed: 5, par: 0.35, speed: 35, drift: 0.25}
+            - {<<: *far_ground, y: 1244}
+            - {actor: ruin, x: -60, y: 1418, scale: 0.7, floors: 14, cols: 5, seed: 13, color: "#2a1814", par: 0.8, burn: 0.04}
+            - {actor: ruin, x: 1130, y: 1418, scale: 0.66, floors: 12, cols: 5, seed: 17, color: "#2a1814", par: 0.8, burn: 0.05}
+            - {actor: ground, x: -300, y: 1400, w: 1700, h: 600, color: ["#3a1a12", "#1a0c09"], par: 0.8}
+            - {actor: rubble, x: 140, y: 1440, w: 300, h: 90, seed: 5, par: 0.8}
+            - {actor: person, view: side, flip: true, x: 290, y: floor, look: {age: adult, outfit: casual, hair: short, silhouette: "#120807"}, walk: 1.3}
+            - {actor: person, view: side, flip: true, x: 450, y: floor, look: {age: kid, outfit: casual, hair: bob, silhouette: "#120807"}, walk: 1.6}
+            - {actor: person, view: side, flip: true, x: 610, y: floor, look: {age: adult, outfit: casual, hair: long, silhouette: "#120807"}, pose: carry, walk: 1.3}
+            - {actor: person, view: side, flip: true, x: 820, y: floor, look: {age: adult, outfit: suit, hair: side, hat: cap, silhouette: "#120807"}, walk: 1.2}
+            - {actor: ground, x: -300, y: 1640, w: 1700, h: 300, color: ["#1e0f0b", "#080404"]}
+            - {actor: rubble, x: 960, y: 2010, w: 520, h: 290, seed: 31, color: "#160e0c", par: 1.15}
+            - *embers
+            - *ash
+
+  - id: cars
+    text: Машины.
+    shots:
+      - id: cars
+        draw:
+          bg: "#1a0b0b"
+          floor: 1640
+          px_per_m: 110
+          camera: {keys: [{t: 0, z: 1.0, x: 520}, {t: end, z: 1.04, x: 560}]}
+          layers:
+            - *sky
+            - {<<: *city_smoke, x: 330, y: 1128, seed: 25}
+            - {<<: *city_smoke, x: 1000, y: 1128, seed: 26, drift: -0.2}
+            - {<<: *city, y: 1140, seed: 12}
+            - {<<: *city_ground, y: 1126}
+            - {<<: *row, x: 60, y: 1162, floors: 9, seed: 51}
+            - {<<: *row, x: 330, y: 1162, floors: 12, seed: 52}
+            - {<<: *row, x: 700, y: 1162, floors: 8, seed: 53}
+            - {<<: *row, x: 1020, y: 1162, floors: 11, seed: 54}
+            - {<<: *row_ground, y: 1148}
+            - {<<: *row_fire, x: 200, y: 1152, seed: 4}
+            - {<<: *row_fire, x: 560, y: 1152, seed: 7}
+            - {<<: *haze, y: 1090}
+            - {<<: *far, x: 140, y: 1190, scale: 0.38, floors: 13, cols: 5, seed: 3}
+            - {<<: *far, x: 520, y: 1200, scale: 0.3, floors: 10, cols: 6, seed: 9}
+            - {<<: *far, x: 900, y: 1190, scale: 0.4, floors: 12, cols: 5, seed: 14}
+            - {<<: *far_ground, y: 1176}
+            - {actor: ground, x: -300, y: 1215, w: 1700, h: 800, color: ["#2e1610", "#0f0806"], par: 0.9}
+            - {actor: streetlight, x: 120, y: 1300, on: 0, rot: -8, depth: 0.7, scale: 0.7, real: true, par: 0.9}
+            - {actor: car, x: 230, y: 1330, color: "#4c5a66", seed: 2, depth: 0.55, scale: 0.55, real: true, brightness: 0.7, par: 0.9}
+            - {actor: car, x: 560, y: 1335, color: "#6a5a4a", flip: true, seed: 5, depth: 0.55, scale: 0.55, real: true, brightness: 0.7, par: 0.9}
+            - {actor: car, x: 880, y: 1330, burnt: true, seed: 8, depth: 0.55, scale: 0.55, real: true, brightness: 0.7, par: 0.9}
+            - {actor: smoke, x: 880, y: 1300, w: 260, h: 600, color: "#2e2120", seed: 9, speed: 35, drift: -0.3, par: 0.9}
+            - {actor: ground, x: -300, y: 1460, w: 1700, h: 560, color: ["#26120c", "#0c0605"]}   # the near road: same par as the front cars
+            - {actor: shape, kind: rect, x: 540, y: 1480, w: 1400, h: 8, fill: "#5a4a3a", opacity: 0.5}
+            - {actor: shape, kind: rect, x: 140, y: 1540, w: 120, h: 10, fill: "#8a7a5a", opacity: 0.45}
+            - {actor: shape, kind: rect, x: 540, y: 1540, w: 120, h: 10, fill: "#8a7a5a", opacity: 0.45}
+            - {actor: shape, kind: rect, x: 940, y: 1540, w: 120, h: 10, fill: "#8a7a5a", opacity: 0.45}
+            - {actor: car, id: burnt, x: 760, y: floor, burnt: true, seed: 4, rot: 3}
+            - {actor: smoke, x: 740, y: 1520, w: 420, h: 900, color: "#241a18", seed: 2, speed: 50, drift: -0.35}
+            - {actor: fire, x: 740, y: 1540, w: 220, h: 170, seed: 7}
+            - {actor: car, x: 300, y: floor, color: "#5a2a24", flip: true, seed: 6, rust: 0.9, saturate: 0.8}
+            - {actor: rubble, x: 120, y: 2010, w: 480, h: 260, seed: 41, color: "#160e0c", par: 1.15}
+            - *embers
+            - *ash

@@ -1,0 +1,454 @@
+# «Казино не виновато» — серия «Аферы». 100% code-drawn video from projects/blame/script.yaml
+# (skill write-script → vg.py script project → this file).
+# Actors: library odds.js (roulette), casino.js (neon_sign, slot_machine, hand), cards.js (chips), ui/people/basic and the
+# project's actors/court.js (gavel, scales, lotto_ticket, streak). Coordinates: screen px 1080x1920. Times: "@word".
+
+title: "Казино не виновато"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+18%", pitch: "+0Hz", tail: 1.6}
+
+theme:
+  preset: minimal
+  accent: "255,211,77"
+  captions:
+    style: clean
+    top: 1250
+    size: 64
+    max_chars: 18
+    hide:
+      - {from: "@hook/не-0.1", until: "@hook/проигрыше.end"}
+      - {from: "@odds/Ячеек-0.1", until: "@odds.end"}
+      - {from: "@monte/разорила-0.1", until: "@monte.end"}
+
+post: {vignette: 0.32, chromatic: 0.0006, grain: 0.022}
+
+draw:
+  palette: {gold: "#ffd34d", alarm: "#ff3b4e", felt: "#0e5a3a", paper: "#f4ead8", wood: "#7a4a24", go: "#3cff8a", neon: "#ff2bd6"}
+
+# shared pieces (YAML anchors)
+x-court: &court_bg {type: radial, at: "50% 35%", stops: [[0, "#3a2414"], [0.6, "#160c06"], [1, "#060302"]]}
+x-green: &green_bg {type: radial, at: "50% 40%", stops: [[0, "#0f3b2c"], [0.6, "#06150f"], [1, "#020806"]]}
+x-night: &night_bg {type: radial, at: "50% 38%", stops: [[0, "#2a1636"], [0.6, "#110a1a"], [1, "#05030a"]]}
+x-sepia: &sepia_bg {type: radial, at: "50% 35%", stops: [[0, "#5a4428"], [0.6, "#2a1e10"], [1, "#0e0904"]]}
+x-panels: &panels
+  actor: svg
+  x: 540
+  y: 960
+  w: 1240
+  h: 2080
+  opacity: 0.55
+  markup: >-
+    <svg xmlns="http://www.w3.org/2000/svg" width="1240" height="2080" viewBox="0 0 1240 2080"><defs>
+    <pattern id="pnl" width="310" height="520" patternUnits="userSpaceOnUse">
+    <rect width="310" height="520" fill="#2a170b"/><rect x="18" y="18" width="274" height="484" rx="10" fill="#3a2212" stroke="#4e2f18" stroke-width="6"/>
+    <rect x="40" y="40" width="230" height="440" rx="6" fill="none" stroke="#24140a" stroke-width="4"/></pattern></defs>
+    <rect width="1240" height="2080" fill="url(#pnl)"/></svg>
+
+audio:
+  music:
+    key: D
+    mode: minor
+    bpm: 96
+    gain: -15
+    sections:
+      - {at: 0, style: pulse, chords: [Dm, Bb, F, C]}
+      - {at: "@printed.start", style: tension}
+      - {at: "@odds.start", style: pulse, chords: [Dm, Gm, Bb, A]}
+      - {at: "@monte.start", style: tension}
+      - {at: "@verdict.start", style: epic, chords: [Bb, C, Dm, F]}
+      - {at: "@cta.start", style: pulse, chords: [Dm, Bb, F, C]}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK — суд над казино
+  - id: hook
+    accent: "255,211,77"
+    text: "Казино не виновато в твоём проигрыше. Оно тебе ничего не обещало."
+    shots:
+      - id: h_court
+        captions_top: 1430
+        effects:
+          - {type: glow, at: [540, 760], sigma: 380, color: [1.0, 0.25, 0.7], intensity: 0.1}
+          - {type: glow, at: [540, 980], sigma: 420, color: [1.0, 0.8, 0.3], intensity: 0.14, from: "@виновато-0.05", fade_in: 0.15}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.12, sat: 1.1}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: *court_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.08, y: 930}], shakes: [{at: "@виновато", amp: 12, dur: 0.35}]}
+          layers:
+            - *panels
+            - {actor: shape, kind: rect, x: 540, y: 1180, w: 900, h: 260, radius: 12, fill: {linear: ["#5a3418", "#2a160a"], angle: 180}, stroke: "#7a4a24", sw: 10}
+            - {actor: text, text: "СКАМЬЯ ПОДСУДИМЫХ", x: 540, y: 1180, size: 40, font: serif, color: "rgba(255,211,77,.75)", letter: 4}
+            - {actor: neon_sign, text: "КАЗИНО", x: 540, y: 820, size: 116, color: neon}
+            - actor: group
+              x: 540
+              y: 820
+              anim: [{at: "@проигрыше", dur: 0.6, dy: -1100, ease: in}]
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 900, h: 560, fill: "rgba(0,0,0,0)", stroke: "#9aa0ac", sw: 12, radius: 8}
+                - {actor: shape, kind: line, points: [[-330, -280], [-330, 280]], stroke: "#9aa0ac", sw: 14}
+                - {actor: shape, kind: line, points: [[-200, -280], [-200, 280]], stroke: "#9aa0ac", sw: 14}
+                - {actor: shape, kind: line, points: [[-66, -280], [-66, 280]], stroke: "#9aa0ac", sw: 14}
+                - {actor: shape, kind: line, points: [[66, -280], [66, 280]], stroke: "#9aa0ac", sw: 14}
+                - {actor: shape, kind: line, points: [[200, -280], [200, 280]], stroke: "#9aa0ac", sw: 14}
+                - {actor: shape, kind: line, points: [[330, -280], [330, 280]], stroke: "#9aa0ac", sw: 14}
+            - {actor: gavel, x: 850, y: 1650, w: 380, strikes: ["@виновато"]}
+            - {actor: text, text: "НЕ ВИНОВНО", x: 540, y: 400, size: 124, width: 1040, weight: 900, color: gold, stroke: {w: 12, color: "#160c06"}, rot: -6, shadow: "0 0 36px rgba(255,211,77,.7)", space: screen, at: "@виновато-0.03", enter: stamp}
+            - {actor: timetag, text: "АФЕРЫ · СУД НАД КАЗИНО", x: 540, y: 200, size: 34, color: gold, space: screen, at: 0.1, enter: fade}
+      - id: h_contract
+        start: "@ничего-0.15"
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1500
+        look: {bloom: [0.7, 0.32], grade: {contrast: 0.1, warmth: 0.05}}
+        draw:
+          bg: *court_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.1, y: 900}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 860, w: 820, h: 1040, radius: 10, fill: paper, rot: -3, shadow: {x: 0, y: 20, blur: 40, a: 0.5}, at: 0, enter: {type: slide_up, dur: 0.35}}
+            - {actor: text, text: "ГАРАНТИИ КАЗИНО:", x: 540, y: 470, size: 66, weight: 900, color: "#1d1409", rot: -3, at: 0.1, enter: fade}
+            - {actor: text, text: "1. ____________", x: 520, y: 640, size: 60, font: mono, color: "#8a7a60", rot: -3, at: 0.15, enter: fade}
+            - {actor: text, text: "2. ____________", x: 510, y: 800, size: 60, font: mono, color: "#8a7a60", rot: -3, at: 0.2, enter: fade}
+            - {actor: text, text: "3. ____________", x: 500, y: 960, size: 60, font: mono, color: "#8a7a60", rot: -3, at: 0.25, enter: fade}
+            - {actor: badge, x: 560, y: 1140, title: "0 ОБЕЩАНИЙ", style: solid, color: alarm, size: 66, rot: -10, at: "@обещало-0.05", enter: stamp}
+    sfx:
+      - {sound: buzz, at: 0.05, gain: -16, f: 120, d: 0.1, n: 3}
+      - {sound: slam, at: "@виновато", gain: -10}
+      - {sound: metal_ring, at: "@проигрыше", gain: -16}
+      - {sound: whoosh, at: "@ничего", gain: -15}
+      - {sound: kick, at: "@обещало", gain: -11}
+
+  # ------------------------------------------------------------------ 2. CONTEXT — ты сам
+  - id: choice
+    accent: "255,211,77"
+    caption_marks: {"сам": "255,211,77"}
+    text: "Вспомни: никто не тащил тебя к столу. Ты сам купил фишки и сам поставил. На входе нет договора «ты выиграешь»."
+    shots:
+      - id: c_walk
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1060
+        look: {bloom: [0.66, 0.4], grade: {contrast: 0.08, sat: 1.1}}
+        ambience: [{sound: hum, gain: -22}]
+        draw:
+          bg: *night_bg
+          world: [1700, 1920]
+          camera: {keys: [{t: 0, x: 560, y: 960, z: 1.0}, {t: end, x: 1140, y: 960, z: 1.04, ease: inOut}]}
+          layers:
+            - {actor: slot_machine, x: 200, y: 1150, scale: 0.6, par: 0.5, brightness: 0.55, blur: 2, title: "BONUS", neon: "#7a2cff"}
+            - {actor: slot_machine, x: 560, y: 1150, scale: 0.6, par: 0.5, brightness: 0.55, blur: 2}
+            - {actor: slot_machine, x: 920, y: 1150, scale: 0.6, par: 0.5, brightness: 0.55, blur: 2, title: "FORTUNE", neon: "#4de1ff"}
+            - {actor: slot_machine, x: 1280, y: 1150, scale: 0.6, par: 0.5, brightness: 0.55, blur: 2, title: "JACKPOT", neon: "#ff2bd6"}
+            - {actor: shape, kind: rect, x: 0, y: 1150, w: 1700, h: 800, origin: top-left, fill: {linear: ["#3a1020", "#16060c"], angle: 180}}
+            - {actor: shape, kind: rect, x: 1420, y: 1240, w: 480, h: 200, radius: 100, fill: {linear: ["#0e5a3a", "#06301e"], angle: 180}, stroke: wood, sw: 14}
+            - {actor: person, view: side, x: 260, y: 1640, scale: 1.0, look: {age: adult, outfit: casual, hair: short, color: "#2c5a8a"}, walk: [{at: 0, v: 0}, {at: "@никто-0.1", v: 2.2}, {at: "@сам#2", v: 0}], anim: [{at: "@никто-0.1", dur: 3.3, x: 1180, ease: inOut}], face: neutral}
+            - {actor: chips, x: 1300, y: 1250, w: 110, count: [{at: 0, v: 0}, {at: "@купил", v: 12, dur: 0.5}], color: "#d3122f", anim: [{at: "@поставил-0.1", dur: 0.5, x: 1460, y: 1220, ease: inOut}]}
+            - {actor: badge, x: 540, y: 380, icon: "🚶", title: "САМ ПРИШЁЛ", style: solid, color: gold, size: 50, space: screen, at: "@сам-0.05", enter: pop}
+            - {actor: badge, x: 540, y: 500, icon: "🪙", title: "САМ КУПИЛ", style: solid, color: gold, size: 50, space: screen, at: "@купил-0.05", enter: pop}
+            - {actor: badge, x: 540, y: 620, icon: "🎯", title: "САМ ПОСТАВИЛ", style: solid, color: gold, size: 50, space: screen, at: "@поставил-0.05", enter: pop}
+      - id: c_door
+        start: "@входе-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1440
+        effects:
+          - {type: glow, at: [540, 420], sigma: 320, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 1100, w: 640, h: 1100, radius: 24, fill: "#120a10", stroke: gold, sw: 10}
+            - {actor: shape, kind: line, points: [[540, 560], [540, 1640]], stroke: gold, sw: 6}
+            - {actor: neon_sign, text: "ВХОД", x: 540, y: 420, size: 110, color: gold}
+            - {actor: shape, kind: rect, x: 540, y: 930, w: 740, h: 300, radius: 10, fill: paper, rot: 3, shadow: {x: 0, y: 14, blur: 30, a: 0.5}, at: "@договора-0.05", enter: drop}
+            - {actor: text, text: "ДОГОВОР", x: 540, y: 860, size: 40, font: mono, color: "#6a5a40", rot: 3, at: "@договора", enter: fade}
+            - {actor: text, text: "«ТЫ ВЫИГРАЕШЬ»", x: 540, y: 950, size: 72, weight: 900, color: "#1d1409", rot: 3, at: "@договора", enter: fade}
+            - {actor: shape, kind: line, points: [[210, 980], [870, 900]], stroke: alarm, sw: 14, cap: round, at: "@выиграешь", enter: draw, enter_dur: 0.25}
+            - {actor: text, text: "ТАКОГО НЕТ", x: 540, y: 1220, size: 100, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -6, at: "@выиграешь+0.15", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.7)"}
+    sfx:
+      - {sound: footstep, at: "@никто", gain: -17}
+      - {sound: footstep, at: "@никто+0.45", gain: -18}
+      - {sound: footstep, at: "@никто+0.9", gain: -18}
+      - {sound: pop, at: "@сам", gain: -15}
+      - {sound: click, at: "@купил", gain: -15}
+      - {sound: pop, at: "@поставил", gain: -14}
+      - {sound: whoosh, at: "@договора", gain: -15}
+      - {sound: scrape, at: "@выиграешь", gain: -14}
+      - {sound: slam, at: "@выиграешь+0.15", gain: -13}
+
+  # ------------------------------------------------------------------ 3. PROOF 1 — шансы напечатаны
+  - id: printed
+    accent: "255,211,77"
+    caption_marks: {"один к двумстам девяноста двум миллионам": "255,211,77"}
+    text: "Тебя даже предупреждают. Лотерея сама печатает шанс джекпота: один к двумстам девяноста двум миллионам. И ты покупаешь билет, зная это."
+    shots:
+      - id: p_ticket
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 980], sigma: 360, color: [1.0, 0.8, 0.3], intensity: 0.1, from: "@печатает", fade_in: 0.3}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *court_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 940}, {t: "@печатает-0.1", z: 1.0, y: 940}, {t: "@один", z: 1.14, y: 1000, ease: inOut}, {t: end, z: 1.16, y: 1000}]}
+          layers:
+            - {actor: lotto_ticket, x: 540, y: 900, w: 960, rot: -4, title: "LOTTO · 6 ИЗ 69", numbers: [7, 14, 23, 31, 42, 9], fine: "ШАНС ДЖЕКПОТА: 1 К 292 201 338", color: alarm, fine_hl: [{at: 0, v: 0}, {at: "@печатает", v: 1, dur: 0.3}], at: "@предупреждают-0.1", enter: {type: slide_up, dur: 0.4}, shadow: {x: 0, y: 20, blur: 40, a: 0.5}}
+            - {actor: image, emoji: "🔍", x: 1000, y: 1400, size: 300, at: "@печатает-0.4", anim: [{at: "@печатает-0.4", dur: 0.6, x: 640, y: 1100, ease: out}], float: {amp: 8, freq: 0.6}}
+            - {actor: badge, x: 540, y: 330, title: "УЛИКА №1 · ШАНСЫ", style: solid, color: gold, size: 52, space: screen, at: "@предупреждают-0.05", enter: stamp}
+            - {actor: text, text: "1 К {n}", x: 540, y: 500, size: 104, weight: 900, color: gold, stroke: {w: 10, color: "#160c06"}, shadow: "0 0 34px rgba(255,211,77,.7)", space: screen, count: {from: 0, to: 292201338, at: "@один", dur: 1.3, sep: " "}, at: "@один-0.05", enter: pop}
+      - id: p_buy
+        start: "@покупаешь-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1470
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *court_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@зная", amp: 9, dur: 0.3}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 860, w: 820, h: 520, radius: 30, fill: "#1d120a", stroke: wood, sw: 16}
+            - {actor: text, text: "КАССА", x: 540, y: 680, size: 54, font: mono, color: gold}
+            - {actor: image, emoji: "💵", x: 300, y: 1250, size: 220, rot: -10, anim: [{at: "@покупаешь", dur: 0.5, x: 560, y: 900, scale: 0.6, ease: inOut}]}
+            - {actor: image, emoji: "🎟️", x: 700, y: 900, size: 200, rot: 12, opacity: 0, anim: [{at: "@покупаешь+0.25", dur: 0.01, opacity: 1}, {at: "@покупаешь+0.3", dur: 0.5, x: 620, y: 1250, scale: 1.3, ease: inOut}]}
+            - {actor: text, text: "ЗНАЛ ЗАРАНЕЕ", x: 540, y: 380, size: 104, width: 1040, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -6, space: screen, at: "@зная-0.03", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.7)"}
+    sfx:
+      - {sound: whoosh, at: "@предупреждают", gain: -15}
+      - {sound: scrape, at: "@печатает", gain: -16}
+      - {sound: typing, at: "@один", gain: -17}
+      - {sound: kick, at: "@миллионам", gain: -12}
+      - {sound: click, at: "@покупаешь", gain: -15}
+      - {sound: slam, at: "@зная", gain: -11}
+
+  # ------------------------------------------------------------------ 4. PROOF 2 — 37 против 36
+  - id: odds
+    accent: "60,255,138"
+    caption_marks: {"тридцать семь": "255,211,77"}
+    text: "А в рулетке минус виден прямо на столе. Ячеек тридцать семь, а платят как за тридцать шесть. Посчитать может каждый."
+    shots:
+      - id: o_wheel
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1300
+        effects:
+          - {type: glow, at: [540, 860], sigma: 420, color: [0.3, 1.0, 0.55], intensity: 0.08}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.1, y: 900, roll: -3}, {t: end, z: 1.0, y: 960, roll: 1}]}
+          layers:
+            - {actor: roulette, x: 540, y: 800, w: 780, speed: 55, ball: false, zero: [{at: 0, v: 0}, {at: "@семь", v: 1, dur: 0.3}]}
+            - {actor: badge, x: 540, y: 300, title: "УЛИКА №2 · МАТЕМАТИКА", style: solid, color: gold, size: 48, space: screen, at: "@рулетке-0.05", enter: stamp}
+            - {actor: text, text: "{n} ЯЧЕЕК", x: 540, y: 1460, size: 90, weight: 900, color: "#ffffff", stroke: {w: 8, color: "#030806"}, space: screen, count: {from: 0, to: 37, at: "@Ячеек", dur: 1.0}, at: "@Ячеек-0.05", enter: pop}
+      - id: o_bars
+        start: "@платят-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [836, 1150], sigma: 200, color: [0.3, 1.0, 0.5], intensity: 0.2, from: "@шесть", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.04}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: text, text: "ЯЧЕЕК: 37", x: 540, y: 420, size: 60, weight: 900, color: "#ffffff"}
+            - {actor: streak, x: 540, y: 620, n: 37, cols: 13, size: 62, gap: 12, from: 0.0, dur: 0.6, color: "#c8102e", ring: "#f3d27a"}
+            - {actor: text, text: "ПЛАТЯТ КАК ЗА: 36", x: 540, y: 880, size: 60, weight: 900, color: gold, at: "@платят-0.05", enter: fade}
+            - {actor: streak, x: 540, y: 1080, n: 36, cols: 13, size: 62, gap: 12, from: "@платят", dur: 0.7, color: "#ffd34d", ring: "#7a5a10"}
+            - {actor: shape, kind: circle, x: 836, y: 1154, r: 29, fill: "#12a150", stroke: "#3cff8a", sw: 5, at: "@шесть", enter: pop, pulse: {freq: 2, amp: 0.1}, glow: {color: "#3cff8a", r: 20, a: 1}}
+            - {actor: callout, target: [836, 1154], x: 760, y: 1330, title: "ЭТО — КАЗИНО", color: go, size: 40, at: "@шесть+0.1", enter: pop}
+            - {actor: text, text: "−2,7%", x: 540, y: 1450, size: 140, weight: 900, color: alarm, stroke: {w: 10, color: "#030806"}, shadow: "0 0 30px rgba(255,59,78,.7)", space: screen, at: "@Посчитать-0.05", enter: stamp}
+            - {actor: badge, x: 540, y: 270, icon: "👁️", title: "НЕ СЕКРЕТ", style: solid, color: go, size: 48, space: screen, at: "@каждый-0.05", enter: drop}
+    sfx:
+      - {sound: riser, at: "@рулетке", gain: -17, d: 0.8}
+      - {sound: typing, at: "@Ячеек", gain: -17}
+      - {sound: click, at: "@семь", gain: -14}
+      - {sound: typing, at: "@платят", gain: -17}
+      - {sound: kick, at: "@шесть", gain: -12}
+      - {sound: slam, at: "@Посчитать", gain: -13}
+      - {sound: ping, at: "@каждый", gain: -14}
+
+  # ------------------------------------------------------------------ 5. REVEAL — Монте-Карло, 1913
+  - id: monte
+    accent: "255,211,77"
+    caption_marks: {"двадцать шесть раз подряд": "255,211,77", "ну теперь-то точно": "255,59,78"}
+    text: "Монте-Карло, тысяча девятьсот тринадцатый. Чёрное выпало двадцать шесть раз подряд. Игроки ставили миллионы на красное — «ну теперь-то точно». Колесо было честным. Их разорила собственная уверенность."
+    shots:
+      - id: m_streak
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1480
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.12, sat: 0.55, warmth: 0.12}}
+        draw:
+          bg: *sepia_bg
+          camera: {keys: [{t: 0, z: 1.08, y: 900}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {actor: roulette, x: 540, y: 660, w: 640, speed: 50, ball_speed: 300, land: "@подряд+0.3", saturate: 0.6}
+            - {actor: timetag, text: "МОНТЕ-КАРЛО · 18.08.1913", x: 540, y: 230, size: 40, color: gold, space: screen, at: 0.05, enter: wipe_right, enter_dur: 0.5}
+            - {actor: streak, x: 540, y: 1150, n: 26, cols: 13, size: 64, gap: 10, from: "@Чёрное", dur: 1.6, color: "#0c0c10", ring: "#e9d9b0"}
+            - {actor: text, text: "{n} РАЗ ПОДРЯД", x: 540, y: 1360, size: 84, weight: 900, color: gold, stroke: {w: 8, color: "#0e0904"}, shadow: "0 0 30px rgba(255,211,77,.6)", count: {from: 1, to: 26, at: "@Чёрное", dur: 1.6}, at: "@Чёрное-0.05", enter: pop}
+            - {actor: text, text: "ЧЁРНОЕ", x: 540, y: 1000, size: 54, font: mono, color: "#e9d9b0", at: "@Чёрное-0.05", enter: fade}
+      - id: m_crowd
+        start: "@Игроки-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1250
+        effects:
+          - {type: glow, at: [300, 760], sigma: 300, color: [1.0, 0.2, 0.25], intensity: 0.14, from: "@ставили", fade_in: 0.4}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.12, sat: 0.7, warmth: 0.1}}
+        draw:
+          bg: *sepia_bg
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 490, y: 920}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 820, w: 1000, h: 560, radius: 30, fill: {linear: ["#0e5a3a", "#06301e"], angle: 180}, stroke: wood, sw: 16}
+            - {actor: shape, kind: rect, x: 290, y: 820, w: 380, h: 340, radius: 14, fill: "#a50d24", stroke: "#e9d9b0", sw: 5}
+            - {actor: text, text: "КРАСНОЕ", x: 290, y: 820, size: 54, weight: 900, color: "#ffffff"}
+            - {actor: shape, kind: rect, x: 740, y: 820, w: 380, h: 340, radius: 14, fill: "#111116", stroke: "#e9d9b0", sw: 5}
+            - {actor: text, text: "ЧЁРНОЕ", x: 740, y: 820, size: 54, weight: 900, color: "#ffffff"}
+            - {actor: chips, x: 120, y: 1260, w: 110, count: 20, color: "#d3122f", anim: [{at: "@ставили", dur: 0.5, x: 230, y: 870, ease: inOut}]}
+            - {actor: chips, x: 300, y: 1300, w: 110, count: 24, color: "#1f6fd6", anim: [{at: "@ставили+0.12", dur: 0.5, x: 330, y: 880, ease: inOut}]}
+            - {actor: chips, x: 480, y: 1260, w: 110, count: 18, color: "#2fa84f", anim: [{at: "@ставили+0.24", dur: 0.5, x: 280, y: 760, ease: inOut}]}
+            - {actor: chips, x: 640, y: 1300, w: 110, count: 22, color: "#ffd34d", anim: [{at: "@миллионы", dur: 0.5, x: 400, y: 780, ease: inOut}]}
+            - {actor: silhouette, x: 120, y: 1700, w: 220, h: 300, color: "#1a120a", par: 1.15}
+            - {actor: silhouette, x: 330, y: 1740, w: 240, h: 330, color: "#22180c", par: 1.15}
+            - {actor: silhouette, x: 560, y: 1700, w: 220, h: 300, color: "#1a120a", par: 1.15}
+            - {actor: silhouette, x: 790, y: 1740, w: 240, h: 330, color: "#22180c", par: 1.15}
+            - {actor: silhouette, x: 990, y: 1700, w: 220, h: 300, color: "#1a120a", par: 1.15}
+            - {actor: badge, x: 540, y: 330, icon: "💰", title: "МИЛЛИОНЫ ФРАНКОВ", style: solid, color: gold, size: 48, space: screen, at: "@миллионы-0.05", enter: pop}
+            - {actor: bubble, text: "НУ ТЕПЕРЬ-ТО ТОЧНО КРАСНОЕ!", x: 820, y: 560, width: 600, size: 42, side: left, space: screen, at: "@ну-0.05", enter: pop}
+      - id: m_fair
+        start: "@Колесо-0.15"
+        transition: {type: zoom, dur: 0.3}
+        effects:
+          - {type: glow, at: [540, 820], sigma: 380, color: [0.3, 1.0, 0.55], intensity: 0.1, until: "@разорила"}
+          - {type: glow, at: [540, 900], sigma: 380, color: [1.0, 0.2, 0.25], intensity: 0.14, from: "@уверенность-0.1", fade_in: 0.2}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.12, sat: 0.8, warmth: 0.08}}
+        draw:
+          bg: *sepia_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.08, y: 940}], shakes: [{at: "@уверенность", amp: 10, dur: 0.35}]}
+          layers:
+            - {actor: silhouette, x: 540, y: 1700, w: 900, h: 1150, color: "#3a2a16", opacity: 0, anim: [{at: "@разорила-0.2", dur: 0.4, opacity: 1}]}
+            - {actor: roulette, x: 540, y: 820, w: 760, speed: 70, ball_speed: 320, anim: [{at: "@разорила-0.1", dur: 0.6, y: 960, scale: 0.42, ease: inOut}]}
+            - {actor: badge, x: 540, y: 330, icon: "✓", title: "КОЛЕСО ЧЕСТНОЕ", style: solid, color: go, size: 52, space: screen, at: "@честным-0.05", enter: stamp, until: "@разорила", exit: fade}
+            - {actor: text, text: "ВИНОВАТА", x: 540, y: 330, size: 110, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -5, space: screen, at: "@собственная-0.05", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.7)"}
+            - {actor: text, text: "УВЕРЕННОСТЬ", x: 540, y: 1430, size: 94, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#c2001f"}, rot: -5, space: screen, at: "@уверенность-0.03", enter: stamp, shadow: "0 0 30px rgba(255,40,60,.7)"}
+    sfx:
+      - {sound: typing, at: 0.1, gain: -17}
+      - {sound: click, at: "@Чёрное", gain: -15}
+      - {sound: click, at: "@Чёрное+0.5", gain: -17}
+      - {sound: click, at: "@Чёрное+1.0", gain: -17}
+      - {sound: kick, at: "@подряд", gain: -12}
+      - {sound: scrape, at: "@ставили", gain: -15}
+      - {sound: pop, at: "@ну", gain: -14}
+      - {sound: chime, at: "@честным", gain: -15}
+      - {sound: whoosh, at: "@разорила", gain: -15}
+      - {sound: slam, at: "@уверенность", gain: -11}
+
+  # ------------------------------------------------------------------ 6. PAYOFF — цена и стоп-кнопка
+  - id: verdict
+    accent: "60,255,138"
+    caption_marks: {"цена": "255,211,77", "кнопка «стоп»": "60,255,138"}
+    text: "Казино продаёт ровно то, что обещает: игру с минусом. Проигрыш — цена, на которую ты согласился. И кнопка «стоп» тоже твоя: самозапрет теперь оформляется через Госуслуги."
+    shots:
+      - id: v_tag
+        transition: {type: whip_x, flash: 0.08}
+        effects:
+          - {type: glow, at: [540, 760], sigma: 380, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1, sat: 1.1}}
+        draw:
+          bg: *green_bg
+          camera: {keys: [{t: 0, z: 1.06, y: 900}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {actor: roulette, x: 540, y: 1500, w: 1000, speed: 30, ball: false, opacity: 0.55, blur: 2}
+            - actor: group
+              x: 540
+              y: 300
+              at: "@продаёт-0.15"
+              enter: drop
+              sway: {rot: 4, freq: 0.6}
+              origin: top
+              children:
+                - {actor: shape, kind: line, points: [[0, -300], [0, 0]], stroke: "#d8d0c0", sw: 5}
+                - {actor: shape, kind: rect, x: 0, y: 300, w: 760, h: 600, radius: 40, fill: paper, stroke: "#c9bba4", sw: 6}
+                - {actor: shape, kind: circle, x: 0, y: 60, r: 26, fill: "#06150f", stroke: "#c9bba4", sw: 5}
+                - {actor: text, text: "ИГРА С МИНУСОМ", x: 0, y: 220, size: 64, weight: 900, color: "#1d1409"}
+                - {actor: shape, kind: line, points: [[-300, 300], [300, 300]], stroke: "#c9bba4", sw: 4, dash: "12 10"}
+                - {actor: text, text: "ЦЕНА:", x: 0, y: 360, size: 46, font: mono, color: "#6a5a40"}
+                - {actor: text, text: "2,7%", x: 0, y: 490, size: 124, weight: 900, color: [{at: 0, v: "#1d1409"}, {at: "@минусом", v: "#d3122f", dur: 0.3}], at: "@минусом-0.05", enter: pop}
+      - id: v_receipt
+        start: "@Проигрыш-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1480
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.1}}
+        draw:
+          bg: *court_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.06, y: 960}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 300, w: 620, h: 1060, fill: "#fbf7ee", origin: top, at: 0, enter: {type: grow_y, dur: 0.9}, shadow: {x: 0, y: 14, blur: 30, a: 0.4}}
+            - {actor: text, text: "ЧЕК", x: 540, y: 380, size: 56, font: mono, weight: 700, color: "#1d1409", at: 0.15, enter: fade}
+            - {actor: text, text: "ФИШКИ ........ КУПИЛ", x: 540, y: 520, size: 36, font: mono, color: "#3a3226", at: 0.3, enter: fade}
+            - {actor: text, text: "СТАВКА ...... ПОСТАВИЛ", x: 540, y: 600, size: 36, font: mono, color: "#3a3226", at: 0.45, enter: fade}
+            - {actor: text, text: "ШАНСЫ ........ ЗНАЛ", x: 540, y: 680, size: 36, font: mono, color: "#3a3226", at: 0.6, enter: fade}
+            - {actor: shape, kind: line, points: [[260, 760], [820, 760]], stroke: "#3a3226", sw: 3, dash: "8 8", at: 0.7, enter: draw}
+            - {actor: text, text: "ПРОИГРЫШ = ЦЕНА", x: 540, y: 850, size: 50, font: mono, weight: 700, color: "#c2001f", at: "@цена-0.05", enter: pop}
+            - {actor: text, text: "Подпись игрока:", x: 540, y: 1000, size: 34, font: mono, color: "#6a5a40", at: "@которую", enter: fade}
+            - {actor: badge, x: 560, y: 1150, icon: "✍️", title: "Я СОГЛАСЕН", style: solid, color: alarm, size: 60, rot: -8, at: "@согласился-0.05", enter: stamp}
+      - id: v_stop
+        start: "@кнопка-0.15"
+        transition: {type: zoom, dur: 0.3}
+        captions_top: 1520
+        effects:
+          - {type: glow, at: [540, 900], sigma: 360, color: [0.3, 1.0, 0.5], intensity: 0.14, from: "@самозапрет", fade_in: 0.3}
+        look: {bloom: [0.7, 0.35], grade: {contrast: 0.08}}
+        draw:
+          bg: *night_bg
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.06, y: 940}]}
+          layers:
+            - {actor: hand, pose: hold_back, x: 540, y: 900, scale: 0.8, sleeve: "#161a28"}
+            - actor: phone
+              x: 540
+              y: 900
+              scale: 0.8
+              screen: app
+              glow: [{at: 0, v: "#ff3b4e"}, {at: "@самозапрет", v: "#3cff8a", dur: 0.3}]
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 524, h: 924, fill: [{at: 0, v: "#14080c"}, {at: "@самозапрет", v: "#06180e", dur: 0.3}], origin: top-left}
+                - {actor: text, text: "САМОЗАПРЕТ", x: 262, y: 120, size: 46, weight: 900, color: "#ffffff"}
+                - {actor: text, text: "на азартные игры", x: 262, y: 175, size: 28, color: "#aab4c8"}
+                - {actor: shape, kind: circle, x: 262, y: 470, r: 170, fill: {radial: ["#ff5a6e", "#b3001b"]}, stroke: "#ffd0d6", sw: 8, pulse: {freq: 1.6, amp: 0.04}, until: "@самозапрет", exit: {type: shrink, dur: 0.2}}
+                - {actor: text, text: "СТОП", x: 262, y: 470, size: 84, weight: 900, color: "#ffffff", until: "@самозапрет", exit: {type: shrink, dur: 0.2}}
+                - {actor: shape, kind: circle, x: 262, y: 470, r: 170, fill: {radial: ["#5dff9e", "#0a8a3c"]}, stroke: "#d0ffe0", sw: 8, at: "@самозапрет", enter: pop}
+                - {actor: text, text: "✓", x: 262, y: 470, size: 150, weight: 900, color: "#ffffff", at: "@самозапрет", enter: pop}
+                - {actor: text, text: "МИНИМУМ 12 МЕСЯЦЕВ", x: 262, y: 720, size: 32, font: mono, color: "#ffffff"}
+                - {actor: text, text: "ДОСТУП ЗАКРЫТ", x: 262, y: 800, size: 40, weight: 900, color: "#3cff8a", at: "@самозапрет+0.2", enter: pop}
+            - {actor: hand, pose: hold_front, x: 540, y: 900, scale: 0.8}
+            - {actor: hand, pose: point, x: 560, y: 900, scale: 0.75, rot: -20, at: "@стоп", enter: {type: fly_up, dur: 0.4}, anim: [{at: "@самозапрет-0.15", dur: 0.12, dy: 30, scale: 0.76}, {at: "@самозапрет", dur: 0.2, dy: -30, scale: 0.8}]}
+            - {actor: badge, x: 540, y: 330, icon: "📅", title: "С 1.09.2026 · ГОСУСЛУГИ / МФЦ", style: solid, color: go, size: 40, space: screen, at: "@самозапрет-0.05", enter: drop}
+            - {actor: text, text: "КНОПКА «СТОП» — ТВОЯ", x: 540, y: 190, size: 48, weight: 900, color: "#ffffff", space: screen, at: "@кнопка-0.05", enter: fade}
+    sfx:
+      - {sound: whoosh, at: "@продаёт", gain: -15}
+      - {sound: ping, at: "@минусом", gain: -14}
+      - {sound: typing, at: "@Проигрыш", gain: -17}
+      - {sound: kick, at: "@согласился", gain: -12}
+      - {sound: blip, at: "@стоп", gain: -14}
+      - {sound: click, at: "@самозапрет", gain: -13}
+      - {sound: chime, at: "@самозапрет+0.1", gain: -14}
+
+  # ------------------------------------------------------------------ 7. CTA — казино или игрок + молоток, как в начале
+  - id: cta
+    accent: "255,211,77"
+    text: "Так кто виноват в проигрыше: казино или игрок? Пиши одним словом."
+    shots:
+      - id: z_scales
+        transition: {type: whip_x, flash: 0.08}
+        captions_top: 1480
+        effects:
+          - {type: glow, at: [540, 760], sigma: 420, color: [1.0, 0.8, 0.3], intensity: 0.12}
+        look: {bloom: [0.66, 0.42], grade: {contrast: 0.12, sat: 1.1}}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          bg: *court_bg
+          camera: {keys: [{t: 0, z: 1.06, y: 920}, {t: end, z: 1.0, y: 960}], shakes: [{at: "@словом+0.05", amp: 12, dur: 0.35}]}
+          layers:
+            - *panels
+            - {actor: scales, x: 540, y: 900, w: 940, left: "КАЗИНО", right: "ИГРОК", tilt: [{at: 0, v: 0}, {at: "@казино", v: -14, dur: 0.5, ease: "back.out(2)"}, {at: "@игрок", v: 16, dur: 0.6, ease: "back.out(2)"}]}
+            - {actor: text, text: "КТО ВИНОВАТ?", x: 540, y: 300, size: 110, weight: 900, color: "#ffffff", stroke: {w: 10, color: "#160c06"}, space: screen, at: "@виноват-0.05", enter: pop}
+            - {actor: badge, x: 540, y: 1360, icon: "💬", title: "ПИШИ ОДНИМ СЛОВОМ", style: solid, color: gold, size: 44, space: screen, at: "@Пиши-0.05", enter: drop, pulse: {freq: 1.6, amp: 0.04}}
+            - {actor: gavel, x: 860, y: 1640, w: 380, strikes: ["@словом+0.05"]}
+            - {actor: timetag, text: "АФЕРЫ · СУД НАД КАЗИНО", x: 540, y: 190, size: 34, color: gold, space: screen}
+    sfx:
+      - {sound: blip, at: "@казино", gain: -14}
+      - {sound: blip, at: "@игрок", gain: -14, f: 1900}
+      - {sound: pop, at: "@Пиши", gain: -14}
+      - {sound: slam, at: "@словом+0.05", gain: -10}

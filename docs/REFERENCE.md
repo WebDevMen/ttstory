@@ -1,6 +1,6 @@
 # Справочник project.yaml
 
-Всё, что можно написать в `projects/<id>/project.yaml`. Рабочие примеры: [`projects/tanker`](../projects/tanker/project.yaml) (sci-fi, 61 с) и [`projects/tea`](../projects/tea/project.yaml) (рисованная акварель, 36 с). Пошаговый процесс описан в [MANUAL.md](MANUAL.md).
+Всё, что можно написать в `projects/<id>/project.yaml`. Рабочие примеры: [`projects/tanker`](../projects/tanker/project.yaml) (sci-fi, 61 с), [`projects/tea`](../projects/tea/project.yaml) (рисованная акварель, 36 с) и [`projects/school`](../projects/school/project.yaml) (полностью нарисованный кодом, 59 с). Пошаговый процесс описан в [MANUAL.md](MANUAL.md), своя графика (`draw:`) и все актёры — в [DRAW.md](DRAW.md).
 
 ## 0. Соглашения
 
@@ -34,11 +34,13 @@
 | `title` | `""` | название |
 | `format` | `{width: 1080, height: 1920, fps: 30, plate_scale: 1.2}` | формат; `plate_scale` — запас кадра для движения камеры |
 | `voice` | см. §2 | озвучка |
+| `voices` | `{}` | голоса героев для реплик: `{marta: {voice: ru-RU-SvetlanaNeural, pitch: "+18Hz"}, hans: {voice: ru-RU-DmitryNeural, pitch: "-10Hz"}}` — см. `lines` у сцены (§4) |
 | `theme` | см. §3 | оформление HUD и субтитров |
 | `post` | `{vignette: 0.42, chromatic: 0.0016, grain: 0.022}` | общая постобработка: виньетка, хроматическая аберрация, зерно (0 — выключить) |
 | `dim` | `[]` | приглушение HUD: `[{at, until, level: 0.38, dur: 0.12}]` (например, «выключили свет») |
 | `cues` | `{}` | глобальные метки `имя: "@ссылка"` |
 | `hud` | `[]` | HUD-элементы на всё видео (§7) |
+| `draw` | `{}` | общие настройки для всех нарисованных шотов (`palette`, `bg`, …), см. [DRAW.md](DRAW.md) |
 | `audio` | см. §8 | музыка, амбиенс, эффекты |
 | `scenes` | — | список сцен (§4) |
 
@@ -58,13 +60,18 @@
 
 Сцена может переопределить голос: `voice: {voice: ..., rate: ...}`.
 
+**Диалог в одной сцене.** `lines: [{who: hans, say: "Сиди дома."}]` у сцены: `say` — дословный кусок `text`, `who` — имя голоса из
+`voices`. Сцена синтезируется по кускам (рассказ — голосом сцены, реплики — голосами героев) и склеивается в одну дорожку, поэтому
+кадры и субтитры идут через диалог без склеек. У `ru-RU-DmitryNeural` бывают случайные отказы сервиса — движок сам повторяет запрос
+с незаметным сдвигом высоты на 1–5 Гц. Подпишите говорящего на экране (выноска с именем у героя при первой реплике).
+
 ## 3. theme
 
 | Ключ | Описание |
 |---|---|
 | `preset` | `scifi` (тёмное неоновое стекло, Exo 2), `minimal` (светлые карточки, Montserrat), `pop` (жирные обводки и жёсткие тени, Unbounded), `documentary` (засечки Playfair, тонкие линии) |
 | `accent` | цвет по умолчанию (у сцены — свой `accent`) |
-| `captions` | субтитры: `enabled` (true), `style` (`neon_word` · `box_word` · `minimal` · `karaoke` · `outline_pop`), `top` (1250), `size` (64), `uppercase` (true), `max_words` (4), `max_chars` (19), `animation` (`pop` · `rise` · `none`), `pop` (0.07, «подпрыгивание» активного слова), `hide: [{from, until}]` (скрыть, например, когда на экране кнопки выбора) |
+| `captions` | субтитры: `enabled` (true), `style` (`neon_word` · `box_word` · `minimal` · `karaoke` · `outline_pop` · `clean` — жирный белый с обводкой, сказанные слова цветом сцены), `top` (1250), `size` (64), `uppercase` (true), `max_words` (4), `max_chars` (19), `animation` (`pop` · `rise` · `none`), `pop` (0.07, «подпрыгивание» активного слова), `hide: [{from, until}]` (скрыть, например, когда на экране кнопки выбора) |
 
 Собственные стили проекта можно положить в `projects/<id>/hud.css` — они подключатся после темы.
 
@@ -76,10 +83,12 @@
 | `text` | текст диктора. Пишите как говорят: короткие фразы, тире для паузы, `ё` для правильного ударения |
 | `accent` | цвет HUD сцены |
 | `caption_color` | цвет активного слова в субтитрах (по умолчанию `accent`) |
+| `caption_marks` | `{"фраза": цвет}` — эти слова в субтитрах всегда своим цветом (например, `{"нет уборщиков": red}`) |
 | `captions_top` | позиция субтитров для всей сцены |
 | `clock` | `[день, часы, минуты]` для `{day}`/`{time}` в topbar |
 | `gap_after` | пауза после сцены, с |
 | `voice` | переопределение голоса |
+| `lines` | реплики героев своими голосами: `[{who, say}]` (см. §2) |
 | `cues` | метки `имя: "@ссылка"` (видны во всём проекте как `@cue:имя`) |
 | `shots` | список шотов (§5) |
 | `hud` | HUD-элементы сцены (§7); по умолчанию живут от начала до конца сцены |
@@ -91,6 +100,7 @@
 |---|---|
 | `id` | имя шота |
 | `plate` | имя файла в `plates/` без расширения (по умолчанию `id`) |
+| `draw` | вместо `plate`: сцена, нарисованная кодом — `{bg, world, camera, layers: [актёры], palette, depth}`. Всё описано в [DRAW.md](DRAW.md) |
 | `start` | начало шота (для первого шота сцены — начало сцены). Конец — начало следующего шота или конец сцены |
 | `prompt` | (необязательно) промпт, которым сгенерирован кадр — для истории |
 | `camera` | движение камеры (§5.1) |
@@ -383,9 +393,16 @@ audio:
 | `python3 vg.py prep <id> [--jobs 4] [--fast]` | апскейл + глубина (`--fast` — без нейросетевого апскейла) |
 | `python3 vg.py grid <id>` | сетки координат → `build/<id>/grid/` |
 | `python3 vg.py preview <id> [--at 3.5,10] [--shots]` | несколько готовых кадров со всем HUD → `build/<id>/preview/preview.jpg` |
+| `python3 vg.py draw <id> [--frames 0:300] [--force]` | нарисованные шоты → `build/<id>/drawn/` (неизменённые пропускаются; `scene` и `preview` вызывают его сами) |
+| `python3 vg.py actors [id]` | список актёров для `draw:` (встроенные + свои актёры проекта) |
 | `python3 vg.py scene <id> [--frames 0:300] [--workers 4]` | слой сцены |
 | `python3 vg.py audio <id> [--stems]` | звук (`--stems` — дорожки отдельно в `build/<id>/stems/`) |
 | `python3 vg.py hud <id> [--workers 3]` | HUD и субтитры поверх кадров |
 | `python3 vg.py mux <id> [--maxrate 8M]` | итоговый файл `out/<id>.mp4` |
 | `python3 vg.py qa <id>` | контактные листы (кадр в секунду) и громкость |
-| `python3 vg.py all <id>` | всё по порядку |
+| `python3 vg.py all <id>` | всё по порядку (voice → compile → prep → draw → scene → audio → hud → mux → qa) |
+| `python3 vg.py script formats [имя]` | форматы, типы крючков, роли, приёмы, звуки ([SCRIPTING.md](SCRIPTING.md)) |
+| `python3 vg.py script new <id> --topic "…" [--format f] [--duration 60]` | заготовка сценария `projects/<id>/script.yaml` |
+| `python3 vg.py script check <id> [--tts]` | тайминг сценария, замечания, оценка готовности 0–100 |
+| `python3 vg.py script render <id> [--tts]` | документ сценария `projects/<id>/script.md` |
+| `python3 vg.py script project <id> [--force]` | черновик `project.yaml` из сценария |

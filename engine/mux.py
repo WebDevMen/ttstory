@@ -7,8 +7,16 @@ import subprocess
 from .common import ROOT, build_dir, load_timeline
 
 
+LIMIT_MB = 95          # GitHub and the platforms: keep the finished video under 100 MB
+
+
 def run(pid, out=None, maxrate="8M", crf=19):
     tl = load_timeline(pid)
+    # long videos (2–3 min stories) would exceed the size limit at 8 Mbit/s: cap the video rate so the file fits
+    fit = int((LIMIT_MB * 8 / max(1.0, tl["duration"])) - 0.3)
+    if fit < int(maxrate.rstrip("M")):
+        print(f"  {tl['duration']:.0f} s video: maxrate {maxrate} -> {fit}M to stay under {LIMIT_MB} MB")
+        maxrate = f"{max(2, fit)}M"
     bd = build_dir(pid)
     video, audio = os.path.join(bd, "video_hud.mp4"), os.path.join(bd, "mix.wav")
     out = out or os.path.join(ROOT, "out", f"{pid}.mp4")

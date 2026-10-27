@@ -25,6 +25,9 @@ if ! (node -e "require('playwright')" || NODE_PATH="$(npm root -g)" node -e "req
   npx --yes playwright install chromium || echo "  (install Chromium manually: npx playwright install chromium)"
 fi
 
+echo "▶ motion engine (Remotion, engine/motion)"
+(cd engine/motion && npm ci --silent --no-audit --no-fund) || echo "  (run manually: cd engine/motion && npm ci)"
+
 echo "▶ models (Real-ESRGAN x4, Depth Anything V2 small)"
 mkdir -p models
 [ -f models/esrgan_x4.onnx ] || curl -fL --retry 4 -o models/esrgan_x4.onnx https://huggingface.co/imgdesignart/realesrgan-x4-onnx/resolve/main/onnx/model.onnx

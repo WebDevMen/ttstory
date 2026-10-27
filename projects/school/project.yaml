@@ -1,0 +1,451 @@
+# «Один день в японской школе» — 100% code-drawn video (no AI images): every frame is built from draw actors
+# (engine/hud/draw/actors) in `draw:` shots, then goes through the usual scene effects, HUD, captions and sound.
+# Coordinates in draw shots are screen pixels 1080x1920 (world = screen unless `world:` is wider). Times: "@word".
+
+title: "Один день в японской школе"
+
+voice: {voice: ru-RU-SvetlanaNeural, rate: "+14%", lead_in: 0.25, gap: 0.38, tail: 2.2}
+
+theme:
+  preset: minimal
+  accent: "232,51,63"
+  captions:
+    style: clean
+    top: 1250
+    size: 64
+    max_chars: 17
+    hide:
+      - {from: "@hook/Смотри-0.1", until: "@hook.end"}
+      - {from: "@klass/Кирицу-0.15", until: "@klass.end"}
+      - {from: "@finale/Пиши-0.05"}
+
+post: {vignette: 0.18, chromatic: 0, grain: 0.01}
+
+# shared pieces (YAML anchors): the "no janitors" sign
+x-nojanitor: &nojanitor
+  actor: group
+  children:
+    - {actor: shape, kind: circle, r: 175, fill: "#ffffff", shadow: {y: 16, blur: 34, a: 0.28}}
+    - {actor: person, x: 0, y: 150, scale: 0.62, look: {age: adult, outfit: casual, color: "#8b95a8", bottom_color: "#5b6476", hair: short, hat: cap, cap_color: "#5b6476"}, pose: stand, hold: mop, face: neutral}
+    - {actor: shape, kind: ring, w: 340, h: 340, r: 158, stroke: "#ff3b4e", sw: 34}
+    - {actor: shape, kind: line, points: [[-112, -112], [112, 112]], stroke: "#ff3b4e", sw: 34, cap: butt}
+
+audio:
+  music:
+    key: D
+    mode: major
+    bpm: 96
+    gain: -15
+    sections:
+      - {at: 0, style: upbeat, chords: [D, A, Bm, G]}
+      - {at: "@road.start", style: lofi, chords: [Gmaj7, "F#m7", Em7, A]}
+      - {at: "@lunch.start", style: upbeat, chords: [D, A, Bm, G]}
+      - {at: "@clubs.start", style: calm, chords: [G, A, "F#m", Bm], div: 8}
+      - {at: "@finale.start", style: upbeat, chords: [G, A, D, Bm]}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK
+  - id: hook
+    accent: "232,51,63"
+    caption_marks: {"нет уборщиков": "255,59,78"}
+    text: В японской школе нет уборщиков. Вообще. Так кто же моет полы? Смотри, как проходит один обычный день.
+    shots:
+      - id: h_school
+        effects:
+          - {type: particles, mode: fall_loop, shape: petal, count: 34, size: [7, 12], speed: [80, 150], sway: 50, drift: 20, color: [1.0, 0.78, 0.86], alpha: 0.9, soft: 0.8}
+        look: {bloom: [0.85, 0.15], grade: {contrast: 0.06, sat: 1.06}}
+        ambience: [{sound: birds, gain: -16}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.09, y: 900}]}
+          layers:
+            - {actor: sky, hour: 8.2, par: 0, clouds: 5}
+            - {actor: tree, kind: round, h: 360, x: 90, y: 1190, par: 0.85}
+            - {actor: tree, kind: round, h: 330, x: 1010, y: 1190, par: 0.85, seed: 4}
+            - {actor: school, x: 540, y: 1190, scale: 0.92, time: 8.2, plaque: "第一中学校", flag: true}
+            - {actor: ground, x: -300, y: 1186, w: 1700, h: 800, color: ["#e2cfa6", "#cdb386"]}
+            - {actor: tree, kind: sakura, h: 560, x: 70, y: 1330, par: 1.15}
+            - {actor: tree, kind: sakura, h: 500, x: 1020, y: 1360, par: 1.15, seed: 3}
+            - <<: *nojanitor
+              x: 540
+              y: 520
+              at: "@нет-0.08"
+              enter: stamp
+              enter_dur: 0.5
+              sfx: {sound: kick, gain: -10}
+              wiggle: {rot: 2, freq: 0.8}
+            - {actor: badge, x: 540, y: 790, at: "@Вообще", enter: pop, style: solid, color: "#ff3b4e", title: "УБОРЩИКОВ: 0", size: 46, sfx: {sound: buzz, gain: -16, f: 150, d: 0.12, n: 2}}
+      - id: h_floor
+        start: "@Так-0.12"
+        transition: {type: whip_x, flash: 0.1}
+        effects:
+          - {type: glow, at: [540, 700], sigma: 420, color: [1, 0.9, 0.7], intensity: 0.06}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.05}}
+        ambience: [{sound: room, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.06, roll: -2}, {t: end, z: 1.14, roll: 1}]}
+          layers:
+            - {actor: room, floor_y: 860, wall: "#f3e9d8", floor: "#c98f5c", windows: [{x: 640, y: 230, w: 300, h: 380}]}
+            - {actor: shape, kind: ellipse, x: 540, y: 1150, w: 760, h: 90, fill: "#000000", opacity: 0.08}
+            - {actor: prop, kind: mop, x: 700, y: 1150, scale: 1.25, rot: -12}
+            - {actor: prop, kind: bucket, x: 380, y: 1160, scale: 1.7}
+            - {actor: particles, kind: dust, region: [100, 800, 1000, 1200], count: 20, alpha: 0.6}
+            - {actor: prop, kind: question, x: 230, y: 640, scale: 2.0, color: "#ff3b4e", at: "@кто", enter: pop, wiggle: {rot: 8, freq: 1.3}, glow: {color: "#ffffff", r: 12, a: 0.9}, sfx: true}
+            - {actor: prop, kind: question, x: 540, y: 560, scale: 2.6, color: "#ff8a3c", at: "@моет", enter: pop, wiggle: {rot: 8, freq: 1.1}, glow: {color: "#ffffff", r: 12, a: 0.9}, sfx: true}
+            - {actor: prop, kind: question, x: 800, y: 680, scale: 2.0, color: "#3a8ee6", at: "@полы", enter: pop, wiggle: {rot: 8, freq: 1.5}, glow: {color: "#ffffff", r: 12, a: 0.9}, sfx: true}
+      - id: h_title
+        start: "@Смотри-0.12"
+        transition: {type: zoom}
+        effects:
+          - {type: particles, mode: fall_loop, shape: petal, count: 26, size: [7, 12], speed: [80, 140], sway: 50, drift: 20, color: [1.0, 0.75, 0.84], alpha: 0.95, soft: 0.8}
+        look: {bloom: [0.9, 0.1], grade: {contrast: 0.05, sat: 1.05}}
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#fff8ec"], [1, "#f4e2c6"]]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - {actor: shape, kind: circle, r: 330, x: 540, y: 740, fill: "#d7263d", at: "@start", enter: grow, enter_dur: 0.55, sfx: {sound: boom, gain: -19}}
+            - {actor: map, x: 540, y: 740, w: 470, h: 470, focus: [Japan], land: none, stroke: none, hi: "#ffffff", at: "@start+0.25", enter: pop, pin_color: "#ffd36b", pins: [{lon: 139.69, lat: 35.68, label: "Токио", at: "@как", size: 30}]}
+            - {actor: text, text: "ОДИН ДЕНЬ", x: 540, y: 1200, size: 128, color: "#1d2347", at: "@проходит-0.1", reveal: {by: word, mode: slam, stagger: 0.18}}
+            - {actor: text, text: "В ЯПОНСКОЙ ШКОЛЕ", x: 540, y: 1330, size: 70, color: "#d7263d", at: "@обычный-0.1", reveal: {by: word, mode: rise, stagger: 0.12}}
+    sfx:
+      - {sound: whoosh, at: "@Смотри-0.3", gain: -16, d: 0.5}
+
+  # ------------------------------------------------------------------ 2. ROAD 07:30
+  - id: road
+    accent: "58,142,230"
+    captions_top: 1300
+    text: Семь тридцать. В школу идут сами — пешком или на поезде. Даже первоклассники ходят без родителей.
+    shots:
+      - id: r_street
+        transition: {type: whip_x, flash: 0.1}
+        effects:
+          - {type: particles, mode: fall_loop, shape: petal, count: 18, size: [6, 10], speed: [70, 130], sway: 50, drift: 30, color: [1.0, 0.8, 0.88], alpha: 0.85, soft: 0.8}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.05}}
+        ambience: [{sound: city, gain: -20}, {sound: birds, gain: -17}]
+        draw:
+          world: [3000, 1920]
+          camera:
+            keys: [{t: 0, x: 540, y: 960}, {t: end, x: 1560, y: 960, ease: linear}]
+          layers:
+            - {actor: sky, hour: 7.5, par: 0, clouds: 5}
+            - {actor: skyline, x: 1500, y: 1060, w: 3600, h: 420, color: "#b6cbe6", color2: "#c8d9ee", lit: 0, par: 0.25}
+            - {actor: train, id: train, x: -1400, y: 900, cars: 3, viaduct: true, viaduct_h: 260, par: 0.55, anim: [{at: "@пешком-0.6", dur: 3.6, x: 2600, ease: linear}]}
+            - {actor: house, x: 180, y: 1180, seed: 1, scale: 1.25}
+            - {actor: house, x: 560, y: 1180, seed: 2, w: 340, scale: 1.25}
+            - {actor: tree, kind: sakura, h: 460, x: 860, y: 1185, seed: 7}
+            - {actor: house, x: 1160, y: 1180, seed: 5, scale: 1.25}
+            - {actor: house, x: 1540, y: 1180, seed: 8, w: 320, scale: 1.25}
+            - {actor: house, x: 1920, y: 1180, seed: 11, scale: 1.25}
+            - {actor: tree, kind: sakura, h: 480, x: 2230, y: 1185, seed: 9}
+            - {actor: house, x: 2560, y: 1180, seed: 13, w: 340, scale: 1.25}
+            - {actor: ground, x: -300, y: 1500, w: 3700, h: 500, color: ["#d8d2c6", "#c9c2b4"]}
+            - {actor: street, x: -200, y: 1180, w: 3400, poles: 640, pole_h: 600}
+            - {actor: person, id: boy, view: side, x: 200, y: 1215, scale: 0.95, look: {outfit: gakuran, hair: short, bag: school_bag}, walk: 1.9, anim: [{at: "@start", dur: 7.2, x: 1240, ease: linear}]}
+            - {actor: person, id: girl, view: side, x: 360, y: 1222, scale: 0.95, look: {outfit: sailor, hair: ponytail, bag: school_bag}, walk: 1.9, anim: [{at: "@start", dur: 7.2, x: 1400, ease: linear}]}
+            - {actor: person, id: kid, view: side, x: 1180, y: 1228, scale: 0.95, at: "@Даже-0.6", look: {age: kid, outfit: casual, color: "#ff8a3c", hat: kid, bag: randoseru, hair: short}, walk: 2.6, anim: [{at: "@Даже-0.6", dur: 3.4, x: 1880, ease: linear}]}
+            - {actor: callout, space: screen, x: 640, y: 520, at: "@первоклассники", enter: pop, target: "kid.top", title: "1 КЛАСС", sub: "6–7 ЛЕТ · БЕЗ РОДИТЕЛЕЙ", icon: "🎒", color: "#ff8a3c", size: 44, sfx: {sound: blip, gain: -18, f: 1400}}
+            - {actor: badge, space: screen, x: 330, y: 520, at: "@пешком-0.05", until: "@Даже-0.3", enter: pop, exit: shrink, style: light, color: "#3a8ee6", icon: "🚶", title: "ПЕШКОМ", size: 36, sfx: true}
+            - {actor: badge, space: screen, x: 750, y: 520, at: "@поезде-0.1", until: "@Даже-0.3", enter: pop, exit: shrink, style: light, color: "#2fa84f", icon: "🚃", title: "ПОЕЗД", size: 36, sfx: true}
+    hud:
+      - {component: marker, at: "@road.vo_start-0.1", icon: clock, text: "**07:30** · ДОРОГА", sfx: false}
+    sfx:
+      - {sound: chime, at: "@road.vo_start", gain: -18, freqs: [880, 1320]}
+      - {sound: footstep, at: "@start+0.3", gain: -22, surface: stone, repeat: {count: 12, every: 0.52}}
+      - {sound: whoosh, at: "@поезде-0.7", gain: -15, d: 1.8, f0: 90, f1: 1200}
+
+  # ------------------------------------------------------------------ 3. SHOES
+  - id: shoes
+    accent: "255,138,60"
+    text: У входа — шкафчики для обуви. Уличную обувь снимают и надевают сменку — увабаки.
+    shots:
+      - id: s_lockers
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.05}}
+        ambience: [{sound: room, gain: -18}]
+        draw:
+          bg: ["#f3e8d6", "#e8d6ba"]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 900}, {t: end, z: 1.1, x: 580, y: 820}]}
+          layers:
+            - {actor: shape, kind: rect, x: 0, y: 1150, w: 1080, h: 800, fill: {linear: ["#b9bfc9", "#9aa1ad"]}, origin: top-left}
+            - {actor: text, text: "下駄箱 · ГЭТАБАКО", x: 540, y: 370, size: 40, font: round, weight: 800, color: "#5d3d28", bg: {color: "#f6e5c8", pad: "10px 26px", radius: 12}, at: "@входа", enter: pop}
+            - {actor: lockers, x: 540, y: 780, rows: 5, cols: 6, cell: [150, 112], fill: 0.85, highlight: {row: 3, col: 4, at: "@шкафчики", label: "ТВОЙ"}, at: "@start", enter: rise}
+            - {actor: particles, kind: sparkles, region: [640, 700, 820, 860], count: 5, at: "@шкафчики+0.1", alpha: 0.9}
+      - id: s_swap
+        start: "@Уличную-0.12"
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.05}}
+        ambience: [{sound: room, gain: -18}]
+        draw:
+          bg: {type: radial, at: "50% 42%", stops: [[0, "#fff8ec"], [1, "#efdcc0"]]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05}]}
+          layers:
+            - {actor: shape, kind: ellipse, x: 280, y: 930, w: 380, h: 60, fill: "#000000", opacity: 0.08}
+            - {actor: shape, kind: ellipse, x: 800, y: 930, w: 380, h: 60, fill: "#000000", opacity: 0.08}
+            - {actor: shoe, id: sneaker, kind: sneaker, x: 280, y: 925, w: 400, color: "#e2463f", enter: drop, at: "@start", anim: [{at: "@снимают", dur: 0.4, opacity: 0.45, scale: 0.9}]}
+            - {actor: badge, x: 280, y: 1040, at: "@Уличную", enter: pop, style: light, color: "#ff3b4e", icon: x, title: "УЛИЦА", size: 40}
+            - {actor: shape, kind: line, x: 0, y: 0, points: [[170, 640], [390, 860]], stroke: "#ff3b4e", sw: 26, at: "@снимают", enter: draw, enter_dur: 0.25, sfx: {sound: kick, gain: -14}}
+            - {actor: shape, kind: line, x: 0, y: 0, points: [[390, 640], [170, 860]], stroke: "#ff3b4e", sw: 26, at: "@снимают+0.15", enter: draw, enter_dur: 0.25}
+            - {actor: sketch, kind: arrow, x: 420, y: 560, points: [[0, 120], [120, 30], [250, 110]], curve: true, stroke: "#5d3d28", sw: 7, roughness: 1.2, at: "@надевают", enter: draw, enter_dur: 0.5, sfx: true}
+            - {actor: shoe, id: uwabaki, kind: uwabaki, x: 800, y: 925, w: 400, toe: "#3a6fd8", at: "@сменку-0.05", enter: drop, sfx: true}
+            - {actor: particles, kind: sparkles, region: [620, 700, 980, 940], count: 7, at: "@сменку+0.2"}
+            - {actor: badge, x: 800, y: 1040, at: "@увабаки-0.1", enter: pop, style: light, color: "#2fbf71", icon: check, title: "ШКОЛА", size: 40, sfx: {sound: chime, gain: -16, freqs: [988, 1319]}}
+            - {actor: text, text: "上履き", x: 800, y: 470, size: 92, font: round, color: "#3a6fd8", at: "@увабаки-0.1", enter: pop}
+    hud:
+      - {component: marker, at: "@shoes.vo_start-0.1", icon: clock, text: "**08:15** · ВХОД", sfx: false}
+    sfx:
+      - {sound: chime, at: "@shoes.vo_start", gain: -18, freqs: [880, 1320]}
+
+  # ------------------------------------------------------------------ 4. CLASS: kiritsu, rei, chakuseki
+  - id: klass
+    accent: "106,92,255"
+    text: "Восемь тридцать. Входит учитель, и дежурный командует: «Кирицу! Рэй! Тякусэки!» — встать, поклон, сесть."
+    shots:
+      - id: k_board
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.05}}
+        ambience: [{sound: room, gain: -17}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540}, {t: end, z: 1.08, x: 560}]}
+          layers:
+            - {actor: room, floor_y: 1170, wall: "#efe4d2", floor: "#c48b58"}
+            - {actor: blackboard, x: 540, y: 690, w: 980, h: 470, at: "@start",
+               lines: [{text: "4月10日（月）", x: 50, y: 34, size: 44, font: jp, weight: 600, at: "@start+0.1", speed: 14},
+                       {text: "おはよう！", x: 60, y: 120, size: 120, font: jp, weight: 600, at: "@start+0.6", speed: 7},
+                       {text: "доброе утро!", x: 70, y: 280, size: 84, at: "@Входит", speed: 14}], date: "日直 田中"}
+            - {actor: clock, x: 920, y: 300, r: 70, time: 8.5}
+            - {actor: shape, kind: rect, x: 610, y: 1080, w: 380, h: 170, radius: 8, fill: "#a8743f", origin: top-left}
+            - {actor: shape, kind: rect, x: 600, y: 1070, w: 400, h: 24, radius: 6, fill: "#c99a62", origin: top-left}
+            - {actor: person, id: t_walk, view: side, x: -120, y: 1215, until: "@учитель+0.1", look: {age: adult, outfit: teacher_m, hair: side, glasses: true}, walk: 1.8, hold: book, anim: [{at: "@start", dur: 1.7, x: 300, ease: linear}]}
+            - {actor: person, id: teacher, x: 330, y: 1215, at: "@учитель+0.1", look: {age: adult, outfit: teacher_m, hair: side, glasses: true}, pose: [{at: 0, v: stand}, {at: "@дежурный", v: point, dur: 0.3}], face: smile, talk: [["@командует", "@командует.end"]]}
+            - {actor: callout, x: 760, y: 1010, at: "@дежурный", enter: pop, target: [985, 600], brackets: 80, title: "ДЕЖУРНЫЙ", sub: "日直 · НИТТЁКУ", icon: "📋", color: "#6a5cff", size: 40, sfx: {sound: blip, gain: -18, f: 1500}}
+      - id: k_class
+        start: "@Кирицу-0.15"
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.05}}
+        ambience: [{sound: room, gain: -17}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.04, y: 980}, {t: end, z: 1.0, y: 960}], shakes: [{at: "@Рэй", amp: 4, dur: 0.3}]}
+          layers:
+            - {actor: room, floor_y: 930, wall: "#efe4d2", floor: "#c48b58", windows: [{x: 50, y: 620, w: 200, h: 220}], board: {x: 820, y: 650, w: 210, h: 160}}
+            - {actor: classroom, rows: 3, cols: 4, back_y: 1090, front_y: 1700, back_scale: 0.64, spread: 255, seed: 4, stagger: 0.18,
+               pose: [{at: 0, v: sit}, {at: "@Кирицу+0.05", v: stand, dur: 0.35}, {at: "@Рэй+0.02", v: bow, dur: 0.3}, {at: "@Тякусэки-0.1", v: stand, dur: 0.25}, {at: "@Тякусэки+0.35", v: sit, dur: 0.35}],
+               face: [{at: 0, v: smile}, {at: "@Рэй", v: neutral}, {at: "@Тякусэки+0.4", v: smile}]}
+            - {actor: text, text: "起立", x: 540, y: 480, size: 150, font: round, color: "#6a5cff", stroke: {w: 14, color: "#ffffff"}, at: "@Кирицу-0.05", until: "@Рэй-0.08", enter: stamp, enter_dur: 0.3, exit: fade, exit_dur: 0.08, shadow: true, sfx: {sound: kick, gain: -13}}
+            - {actor: text, text: "КИРИЦУ · ВСТАТЬ", x: 540, y: 640, size: 52, color: "#1d2347", bg: {color: "#ffffff", pad: "8px 24px", radius: 14}, at: "@Кирицу", until: "@Рэй-0.08", enter: pop, exit: fade, exit_dur: 0.08}
+            - {actor: text, text: "礼", x: 540, y: 480, size: 150, font: round, color: "#e8333f", stroke: {w: 14, color: "#ffffff"}, at: "@Рэй-0.05", until: "@Тякусэки-0.08", enter: stamp, enter_dur: 0.3, exit: fade, exit_dur: 0.08, shadow: true, sfx: {sound: kick, gain: -13}}
+            - {actor: text, text: "РЭЙ · ПОКЛОН", x: 540, y: 640, size: 52, color: "#1d2347", bg: {color: "#ffffff", pad: "8px 24px", radius: 14}, at: "@Рэй", until: "@Тякусэки-0.08", enter: pop, exit: fade, exit_dur: 0.08}
+            - {actor: text, text: "着席", x: 540, y: 480, size: 150, font: round, color: "#2fbf71", stroke: {w: 14, color: "#ffffff"}, at: "@Тякусэки-0.05", until: "@встать-0.08", enter: stamp, enter_dur: 0.3, exit: fade, exit_dur: 0.08, shadow: true, sfx: {sound: kick, gain: -13}}
+            - {actor: text, text: "ТЯКУСЭКИ · СЕСТЬ", x: 540, y: 640, size: 52, color: "#1d2347", bg: {color: "#ffffff", pad: "8px 24px", radius: 14}, at: "@Тякусэки", until: "@встать-0.08", enter: pop, exit: fade, exit_dur: 0.08}
+            - {actor: text, text: "ВСТАТЬ → ПОКЛОН → СЕСТЬ", x: 540, y: 520, size: 52, color: "#1d2347", bg: {color: "#ffffff", pad: "14px 30px", radius: 18}, at: "@встать-0.1", enter: pop,
+               reveal: {by: word, mode: pop, sync: true}, highlight: [{at: "@встать", until: "@поклон", word: 0, color: "#6a5cff"}, {at: "@поклон", until: "@сесть", word: 2, color: "#e8333f"}, {at: "@сесть", word: 4, color: "#2fbf71"}]}
+    hud:
+      - {component: marker, at: "@klass.vo_start-0.1", icon: clock, text: "**08:30** · УРОК", sfx: false}
+    sfx:
+      - {sound: bell, at: "@klass.vo_start-0.05", gain: -15, f: 659, d: 2.4}
+      - {sound: bell, at: "@klass.vo_start+0.4", gain: -16, f: 523, d: 2.4}
+      - {sound: bell, at: "@klass.vo_start+0.85", gain: -16, f: 587, d: 2.4}
+      - {sound: bell, at: "@klass.vo_start+1.3", gain: -15, f: 392, d: 3.0}
+      - {sound: footstep, at: "@start+0.2", gain: -21, surface: wood, repeat: {count: 4, every: 0.42}}
+
+  # ------------------------------------------------------------------ 5. LUNCH
+  - id: lunch
+    accent: "242,164,58"
+    text: Обед. Столовой нет — еду привозят прямо в класс, и раздают её сами ученики в белых халатах. Есть начинают только после слова «итадакимас».
+    shots:
+      - id: l_cart
+        transition: {type: whip_x, flash: 0.1}
+        captions_top: 1400
+        effects:
+          - {type: particles, mode: smoke, center: [560, 860], count: 22, size: [24, 80], rise: 380, drift: 30, spread: 120, life: [2.0, 3.2], depth: 0.6, color: [1, 1, 1], alpha: 0.12, from: "@привозят+0.6"}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.06}}
+        ambience: [{sound: room, gain: -17}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.07}]}
+          layers:
+            - {actor: room, floor_y: 1050, wall: "#f3e9d8", floor: "#c98f5c", windows: [{x: 90, y: 300, w: 300, h: 400}, {x: 690, y: 300, w: 300, h: 400}]}
+            - {actor: badge, x: 540, y: 560, at: "@Столовой-0.05", enter: stamp, style: solid, color: "#ff3b4e", icon: x, title: "СТОЛОВОЙ НЕТ", size: 44, sfx: {sound: kick, gain: -13}}
+            - actor: group
+              x: 1500
+              y: 1090
+              anim: [{at: "@привозят-0.3", dur: 1.4, x: 560, ease: outCubic}]
+              children:
+                - {actor: prop, kind: cart, x: 0, y: 130}
+                - {actor: prop, kind: pot, x: -100, y: -88, scale: 0.8}
+                - {actor: prop, kind: pot, x: 105, y: -88, scale: 0.7, color: "#d4c39a"}
+                - {actor: prop, kind: milk, x: -110, y: 82, scale: 0.6}
+                - {actor: prop, kind: milk, x: -60, y: 82, scale: 0.6}
+                - {actor: prop, kind: milk, x: -10, y: 82, scale: 0.6}
+            - {actor: text, text: "給食 · КЮСЁКУ", x: 540, y: 760, size: 46, font: round, color: "#ffffff", bg: {color: "#f2a43a", pad: "8px 24px", radius: 14}, at: "@класс", enter: pop, sfx: true}
+      - id: l_serve
+        start: "@раздают-0.12"
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.06}}
+        ambience: [{sound: room, gain: -17}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.08, y: 1000}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {actor: room, floor_y: 1080, wall: "#f3e9d8", floor: "#c98f5c", board: {x: 80, y: 330, w: 280, h: 200}, clock: {x: 900, y: 330, r: 62, time: 12.5}}
+            - {actor: person, id: srv1, x: 270, y: 1130, look: {outfit: kyushoku, hair: bob}, pose: hold, face: smile, seed: 3}
+            - {actor: person, id: srv2, x: 540, y: 1130, look: {outfit: kyushoku, hair: short}, pose: hold, face: happy, seed: 8}
+            - {actor: person, id: srv3, x: 810, y: 1130, look: {outfit: kyushoku, hair: ponytail}, pose: hold, face: smile, seed: 5}
+            - {actor: shape, kind: rect, x: 60, y: 1010, w: 960, h: 34, radius: 8, fill: "#9aa3b5", origin: top-left}
+            - {actor: shape, kind: rect, x: 80, y: 1044, w: 920, h: 150, radius: 6, fill: "#c7ccd6", origin: top-left}
+            - {actor: prop, kind: pot, x: 270, y: 1020, scale: 0.75}
+            - {actor: prop, kind: pot, x: 540, y: 1020, scale: 0.75, color: "#d4c39a"}
+            - {actor: prop, kind: bento, x: 810, y: 1020, scale: 0.9, color: "#3a6fd8"}
+            - {actor: callout, x: 540, y: 470, at: "@белых-0.1", enter: pop, target: "srv2.top", title: "ДЕЖУРНЫЕ", sub: "給食当番 · В БЕЛЫХ ХАЛАТАХ", icon: "🍚", color: "#f2a43a", size: 46, sfx: {sound: blip, gain: -18, f: 1400}}
+      - id: l_tray
+        start: "@Есть-0.12"
+        transition: {type: whip_x, flash: 0.1}
+        effects:
+          - {type: particles, mode: smoke, center: [690, 690], count: 14, size: [20, 60], rise: 300, drift: 20, spread: 60, life: [2.0, 3.0], depth: 0.6, color: [1, 1, 1], alpha: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.06}}
+        ambience: [{sound: room, gain: -17}]
+        draw:
+          bg: {type: radial, at: "50% 40%", stops: [[0, "#fff6e8"], [1, "#efd9b8"]]}
+          camera: {keys: [{t: 0, z: 1.0, roll: -1}, {t: end, z: 1.08, roll: 1}]}
+          layers:
+            - {actor: tray, x: 540, y: 760, scale: 1.25, at: "@start", stagger: 0.12, shadow: {y: 20, blur: 30, a: 0.22}}
+            - {actor: text, text: "いただきます！", x: 540, y: 1150, size: 96, font: round, color: "#e8333f", stroke: {w: 14, color: "#ffffff"}, at: "@итадакимас-0.05", enter: stamp, enter_dur: 0.35, shadow: true, sfx: {sound: chime, gain: -14, freqs: [784, 988, 1175]}}
+            - {actor: image, emoji: "🙏", x: 540, y: 340, size: 130, at: "@итадакимас+0.15", enter: pop, bob: {amp: 6, freq: 1.2}}
+            - {actor: particles, kind: sparkles, region: [150, 300, 930, 1100], count: 10, at: "@итадакимас+0.1"}
+    hud:
+      - {component: marker, at: "@lunch.vo_start-0.1", icon: clock, text: "**12:30** · ОБЕД", sfx: false}
+    sfx:
+      - {sound: chime, at: "@lunch.vo_start", gain: -18, freqs: [880, 1320]}
+      - {sound: scrape, at: "@привозят-0.3", gain: -26, d: 1.3}
+
+  # ------------------------------------------------------------------ 6. CLEANING (o-soji)
+  - id: clean
+    accent: "47,191,113"
+    caption_marks: {"не нужны": "47,191,113"}
+    captions_top: 1330
+    text: После уроков — о-содзи, уборка. Ученики сами моют полы, окна и даже туалеты. Вот почему уборщики не нужны.
+    shots:
+      - id: c_floor
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.06}}
+        ambience: [{sound: room, gain: -17}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540}, {t: end, z: 1.05, x: 520}]}
+          layers:
+            - {actor: room, floor_y: 900, wall: "#eef0e6", floor: "#c98f5c", windows: [{x: 600, y: 300, w: 380, h: 420}]}
+            - {actor: desk, part: desk, x: 120, y: 900, scale: 0.6}
+            - {actor: desk, part: desk, x: 260, y: 900, scale: 0.6}
+            - {actor: desk, part: desk, x: 400, y: 900, scale: 0.6}
+            - {actor: person, x: 790, y: 905, scale: 0.85, at: "@окна-0.3", enter: rise, look: {outfit: pe, hair: bob}, pose: {a1: [10, 6], a2: [150, -40], l1: [2, 0], l2: [2, 0]}, wave_hand: true, hold: rag, hold_rot: 180, face: happy, seed: 2}
+            - {actor: checklist, x: 60, y: 310, width: 520, size: 52, color: "#2fbf71", ink: "#1d2347", shadow: false, show_at: "@Ученики-0.2", items: [{text: "ПОЛЫ", at: "@полы"}, {text: "ОКНА", at: "@окна"}, {text: "ТУАЛЕТЫ", at: "@туалеты"}], sfx: {sound: pop, gain: -18}}
+            - {actor: person, view: side, flip: true, x: 1250, y: 1210, look: {outfit: pe, hair: short}, pose: wipe, run: true, walk: 2.6, hold: rag, seed: 1, anim: [{at: "@start+0.2", dur: 2.6, x: -260, ease: linear}, {at: "@моют", dur: 0.01, x: 1300}, {at: "@моют+0.01", dur: 2.6, x: -260, ease: linear}], sfx: {sound: whoosh, gain: -20, d: 0.6}}
+            - {actor: person, view: side, flip: true, x: 1450, y: 1235, look: {outfit: pe, hair: twintails}, pose: wipe, run: true, walk: 2.6, hold: rag, seed: 6, anim: [{at: "@start+0.2", dur: 2.6, x: -60, ease: linear}, {at: "@моют+0.4", dur: 0.01, x: 1500}, {at: "@моют+0.41", dur: 2.6, x: -60, ease: linear}]}
+            - {actor: person, view: side, flip: true, x: 1650, y: 1260, look: {outfit: pe, hair: spiky}, pose: wipe, run: true, walk: 2.6, hold: rag, seed: 9, anim: [{at: "@start+0.2", dur: 2.6, x: 140, ease: linear}, {at: "@моют+0.8", dur: 0.01, x: 1700}, {at: "@моют+0.81", dur: 2.6, x: 140, ease: linear}]}
+            - {actor: particles, kind: sparkles, region: [80, 1080, 1000, 1280], count: 14, at: "@полы"}
+            - {actor: meter, x: 300, y: 690, w: 470, label: "ЧИСТОТА", color: "#2fbf71", size: 30, ink: dark, value: [{at: 0, v: 12}, {at: "@полы", v: 45, dur: 0.6}, {at: "@окна", v: 75, dur: 0.6}, {at: "@туалеты", v: 100, dur: 0.6}]}
+      - id: c_done
+        start: "@Вот-0.12"
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.85, 0.15], grade: {contrast: 0.06, sat: 1.08}}
+        ambience: [{sound: birds, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.06}, {t: end, z: 1.0}]}
+          layers:
+            - {actor: sky, hour: 15.3, par: 0}
+            - {actor: school, x: 540, y: 1190, scale: 0.92, time: 15.25, plaque: "第一中学校"}
+            - {actor: ground, x: -300, y: 1186, w: 1700, h: 800, color: ["#e2cfa6", "#cdb386"]}
+            - {actor: particles, kind: sparkles, region: [80, 700, 1000, 1180], count: 18, at: "@start"}
+            - <<: *nojanitor
+              x: 540
+              y: 470
+              at: "@Вот"
+              enter: pop
+              sfx: {sound: pop, gain: -14}
+            - {actor: badge, x: 540, y: 735, at: "@не-0.05", enter: stamp, style: solid, color: "#2fbf71", icon: check, title: "НЕ НУЖНЫ", size: 50, sfx: {sound: chime, gain: -14, freqs: [988, 1319, 1760]}}
+    hud:
+      - {component: marker, at: "@clean.vo_start-0.1", icon: clock, text: "**15:15** · УБОРКА", sfx: false}
+    sfx:
+      - {sound: chime, at: "@clean.vo_start", gain: -18, freqs: [880, 1320]}
+      - {sound: sparkle, at: "@полы", gain: -18}
+      - {sound: sparkle, at: "@туалеты", gain: -18, seed: 3}
+
+  # ------------------------------------------------------------------ 7. CLUBS + evening
+  - id: clubs
+    accent: "255,122,60"
+    captions_top: 820
+    text: "А потом — кружки: бейсбол, оркестр, кендо. Домой многие приходят только к семи вечера."
+    shots:
+      - id: b_cards
+        transition: {type: whip_x, flash: 0.1}
+        look: {bloom: [0.8, 0.18, [1, 0.9, 0.8]], grade: {contrast: 0.06, sat: 1.08}}
+        ambience: [{sound: birds, gain: -20}, {sound: wind, gain: -24}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - {actor: sky, hour: 16.8, par: 0}
+            - {actor: school, x: 540, y: 1330, scale: 0.62, time: 16.5, par: 0.5}
+            - {actor: ground, x: -300, y: 1328, w: 1700, h: 800, color: ["#dcb98a", "#c49f6f"]}
+            - {actor: card, x: 200, y: 500, w: 270, emoji: "⚾", title: "Бейсбол", style: light, color: "#e8333f", at: "@бейсбол-0.1", enter: rise, sfx: true}
+            - {actor: card, x: 540, y: 500, w: 270, emoji: "🎺", title: "Оркестр", style: light, color: "#f2a43a", at: "@оркестр-0.1", enter: rise, sfx: true}
+            - {actor: card, x: 880, y: 500, w: 270, emoji: "🥋", title: "Кендо", style: light, color: "#3a6fd8", at: "@кендо-0.1", enter: rise, sfx: true}
+            - {actor: person, view: side, x: 190, y: 1520, scale: 1.05, at: "@бейсбол-0.1", enter: rise, look: {outfit: baseball, hair: buzz}, hold: bat, hold_rot: 160,
+               pose: [{at: 0, v: swing_ready}, {at: "@оркестр-0.2", v: swing, dur: 0.18, ease: inCubic}], sfx: {sound: kick, gain: -12, offset: 0.9}}
+            - {actor: person, x: 540, y: 1520, scale: 1.05, at: "@оркестр-0.1", enter: rise, look: {outfit: blazer_skirt, hair: long}, pose: hold, face: neutral}
+            - {actor: prop, kind: trumpet, x: 605, y: 1200, scale: 0.6, rot: -8, at: "@оркестр-0.1", enter: rise, wiggle: {rot: 3, freq: 2}}
+            - {actor: person, x: 880, y: 1520, scale: 1.05, at: "@кендо-0.1", enter: rise, look: {outfit: kendo, hair: short}, pose: {a1: [30, 128], a2: [30, 128], l1: [6, 0], l2: [6, 0]}, hold: shinai, hold_rot: 200, face: determined}
+      - id: b_dusk
+        start: "@Домой-0.12"
+        transition: {type: dissolve, dur: 0.6}
+        captions_top: 1330
+        look: {bloom: [0.72, 0.3, [1, 0.85, 0.7]], grade: {contrast: 0.06, sat: 1.08}}
+        ambience: [{sound: wind, gain: -24}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.08, y: 930}]}
+          layers:
+            - {actor: sky, hour: [{at: "@start", v: 17.2}, {at: "@start+0.2", v: 19.9, dur: 2.4, ease: linear}], par: 0, clouds: 3, moon: [880, 640]}
+            - {actor: school, x: 540, y: 1190, scale: 0.92, plaque: "第一中学校", time: [{at: "@start", v: 17.0}, {at: "@start+0.2", v: 19.0, dur: 2.4, ease: linear}], lit: [{at: "@start", v: 0}, {at: "@start+1.4", v: 0.55, dur: 1.0}]}
+            - {actor: ground, x: -300, y: 1186, w: 1700, h: 800, color: ["#9a7f6a", "#6d5a52"]}
+            - {actor: streetlight, x: 140, y: 1400, on: [{at: "@start", v: 0}, {at: "@приходят", v: 1, dur: 0.2}]}
+            - {actor: streetlight, x: 940, y: 1400, flip: true, on: [{at: "@start", v: 0}, {at: "@приходят+0.15", v: 1, dur: 0.2}]}
+            - {actor: person, view: side, x: 250, y: 1560, look: {outfit: sailor, hair: ponytail, bag: school_bag, silhouette: "#2b2240"}, walk: 1.8, anim: [{at: "@start", dur: 3.2, x: 680, ease: linear}]}
+            - {actor: person, view: side, x: 90, y: 1580, look: {outfit: gakuran, hair: short, bag: school_bag, silhouette: "#2b2240"}, walk: 1.8, anim: [{at: "@start", dur: 3.2, x: 520, ease: linear}]}
+            - {actor: clock, x: 540, y: 470, r: 120, numbers: true, seconds: false, at: "@start+0.1", enter: pop, time: [{at: "@start", v: 17.0}, {at: "@start+0.2", v: 19.0, dur: 2.4, ease: inOutSine}], shadow: {y: 12, blur: 24, a: 0.3}}
+    hud:
+      - {component: marker, at: "@clubs.vo_start-0.1", until: "@Домой-0.15", icon: clock, text: "**16:00** · КРУЖКИ", sfx: false}
+      - {component: marker, at: "@Домой-0.05", icon: clock, text: "**19:00** · ДОМОЙ", sfx: false}
+    sfx:
+      - {sound: chime, at: "@clubs.vo_start", gain: -18, freqs: [880, 1320]}
+      - {sound: click, at: "@оркестр-0.12", gain: -10}
+      - {sound: gong, at: "@Домой", gain: -20, f: 110}
+
+  # ------------------------------------------------------------------ 8. FINALE
+  - id: finale
+    accent: "255,74,122"
+    text: "Хочешь учиться в такой школе? Пиши в комментариях: да или нет!"
+    cues: {cta: "@Пиши"}
+    shots:
+      - id: f_night
+        transition: {type: dissolve, dur: 0.6}
+        look: {bloom: [0.7, 0.32, [1, 0.9, 0.75]], grade: {contrast: 0.06, sat: 1.06}}
+        ambience: [{sound: wind, gain: -26}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.08, y: 900}, {t: end, z: 1.0, y: 960}]}
+          layers:
+            - {actor: sky, hour: 21, par: 0, stars: 180, moon: [860, 760]}
+            - {actor: school, x: 540, y: 1190, scale: 0.92, plaque: "第一中学校", time: 21, lit: 0.12, par: 0.7}
+            - {actor: ground, x: -300, y: 1186, w: 1700, h: 800, color: ["#3d3a52", "#2a283a"]}
+            - {actor: tree, kind: sakura, h: 520, x: 60, y: 1330, color: "#d98aa6", par: 1.1}
+            - {actor: tree, kind: sakura, h: 480, x: 1030, y: 1360, color: "#d98aa6", seed: 3, par: 1.1}
+            - {actor: person, x: 330, y: 1720, scale: 1.05, look: {outfit: sailor, hair: long}, pose: wave, face: happy, enter: rise, at: "@start+0.2"}
+            - {actor: person, x: 750, y: 1730, scale: 1.05, look: {outfit: gakuran, hair: spiky}, pose: [{at: 0, v: stand}, {at: "@да", v: cheer, dur: 0.3}], face: smile, enter: rise, at: "@start+0.35"}
+            - {actor: particles, kind: petals, region: [0, 0, 1080, 1920], count: 24, colors: ["#ffc6d3", "#ffe0e8"], alpha: 0.85}
+    hud:
+      - {component: text, at: "@Хочешь-0.1", until: "@Пиши-0.1", text: "ХОЧЕШЬ В ТАКУЮ\n**ШКОЛУ?**", size: 76, width: 940, x: 540, y: 330, align: center top, text_align: center, enter: pop}
+      - component: choices
+        at: "@Пиши-0.15"
+        x: 70
+        y: 360
+        width: 940
+        options:
+          - {key: "✓", text: "ДА, ХОЧУ!", color: "47,191,113", highlight_at: "@да"}
+          - {key: "✕", text: "НЕТ, СПАСИБО", color: "255,74,92", highlight_at: "@нет"}
+      - {component: cta, at: "@cue:cta+0.6", emoji: "💬", text: "ПИШИ В КОММЕНТАРИЯХ!", x: 540, y: 1225, align: center top}
+    sfx:
+      - {sound: chime, at: "@finale.vo_start", gain: -18, freqs: [988, 1319]}
