@@ -123,7 +123,7 @@ You cannot listen to audio. Verify it objectively: `vg.py audio <id> --stems`, c
 
 ## 7. Deliver
 
-- Commit the project folder (`projects/<id>/` with plates and YAML) and `out/<id>.mp4` on the working branch, then push (`build/` and `models/` are git-ignored).
+- Commit the project folder (`projects/<id>/` with plates and YAML) on `main` and push. **Never commit or push `out/<id>.mp4`** — the user asked for finished videos to be sent only in the chat (SendUserFile); `out/*.mp4`, `build/` and `models/` are git-ignored.
 - Send the MP4 to the user (SendUserFile) together with a short note: what was made, any deviations from the script, how many image generations were used, and what is easy to tweak next.
 
 ## Pitfalls learned the hard way
