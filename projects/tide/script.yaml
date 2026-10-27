@@ -18,7 +18,7 @@ meta:
   duration: 175
   format: fiction
   style: draw
-  voice: {voice: ru-RU-SvetlanaNeural, rate: "+10%", pitch: "+0Hz"}
+  voice: {voice: ru-RU-SvetlanaNeural, rate: "+15%", pitch: "+0Hz"}
   genre: fiction
   status: checked
 
@@ -907,11 +907,11 @@ production:
       - "Шрифты: заголовки Oswald, метки и таймкоды IBM Plex Mono, субтитры Inter; не больше двух шрифтов в кадре; без игрового HUD"
   music: {key: E, mode: minor, bpm: 88}
   voices:
-    narrator: {voice: ru-RU-SvetlanaNeural, rate: "+10%"}
-    system: {voice: ru-RU-DariyaNeural, rate: "-2%", pitch: "-4Hz"}
-    gleb: {voice: ru-RU-DmitryNeural, rate: "+6%", pitch: "-4Hz"}
-    sonya: {voice: ru-RU-SvetlanaNeural, rate: "+14%", pitch: "+45Hz"}
-    petrovich: {voice: ru-RU-DmitryNeural, rate: "-8%", pitch: "-18Hz"}
+    narrator: {voice: ru-RU-SvetlanaNeural, rate: "+15%"}
+    system: {voice: de-DE-SeraphinaMultilingualNeural, rate: "+6%", pitch: "-2Hz"}
+    gleb: {voice: ru-RU-DmitryNeural, rate: "+10%", pitch: "-4Hz"}
+    sonya: {voice: ru-RU-SvetlanaNeural, rate: "+16%", pitch: "+45Hz"}
+    petrovich: {voice: ru-RU-DmitryNeural, rate: "-2%", pitch: "-18Hz"}
   assets:
     - "Своя графика без ИИ. Новые актёры проекта (projects/tide/actors): оверлей архива (источник, таймкод, PROTOCOL 07, сбои), седан, дождь вверх/вниз, лужа со струями вверх, жёлтый зонт, экран звонка, подъезд, динамик лифта, кухня с весами и плитой, вода по стене, следы на потолке, разрез дома, яма и кабина лифта, оторванный квартал с днищем"
     - "Из библиотеки: sky, cloud, skyline, building, street, streetlight, tree, ground, person, hand, timetag, callout, card, text, particles"

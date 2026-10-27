@@ -1,0 +1,761 @@
+# «Обратный прилив» (~3:07). Своя графика кодом (method draw), без ИИ-картинок. Концепция EMERGENCY ARCHIVE:
+# утёкший видеопротокол службы выживания — «найденные записи» (камеры наблюдения, регистратор, телефон, нашлемная камера,
+# дрон) + кинематографичные кадры катастрофы; интерфейс PROTOCOL 07 в углу (актёр archive), правила — крупно (rule_card),
+# красный — только опасность. Интерфейс ломается к финалу (stage 0 → 1 → 2).
+# Сценарий: projects/tide/script.yaml. Актёры проекта: projects/tide/actors/ (archive.js, city.js, interior.js).
+# Время: "@слово" (числа в at — абсолютные секунды ролика).
+
+title: "Обратный прилив"
+
+voice: {voice: ru-RU-SvetlanaNeural, rate: "+15%", pitch: "+0Hz", tail: 1.6}
+voices:
+  system: {voice: de-DE-SeraphinaMultilingualNeural, rate: "+6%", pitch: "-2Hz"}
+  gleb: {voice: ru-RU-DmitryNeural, rate: "+10%", pitch: "-4Hz"}
+  sonya: {voice: ru-RU-SvetlanaNeural, rate: "+16%", pitch: "+45Hz"}
+  petrovich: {voice: ru-RU-DmitryNeural, rate: "-2%", pitch: "-18Hz"}
+
+theme:
+  preset: archive
+  accent: "#d9e2ea"
+  captions: {style: clean, top: 1330, size: 64, max_chars: 20}
+
+post: {vignette: 0.18, chromatic: 0, grain: 0.02}
+
+draw:
+  palette: {ink: "#0a0c0f", steel: "#3c4650", grey: "#8a96a2", white: "#f2f4f6", red: "#e3262f", yellow: "#ffd23a", water: "#9fc4dc"}
+
+audio:
+  music:
+    key: E
+    mode: minor
+    bpm: 88
+    gain: -15
+    sections:
+      - {at: 0, style: drone}
+      - {at: "@problem.start", style: tension}
+      - {at: "@water.start", style: dark}
+      - {at: "@call.start", style: pulse}
+      - {at: "@pit.start", style: epic}
+      - {at: "@twist.start", style: sub}
+      - {at: "@cliff.start", style: drone}
+  duck: 0.6
+
+# ------------------------------------------------------------------ shared pieces
+x-sky: &sky_rain {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1100, par: 0}
+x-clouds: &clouds {actor: cloud_bank, x: -400, y: -80, w: 1900, h: 760, par: 0.05, color: "#56606a", shade: "#262d34", n: 32}
+x-skyline: &skyline_far {actor: skyline, x: 540, y: 1012, w: 2200, h: 380, color: "#47515a", color2: "#3d464e", lit: 0.1, par: 0.2, seed: 5}
+x-ground-far: &ground_far {actor: ground, x: -600, y: 1000, w: 2300, h: 1000, color: ["#3a434b", "#2c333a"], par: 0.2}
+x-haze: &haze {actor: shape, kind: rect, x: 540, y: 985, w: 2400, h: 300, par: 0.22, fill: {linear: ["rgba(110,122,134,0)", "rgba(110,122,134,0.6)", "rgba(110,122,134,0)"], angle: 180}}
+x-ground-mid: &ground_mid {actor: ground, x: -600, y: 1150, w: 2300, h: 900, color: ["#30373e", "#23292f"], par: 0.5}
+x-rule: &rule {actor: rule_card, x: 540, y: 800, space: screen, enter: {type: wipe_right, dur: 0.25}, exit: {type: fade, dur: 0.2}, sfx: false}
+x-look-gleb: &gleb {age: adult, outfit: gakuran, hair: short, silhouette: "#14181c"}
+x-look-sonya: &sonya {age: kid, outfit: kyushoku, hat: none, mask: false, hair: twintails, silhouette: "#6b5718"}
+x-look-sonya-wet: &sonya_wet {age: kid, outfit: kyushoku, hat: none, mask: false, hair: twintails, silhouette: "#4e4114"}
+x-look-petr: &petr {age: adult, outfit: blazer, hair: buzz, glasses: true, silhouette: "#1e2124"}
+
+scenes:
+
+  # ------------------------------------------------------------------ 1. HOOK — регистратор: машина всплывает; заголовок
+  - id: hook
+    text: "Дождь пошёл вверх? Высохните за три минуты. Иначе упадёте в небо."
+    lines:
+      - {who: system, say: "Дождь пошёл вверх? Высохните за три минуты. Иначе упадёте в небо."}
+    caption_marks: {"три минуты": "#f2f4f6"}
+    shots:
+      - id: k_car
+        transition: {type: fade, dur: 0.2}
+        ambience: [{sound: rain, gain: -14}, {sound: city, gain: -22}]
+        captions_top: 1360
+        draw:
+          camera: {keys: [{t: 0, z: 1.06, x: 540, y: 1010}, {t: "@вверх", z: 1.1, x: 560, y: 980}, {t: end, z: 1.12, x: 570, y: 900}],
+                   shakes: [{at: 0.55, amp: 18, dur: 0.5}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.6}}
+          layers:
+            - *sky_rain
+            - *clouds
+            - *skyline_far
+            - *ground_far
+            - *haze
+            - {actor: panel_block, x: 160, y: 1162, scale: 0.62, floors: 9, cols: 8, seed: 3, lit: 0.18, par: 0.5}
+            - {actor: panel_block, x: 900, y: 1162, scale: 0.58, floors: 9, cols: 7, seed: 8, lit: 0.22, par: 0.5, color: "#737b82"}
+            - *ground_mid
+            - {actor: wet_ground, x: -400, y: 1290, w: 1900, h: 800, curb: 0, lines: 230, lights: [[760, "#e8eef2", 40], [300, "#e9d9a8", 26]]}
+            - {actor: puddle, x: 300, y: 1560, w: 420, h: 70, up: [{at: 0, v: 0}, {at: "@вверх", v: 1, dur: 0.6}]}
+            - {actor: puddle, x: 860, y: 1700, w: 360, h: 60, seed: 5, up: [{at: 0, v: 0}, {at: "@вверх+0.2", v: 1, dur: 0.6}]}
+            - {actor: lamp_post, x: 760, y: 1310, h: 700, left: true}
+            # the sedan hits the pole and, instead of stopping, floats up
+            - {actor: sedan, id: car, x: 120, y: 1330, scale: 1.05, color: "#59656f", lights: 1, drip_up: [{at: 0, v: 0}, {at: "@вверх", v: 1, dur: 0.8}],
+               anim: [{at: 0, dur: 0.55, x: 515, ease: in}, {at: 0.55, dur: 0.2, x: 500, rot: -3, ease: out}, {at: "@вверх-0.2", dur: 5, y: 760, rot: -11, ease: inOutSine}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 320, v: [{at: 0, v: 1}, {at: 0.6, v: 0, dur: 0.5}, {at: "@вверх", v: -0.7, dur: 1.2}]}
+            - {<<: *rule, at: "@Высохните-0.05", until: end, kicker: "ПРАВИЛО 00 · ДОЖДЬ ИДЁТ ВВЕРХ", text: "3 МИНУТЫ, ЧТОБЫ ВЫСОХНУТЬ", danger: true}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: dash, src: "DVR · МАРШРУТ 41 · ПР. СТРОИТЕЛЕЙ", tc: 24124, glitch: [{at: 0.55, dur: 0.2}]}
+      - id: k_title
+        start: "@Иначе-0.22"
+        transition: {type: whip_y}
+        look: {bloom: [0.75, 0.25]}
+        draw:
+          world: [1080, 2900]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1900}, {t: end, z: 1.04, x: 540, y: 1000, ease: inout}], sway: {x: 6, y: 4, roll: 0.4, freq: 0.3}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2900, hour: 12, colors: ["#141a20", "#2e373f", "#55606b"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2600}
+            # easter egg: the underside of another city block, barely visible through the clouds
+            - {actor: city_chunk, x: 120, y: 150, w: 860, soil: 380, seed: 21, opacity: 0.45, blur: 3, drip: 0.8, buildings: []}
+            - {actor: cloud_bank, x: -500, y: 300, w: 2100, h: 800, color: "#4d5761", shade: "#20262c", n: 40, blur: 34}
+            - {actor: cloud_bank, x: -500, y: 900, w: 2100, h: 700, color: "#5d6873", shade: "#2c343b", n: 30, seed: 7}
+            - {actor: skyline, x: 540, y: 2620, w: 2200, h: 520, color: "#3d464e", color2: "#333b42", lit: 0.12, seed: 9}
+            - {actor: ground, x: -600, y: 2610, w: 2300, h: 400, color: ["#2c333a", "#1d2227"]}
+            - {actor: sedan, x: 600, y: 1700, scale: 0.55, rot: -18, color: "#59656f", drip_up: 1, anim: [{at: "@Иначе-0.2", dur: 3, y: 1250, rot: -32, ease: linear}]}
+            - {actor: shape, kind: rect, x: 300, y: 1950, w: 120, h: 70, fill: "#3c4650", rot: 24, anim: [{at: "@Иначе-0.2", dur: 3, y: 1500, rot: 60, ease: linear}]}
+            - {actor: shape, kind: rect, x: 860, y: 2150, w: 60, h: 90, fill: "#2c333a", rot: -12, anim: [{at: "@Иначе-0.2", dur: 3, y: 1780, rot: -50, ease: linear}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.75, seed: 8}
+            - {actor: title_card, x: 540, y: 720, space: screen, at: "@небо-0.15", enter: {type: fade, dur: 0.15}, kicker: "ПРОТОКОЛ 07", text: "ОБРАТНЫЙ ПРИЛИВ", sub: "ЗАПИСЬ 001 / 031 · ДОСТУП ОГРАНИЧЕН"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cinema, src: "РЕКОНСТРУКЦИЯ · МАТЕРИАЛЫ ДЕЛА", tc: 24127, glitch: [{at: "@небо-0.2", dur: 0.18}]}
+    sfx:
+      - {sound: impact, at: 0.55, gain: -8}
+      - {sound: glitch, at: 0.55, gain: -16}
+      - {sound: riser, at: "@вверх", gain: -12}
+      - {sound: boom, at: "@небо", gain: -10}
+
+  # ------------------------------------------------------------------ 2. SETUP — двор на Речной, Глеб, Соня, первый звонок
+  - id: setup
+    text: "Шесть сорок одна. Двор на Речной. Дождь идёт всю ночь. Глеб, двадцать девять лет, лифтёр. Знает в этом доме каждый трос. Соня, семь лет, его дочь. Складывает жёлтый зонт, чтобы ловить дождь языком. Сонь, промокнешь! Пап, он сладкий! У Глеба жужжит телефон. Звонит Глеб. Его собственный номер. Он сбрасывает."
+    lines:
+      - {who: gleb, say: "Сонь, промокнешь!"}
+      - {who: sonya, say: "Пап, он сладкий!"}
+    caption_marks: {"жёлтый зонт": "#ffd23a", "собственный номер": "#f2f4f6"}
+    shots:
+      - id: s_yard
+        transition: {type: dip, dur: 0.35}
+        ambience: [{sound: rain, gain: -15}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 520, y: 990}]}
+          layers:
+            - *sky_rain
+            - *clouds
+            - *skyline_far
+            - *ground_far
+            - *haze
+            - {actor: panel_block, x: 900, y: 1150, scale: 0.55, floors: 9, cols: 6, seed: 12, lit: 0.2, par: 0.5}
+            - *ground_mid
+            # the block on Rechnaya: entrance 2 with a canopy and a lamp
+            - {actor: panel_block, id: home, x: 380, y: 1330, scale: 1.0, floors: 9, cols: 9, cell: [100, 84], seed: 4, lit: [{at: 0, v: 0.12}, {at: "@ночь", v: 0.3, dur: 1.2}], entrances: [4], stains: 0.7}
+            - {actor: wet_ground, x: -400, y: 1310, w: 1900, h: 800, lights: [[440, "#e8eef2", 60]]}
+            - {actor: tree, kind: round, x: 930, y: 1360, h: 520, color: "#2c3a33", trunk: "#2a2420", seed: 3, sway: 1}
+            - {actor: puddle, x: 560, y: 1520, w: 460, h: 80}
+            - {actor: puddle, x: 180, y: 1680, w: 300, h: 56, seed: 7}
+            - {actor: sedan, x: -300, y: 1600, scale: 1.1, color: "#4a545e", lights: 1, at: "@ночь", anim: [{at: "@ночь", dur: 3.5, x: 1500, ease: linear}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 300}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 03 · РЕЧНАЯ, 12 · ДВОР", tc: 24063}
+      - id: s_gleb
+        start: "@Глеб-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 980}, {t: end, z: 1.07, x: 520, y: 960}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 600, w: 1400, h: 1300, fill: "#3a4148"}
+            - {actor: panel_block, x: 540, y: 1460, scale: 2.6, floors: 4, cols: 4, cell: [100, 84], seed: 4, lit: 0.1, entrances: [1], stains: 0.6, roof: false}
+            - {actor: wet_ground, x: -400, y: 1440, w: 1900, h: 600, lights: [[540, "#e8eef2", 120]]}
+            - {actor: person, id: gleb, x: 520, y: 1470, scale: 1.75, look: *gleb, face: neutral,
+               pose: [{at: 0, v: stand}, {at: "@двадцать", v: {a1: [7, 4], a2: [60, 110], l1: [2, 0], l2: [2, 0]}, dur: 0.3}, {at: "@лифтёр", v: hold, dur: 0.3}, {at: "@трос", v: {a1: [30, 40], a2: [7, 4], l1: [2, 0], l2: [2, 0]}, dur: 0.3}],
+               look_dx: [{at: 0, v: 0}, {at: "@двадцать", v: -0.4, dur: 0.3}, {at: "@трос", v: 0.2, dur: 0.3}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, seed: 3}
+            - {actor: mark, x: 520, y: 760, w: 300, h: 320, space: screen, at: "@Глеб", enter: {type: fade, dur: 0.2}, label: "ГЛЕБ, 29", sub: "ЛИФТЁР · ПОДЪЕЗД 2"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ВХОД", tc: 24070}
+      - id: s_sonya
+        start: "@Соня-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.02, x: 540, y: 1010}, {t: end, z: 1.1, x: 560, y: 1000}], sway: {x: 10, y: 8, roll: 0.8, freq: 0.5}}
+          layers:
+            - *sky_rain
+            - *clouds
+            - *skyline_far
+            - *ground_far
+            - *haze
+            - {actor: panel_block, x: 120, y: 1170, scale: 0.7, floors: 9, cols: 6, seed: 4, lit: 0.3, par: 0.5}
+            - {actor: panel_block, x: 960, y: 1170, scale: 0.6, floors: 9, cols: 5, seed: 6, lit: 0.25, par: 0.5}
+            - *ground_mid
+            - {actor: wet_ground, x: -400, y: 1250, w: 1900, h: 800}
+            - {actor: shape, kind: path, d: "M760,1400 L860,1180 L880,1180 L800,1400 Z", fill: "#7b838a"}
+            - {actor: shape, kind: path, d: "M840,1190 L980,1190 L980,1400 L960,1400 L960,1210 L840,1210 Z", fill: "#4a545e"}
+            - {actor: puddle, x: 420, y: 1560, w: 520, h: 80}
+            - {actor: umbrella, x: 690, y: 1280, scale: 0.7, rot: 8, open: [{at: 0, v: 1}, {at: "@Складывает", v: 0, dur: 0.6}],
+               anim: [{at: "@Складывает+0.4", dur: 0.6, x: 640, y: 1350, rot: 70}]}
+            - {actor: person, id: sonya, x: 560, y: 1460, scale: 1.55, look: *sonya, face: [{at: 0, v: smile}, {at: "@языком", v: happy}],
+               pose: [{at: 0, v: {a1: [7, 4], a2: [40, 60], l1: [2, 0], l2: [2, 0]}}, {at: "@языком", v: {a1: [60, 20], a2: [60, 20], l1: [3, 0], l2: [3, 0], tilt: -14}, dur: 0.4}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 280, seed: 6}
+            - {actor: mark, x: 560, y: 1000, w: 260, h: 260, space: screen, at: "@Соня", until: "@промокнешь", exit: fade, enter: {type: fade, dur: 0.2}, label: "СОНЯ, 7", sub: "ДОЧЬ"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24076}
+      - id: s_call
+        start: "@жужжит-0.22"
+        transition: {type: dip, dur: 0.25}
+        captions_top: 1440
+        draw:
+          bg: "#0e1114"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@жужжит", amp: 6, dur: 0.6}, {at: "@Звонит", amp: 5, dur: 0.6}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#2a3138", "#0e1114"]}}
+            - {actor: rain, x: 0, y: 0, count: 120, alpha: 0.35, seed: 9}
+            - {actor: phone_call, x: 540, y: 820, scale: 0.92, state: [{at: 0, v: incoming}, {at: "@сбрасывает+0.15", v: declined}], tap: [{at: 0, v: 0}, {at: "@сбрасывает", v: -1}, {at: "@сбрасывает+0.5", v: 0}],
+               clock: "06:41", name: "Глеб", number: "+7 912 406-17-33", own: "Мой номер"}
+            - {actor: mark, x: 540, y: 520, w: 520, h: 150, space: screen, at: "@номер-0.2", enter: {type: fade, dur: 0.2}, label: "ЭТО ЕГО НОМЕР", sub: "ВЫЗОВ 06:41:52", side: bottom}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "КАМЕРА ДОМОФОНА · ПОДЪЕЗД 2", tc: 24112}
+    sfx:
+      - {sound: drip, at: "@Шесть", gain: -16}
+      - {sound: click, at: "@трос", gain: -14}
+      - {sound: click, at: "@Складывает", gain: -14}
+      - {sound: buzz, at: "@жужжит", gain: -10}
+      - {sound: buzz, at: "@Звонит", gain: -12}
+      - {sound: click, at: "@сбрасывает", gain: -10}
+
+  # ------------------------------------------------------------------ 3. PROBLEM — 06:42, капли замирают, всё мокрое уходит вверх
+  - id: problem
+    text: "Шесть сорок две. Капли замирают в воздухе. И падают вверх. Лужи идут дождём в небо. Машина у подъезда бьётся о столб — и всплывает. Жёлтый зонт уходит в облака. Пап, я лечу! Кроссовки Сони отрываются от асфальта. Глеб ловит её за руку."
+    lines:
+      - {who: sonya, say: "Пап, я лечу!"}
+    caption_marks: {"падают вверх": "#f2f4f6"}
+    shots:
+      - id: p_freeze
+        transition: {type: glitch, dur: 0.3}
+        ambience: [{sound: rain, gain: -14, until: "@замирают"}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.15, x: 540, y: 1100}, {t: "@замирают", z: 1.25, x: 540, y: 1080}, {t: end, z: 1.3, x: 540, y: 900}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#2a333c", "#141a1f"], angle: 180}}
+            - {actor: panel_block, x: 540, y: 1300, scale: 1.4, floors: 9, cols: 8, seed: 4, lit: 0.3, blur: 6, brightness: 0.7}
+            - {actor: wet_ground, x: -400, y: 1290, w: 1900, h: 800}
+            - {actor: puddle, x: 540, y: 1480, w: 760, h: 120, up: [{at: 0, v: 0}, {at: "@вверх", v: 1, dur: 0.5}], ripples: [{at: 0, v: 1}, {at: "@замирают", v: 0, dur: 0.3}]}
+            - {actor: rain, x: 0, y: 0, count: 220, len: 110, width: 3, alpha: 0.75, seed: 4, v: [{at: 0, v: 1}, {at: "@замирают", v: 0, dur: 0.35}, {at: "@вверх", v: -0.8, dur: 0.6}]}
+            - {<<: *rule, at: "@вверх-0.05", kicker: "06:42:00 · НАЧАЛО СОБЫТИЯ", text: "КАПЛИ ПАДАЮТ ВВЕРХ", danger: true}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24119, stage: 1, status: "СОБЫТИЕ", glitch: [{at: "@Шесть", dur: 0.25}]}
+      - id: p_puddles
+        start: "@Лужи-0.22"
+        ambience: [{sound: wind, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1040}, {t: end, z: 1.04, x: 540, y: 880}], shakes: [{at: "@бьётся", amp: 14, dur: 0.4}]}
+          layers:
+            - *sky_rain
+            - *clouds
+            - *skyline_far
+            - *ground_far
+            - *haze
+            - *ground_mid
+            - {actor: panel_block, x: 300, y: 1330, scale: 1.0, floors: 9, cols: 9, cell: [100, 84], seed: 4, lit: 0.3, entrances: [4], stains: 0.7}
+            - {actor: wet_ground, x: -400, y: 1310, w: 1900, h: 800}
+            - {actor: lamp_post, x: 860, y: 1330, h: 640, left: true}
+            - {actor: puddle, x: 420, y: 1500, w: 460, h: 80, up: 1}
+            - {actor: puddle, x: 760, y: 1660, w: 360, h: 60, up: 1, seed: 4}
+            - {actor: sedan, x: 560, y: 1360, scale: 1.0, color: "#6a5a4a", drip_up: [{at: 0, v: 0.3}, {at: "@всплывает", v: 1, dur: 0.5}],
+               anim: [{at: "@Лужи", dur: 0.8, x: 640, ease: in}, {at: "@бьётся", dur: 0.25, x: 620, rot: -2}, {at: "@всплывает", dur: 3.5, y: 900, rot: 14, ease: inOutSine}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.75, seed: 2}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 03 · РЕЧНАЯ, 12 · ДВОР", tc: 24127, stage: 1, status: "СОБЫТИЕ"}
+      - id: p_umbrella
+        start: "@Жёлтый-0.22"
+        draw:
+          world: [1080, 2800]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1800}, {t: end, z: 1.0, x: 540, y: 1000, ease: inout}], sway: {x: 10, y: 8, roll: 1, freq: 0.6}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2800, hour: 12, colors: ["#161c22", "#323b44", "#56616c"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2700}
+            - {actor: cloud_bank, x: -500, y: 200, w: 2100, h: 900, color: "#4d5761", shade: "#20262c", n: 40, blur: 34}
+            - {actor: panel_block, x: 280, y: 2850, scale: 1.3, floors: 9, cols: 6, seed: 4, lit: 0.3, stains: 0.7}
+            - {actor: panel_block, x: 920, y: 2850, scale: 1.1, floors: 9, cols: 5, seed: 9, lit: 0.2, color: "#737b82"}
+            - {actor: umbrella, x: 540, y: 2100, scale: 0.9, open: 0.15, rot: 30, spin: 40, anim: [{at: "@Жёлтый", dur: 2.6, y: 700, x: 600, scale: 0.25, ease: in}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.8, seed: 5}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24131, stage: 1, status: "СОБЫТИЕ"}
+      - id: p_sonya
+        start: "@Пап-0.22"
+        transition: {type: whip_x}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.1, x: 540, y: 920}], shakes: [{at: "@ловит", amp: 16, dur: 0.4}], sway: {x: 14, y: 10, roll: 1.4, freq: 0.9}}
+          layers:
+            - *sky_rain
+            - *clouds
+            - *skyline_far
+            - *ground_far
+            - *haze
+            - {actor: panel_block, x: 300, y: 1170, scale: 0.7, floors: 9, cols: 7, seed: 4, lit: 0.3, par: 0.5}
+            - *ground_mid
+            - {actor: wet_ground, x: -400, y: 1250, w: 1900, h: 800}
+            - {actor: puddle, x: 560, y: 1560, w: 520, h: 80, up: 1}
+            - {actor: person, id: sonya, x: 620, y: 1500, scale: 1.55, air: true, look: *sonya_wet, face: [{at: 0, v: surprised}, {at: "@ловит", v: sad}],
+               pose: [{at: 0, v: {a1: [40, 20], a2: [40, 20], l1: [8, 10], l2: [-6, 14]}}, {at: "@ловит", v: {a1: [30, 10], a2: [150, -10], l1: [10, 20], l2: [-4, 30]}, dur: 0.3}],
+               anim: [{at: "@лечу", dur: 2.2, y: 1330, ease: inOutSine}, {at: "@ловит", dur: 1.4, y: 1300, x: 600, ease: out}]}
+            - {actor: person, id: gleb, x: 260, y: 1620, scale: 1.9, look: *gleb, face: determined, at: "@ловит-0.5", enter: {type: slide_right, dur: 0.4},
+               pose: [{at: 0, v: {a1: [7, 4], a2: [120, -30], l1: [20, 10], l2: [-10, 10], lean: 12}}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.75, seed: 3}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24134, stage: 1, status: "СОБЫТИЕ", glitch: [{at: "@ловит", dur: 0.2}]}
+    sfx:
+      - {sound: noise_sweep, at: "@замирают", gain: -12}
+      - {sound: whoosh, at: "@вверх", gain: -12}
+      - {sound: impact, at: "@бьётся", gain: -8}
+      - {sound: riser, at: "@всплывает", gain: -14}
+      - {sound: whoosh, at: "@Жёлтый", gain: -14}
+      - {sound: impact, at: "@ловит", gain: -10}
+
+  # ------------------------------------------------------------------ 4. RULE — подъезд, Система, Петрович, весы
+  - id: rule
+    text: "Глеб затаскивает её в подъезд. Из динамика лифта — женский голос. Всё, что намокло, падает вверх. Высушите себя и детей. Аркадий Петрович, семьдесят лет. Тридцать лет на метеостанции. Сюда! На весы её! На весах девять килограммов. Утром было двадцать два. Полотенца. Газ. Через минуту — двадцать. Сухое — тяжёлое."
+    lines:
+      - {who: system, say: "Всё, что намокло, падает вверх. Высушите себя и детей."}
+      - {who: petrovich, say: "Сюда! На весы её!"}
+      - {who: petrovich, say: "Сухое — тяжёлое."}
+    caption_marks: {"девять килограммов": "#f2f4f6"}
+    shots:
+      - id: r_hall
+        transition: {type: whip_x}
+        ambience: [{sound: room, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 540, y: 760}], shakes: [{at: "@затаскивает", amp: 10, dur: 0.3}]}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: hall, flicker: 1}
+            - {actor: intercom, x: 540, y: 520, r: 60, talk: [{at: 0, v: 0}, {at: "@динамика", v: 1}]}
+            - {actor: person, id: gleb, x: 380, y: 1520, scale: 1.75, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [110, -20], l1: [2, 0], l2: [2, 0]}}
+            - {actor: person, id: sonya, x: 580, y: 1420, scale: 1.4, air: true, look: *sonya_wet, face: sad, pose: {a1: [150, -10], a2: [40, 20], l1: [8, 10], l2: [-6, 14]}, float: {amp: 10, freq: 0.4}}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24166, stage: 1, status: "ТРЕВОГА"}
+      - id: r_speaker
+        start: "@Всё-0.22"
+        captions_top: 1440
+        draw:
+          bg: "#2a2f35"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}]}
+          layers:
+            - {actor: stairwell, x: 0, y: -600, view: hall, scale: 1.0, blur: 3, brightness: 0.6}
+            - {actor: intercom, x: 540, y: 480, r: 160, talk: 1}
+            - {<<: *rule, y: 1020, at: "@намокло-0.05", until: "@Высушите-0.1", kicker: "ПРАВИЛО 01", text: "ВСЁ МОКРОЕ ПАДАЕТ ВВЕРХ", danger: true}
+            - {<<: *rule, y: 1020, at: "@Высушите-0.05", kicker: "ПРАВИЛО 01 · П.2", text: "ВЫСУШИТЕ СЕБЯ И ДЕТЕЙ"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: alert, src: "СИСТЕМА ОПОВЕЩЕНИЯ · ЛИФТ П-2", tc: 24170, stage: 1, status: "ТРЕВОГА", rec: false}
+      - id: r_petrovich
+        start: "@Аркадий-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 640, y: 980}, {t: end, z: 1.1, x: 720, y: 940}]}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: hall, door: [{at: 0, v: 0}, {at: "@Аркадий", v: 1, dur: 0.6}]}
+            - {actor: person, id: petr, x: 900, y: 1520, scale: 1.7, look: *petr, face: [{at: 0, v: surprised}, {at: "@Сюда", v: talk}],
+               pose: [{at: 0, v: stand}, {at: "@семьдесят", v: {a1: [7, 4], a2: [120, 120], l1: [2, 0], l2: [2, 0]}, dur: 0.3}, {at: "@метеостанции", v: stand, dur: 0.3}, {at: "@Сюда", v: wave, dur: 0.25}],
+               at: "@Аркадий+0.2", enter: {type: fade, dur: 0.3}}
+            - {actor: person, id: gleb, x: 300, y: 1540, scale: 1.75, look: *gleb, face: neutral, pose: stand, look_dx: 0.6}
+            - {actor: mark, x: 900, y: 860, w: 280, h: 300, space: screen, at: "@Аркадий+0.1", enter: {type: fade, dur: 0.2}, label: "А. П. ВОРОНОВ, 70", sub: "КВ. 1 · МЕТЕОСТАНЦИЯ 30 ЛЕТ", align: right}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24178, stage: 1, status: "ТРЕВОГА"}
+      - id: r_scale
+        start: "@весах-0.22"
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.12, x: 540, y: 1180}], sway: {x: 8, y: 8, roll: 0.6, freq: 0.6}}
+          layers:
+            - {actor: kitchen, x: 0, y: 0, floor_y: 1420}
+            - {actor: person, id: sonya, x: 540, y: 1300, scale: 1.25, look: *sonya_wet, face: sad, pose: {a1: [7, 4], a2: [7, 4], l1: [2, 0], l2: [2, 0]}}
+            - {actor: bath_scale, x: 540, y: 1460, w: 560, kg: [{at: 0, v: 22}, {at: "@девять-0.6", v: 9, dur: 0.6, ease: out}], alarm: [{at: 0, v: 0}, {at: "@девять", v: 1}]}
+            - {actor: person, id: gleb, x: 280, y: 1560, scale: 1.6, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [100, 20], l1: [2, 0], l2: [2, 0]}}
+            - {<<: *rule, y: 700, at: "@девять-0.05", kicker: "ВЕС · СОНЯ, 7 ЛЕТ", text: "22 → 9 КГ", danger: true, size: 120}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ВОРОНОВА · ВИДЕО", tc: 24196, stage: 1, status: "ТРЕВОГА"}
+      - id: r_dry
+        start: "@Полотенца-0.22"
+        transition: {type: dip, dur: 0.3}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.08, x: 540, y: 1100}], sway: {x: 8, y: 8, roll: 0.6, freq: 0.6}}
+          layers:
+            - {actor: kitchen, x: 0, y: 0, floor_y: 1420}
+            - {actor: stove, x: 200, y: 1470, fire: [{at: 0, v: 0}, {at: "@Газ", v: 1, dur: 0.3}]}
+            - {actor: particles, kind: steam, region: [80, 700, 340, 820], count: 18, at: "@Газ"}
+            - {actor: person, id: sonya, x: 600, y: 1300, scale: 1.25, look: *sonya, face: [{at: 0, v: sad}, {at: "@Сухое", v: smile}], pose: {a1: [7, 4], a2: [7, 4], l1: [2, 0], l2: [2, 0]}}
+            - {actor: bath_scale, x: 600, y: 1460, w: 560, kg: [{at: 0, v: 9}, {at: "@минуту", v: 20, dur: 1.6, ease: inOutSine}]}
+            - {actor: person, id: petr, x: 860, y: 1600, scale: 1.75, look: *petr, face: talk, pose: {a1: [7, 4], a2: [110, 60], l1: [2, 0], l2: [2, 0]}}
+            - {actor: shape, kind: rect, x: 780, y: 1020, w: 110, h: 150, fill: "#c9d3da", rot: 12, anim: [{at: "@Полотенца", dur: 0.5, x: 700, rot: -10}]}
+            - {<<: *rule, y: 700, at: "@Сухое-0.05", kicker: "ПРАВИЛО 01 · ПРОВЕРЕНО", text: "СУХОЕ — ТЯЖЁЛОЕ", size: 104}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ВОРОНОВА · ВИДЕО", tc: 24215, stage: 1, status: "ТРЕВОГА"}
+    sfx:
+      - {sound: slam, at: "@затаскивает", gain: -10}
+      - {sound: alarm, at: "@Всё", gain: -14}
+      - {sound: creak, at: "@Аркадий", gain: -12}
+      - {sound: blip, at: "@девять", gain: -10}
+      - {sound: hiss, at: "@Газ", gain: -14}
+      - {sound: chime, at: "@Сухое", gain: -12}
+
+  # ------------------------------------------------------------------ 5. WATER — правило 2: вода течёт вверх, дом тонет сверху
+  - id: water
+    text: "Под дверью подъезда ползёт вода. Не по полу — вверх по стене. На потолке площадки — мокрые следы босых ног. Сверху стук. Это те, кто промок. Теперь они ходят по потолку. Девятый уже под водой. Вода копится под крышей и спускается. Этаж за шесть минут."
+    lines:
+      - {who: petrovich, say: "Это те, кто промок. Теперь они ходят по потолку."}
+      - {who: petrovich, say: "Девятый уже под водой."}
+    caption_marks: {"вверх по стене": "#f2f4f6"}
+    shots:
+      - id: w_wall
+        transition: {type: dip, dur: 0.3}
+        ambience: [{sound: water_calm, gain: -16}, {sound: room, gain: -20}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1100}, {t: end, z: 1.1, x: 500, y: 900}]}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: hall, flicker: 1}
+            - {actor: water_wall, x: 0, y: 360, w: 1080, h: 1150, n: 11, grow: [{at: 0, v: 0}, {at: "@ползёт", v: 0.25, dur: 1.2}, {at: "@стене", v: 0.75, dur: 2.2, ease: inOutSine}]}
+            - {actor: shape, kind: rect, x: 540, y: 1505, w: 1200, h: 22, fill: "#9fc4dc", opacity: [{at: 0, v: 0}, {at: "@ползёт", v: 0.5, dur: 0.6}]}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24402, stage: 1, status: "ТРЕВОГА"}
+      - id: w_ceiling
+        start: "@потолке-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1000}, {t: end, z: 1.12, x: 540, y: 900}], shakes: [{at: "@стук", amp: 12, dur: 0.35}, {at: "@стук+0.45", amp: 10, dur: 0.3}], sway: {x: 8, y: 8, roll: 0.8, freq: 0.6}}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: ceiling, swing: [{at: 0, v: 0}, {at: "@стук", v: 9, dur: 0.2}]}
+            - {actor: footprints, x: 0, y: 0, show: [{at: 0, v: 0}, {at: "@следы-0.3", v: 4, dur: 1.2}, {at: "@ног", v: 6, dur: 0.8}]}
+            - {actor: particles, kind: dust, region: [200, 300, 880, 900], count: 30, colors: ["#d9dcd6"], at: "@стук"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24410, stage: 1, status: "ТРЕВОГА"}
+      - id: w_petr
+        start: "@Это-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 600, y: 980}, {t: end, z: 1.1, x: 700, y: 900}]}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: hall, door: 1, flicker: 1}
+            - {actor: water_wall, x: 0, y: 360, w: 1080, h: 1150, n: 11, grow: 0.8}
+            - {actor: person, id: gleb, x: 300, y: 1540, scale: 1.75, look: *gleb, face: neutral, pose: hold, look_dx: 0.3}
+            - {actor: person, id: sonya, x: 330, y: 1250, scale: 1.2, air: true, look: *sonya, face: sad, pose: {a1: [40, 60], a2: [40, 60], l1: [40, 60], l2: [30, 60]}}
+            - {actor: person, id: petr, x: 820, y: 1540, scale: 1.7, look: *petr, face: [{at: 0, v: neutral}, {at: "@промок", v: talk}],
+               pose: [{at: 0, v: stand}, {at: "@ходят", v: raise, dur: 0.3}], tilt: [{at: 0, v: 0}, {at: "@промок", v: -10, dur: 0.4}]}
+            - {actor: particles, kind: dust, region: [500, 200, 1000, 600], count: 22, colors: ["#d9dcd6"], at: "@ходят"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24414, stage: 1, status: "ТРЕВОГА"}
+      - id: w_section
+        start: "@Девятый-0.22"
+        transition: {type: glitch, dur: 0.25}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 900}]}
+          layers:
+            - {actor: house_section, x: 0, y: 0, water: [{at: 0, v: 0}, {at: "@Девятый", v: 1, dur: 0.8}, {at: "@спускается", v: 1.6, dur: 2.4, ease: linear}],
+               timer: [{at: 0, v: ""}, {at: "@шесть", v: "8 ЭТ. · 06:00"}], danger: [{at: 0, v: 0}, {at: "@спускается", v: 1}]}
+            - {<<: *rule, y: 1600, w: 940, at: "@Этаж-0.05", kicker: "ПРАВИЛО 02", text: "ЭТАЖ ЗА 6 МИНУТ", danger: true, size: 96}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: doc, src: "ДОК. 07-14 · СХЕМА ЗАТОПЛЕНИЯ", tc: 24420, stage: 1, status: "ТРЕВОГА"}
+        captions_top: 1440
+    sfx:
+      - {sound: drip, at: "@ползёт", gain: -12}
+      - {sound: kick, at: "@стук", gain: -6}
+      - {sound: kick, at: "@стук+0.45", gain: -8}
+      - {sound: footstep, at: "@ходят", gain: -12}
+      - {sound: drip, at: "@Девятый", gain: -12}
+      - {sound: impact, at: "@Этаж", gain: -10}
+
+  # ------------------------------------------------------------------ 6. CALL — сирена зовёт на крыши; второй звонок: его голос
+  - id: call
+    text: "Жителям подняться на крыши. Эвакуация в семь ноль-ноль. Слышал? Вертолёты. Телефон жужжит снова. Звонит Глеб. Глеб отвечает — и слышит себя. Хрипло, с ветром. Не веди её на крышу. Спрячь в лифт, в яму. Ключ у тебя в левом кармане."
+    lines:
+      - {who: system, say: "Жителям подняться на крыши. Эвакуация в семь ноль-ноль."}
+      - {who: petrovich, say: "Слышал? Вертолёты."}
+      - {who: gleb, say: "Не веди её на крышу."}
+      - {who: gleb, say: "Спрячь в лифт, в яму."}
+      - {who: gleb, say: "Ключ у тебя в левом кармане."}
+    caption_marks: {"слышит себя": "#f2f4f6"}
+    shots:
+      - id: d_alert
+        transition: {type: glitch, dur: 0.3}
+        captions_top: 1440
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 540, y: 700}]}
+          layers:
+            - {actor: house_section, x: 0, y: 0, water: 1.8, roof: [{at: 0, v: 0}, {at: "@крыши", v: 1, dur: 0.3}], heli: [{at: 0, v: 0}, {at: "@семь", v: 1, dur: 0.3}]}
+            - {<<: *rule, y: 1640, at: "@Жителям-0.05", kicker: "ВНИМАНИЕ ВСЕМ · ПРОТОКОЛ 07", text: "ПОДНИМИТЕСЬ НА КРЫШИ", danger: true, size: 84}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: alert, src: "СИСТЕМА ОПОВЕЩЕНИЯ · ВСЕ КАНАЛЫ", tc: 24477, stage: 1, status: "ЭВАКУАЦИЯ 07:00", rec: false}
+      - id: d_neighbors
+        start: "@Слышал-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.06, x: 600, y: 900}]}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: stairs, flicker: 1}
+            - {actor: water_wall, x: 0, y: 200, w: 1080, h: 900, n: 8, grow: 0.5, seed: 3, opacity: 0.8}
+            - {actor: person, x: 150, y: 1780, scale: 1.5, view: side, look: {age: adult, outfit: casual, silhouette: "#1a1e22", color: "#4a4f55", bottom_color: "#2a2f35", hair: bob, hair_color: "#3a2a20"}, walk: 2, hold: bucket,
+               anim: [{at: "@Слышал", dur: 4, x: 700, y: 1250, ease: linear}]}
+            - {actor: person, x: -60, y: 1960, scale: 1.55, view: side, look: {age: adult, outfit: casual, silhouette: "#1a1e22", color: "#5a5048", bottom_color: "#2a2f35", hair: short, hair_color: "#2a2420"}, walk: 2,
+               anim: [{at: "@Слышал", dur: 4, x: 480, y: 1460, ease: linear}]}
+            - {actor: person, id: petr, x: 880, y: 1680, scale: 1.6, look: *petr, face: talk, pose: [{at: 0, v: stand}, {at: "@Вертолёты", v: raise, dur: 0.3}], at: "@Слышал", enter: {type: fade, dur: 0.2}}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 05 · ПОДЪЕЗД 2 · ЛЕСТНИЦА", tc: 24484, stage: 1, status: "ЭВАКУАЦИЯ 07:00"}
+      - id: d_call
+        start: "@Телефон-0.22"
+        captions_top: 1440
+        draw:
+          bg: "#0e1114"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], shakes: [{at: "@жужжит", amp: 6, dur: 0.6}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#262c32", "#0b0d10"]}}
+            - {actor: phone_call, x: 540, y: 820, scale: 0.92, state: [{at: 0, v: incoming}, {at: "@отвечает", v: active}], tap: [{at: 0, v: 0}, {at: "@отвечает-0.2", v: 1}, {at: "@отвечает+0.3", v: 0}],
+               secs: "@отвечает", bars: 1, clock: "06:48", name: "Глеб", number: "+7 912 406-17-33", own: "Мой номер", level: [{at: 0, v: 0.3}, {at: "@себя", v: 0.9}]}
+            - {actor: mark, x: 540, y: 470, w: 520, h: 130, space: screen, at: "@себя-0.1", enter: {type: fade, dur: 0.2}, label: "ГОЛОС: ГЛЕБ", sub: "АБОНЕНТ ВНЕ СЕТИ · ИСТОЧНИК НЕ НАЙДЕН", side: bottom, danger: true}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ЗАПИСЬ ВЫЗОВА · 06:48:21", tc: 24501, stage: 1, status: "НЕСООТВЕТСТВИЕ", src_red: 1, glitch: [{at: "@ветром", dur: 0.3}]}
+      - id: d_key
+        start: "@Не-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 470, y: 1080}], sway: {x: 8, y: 8, roll: 0.6, freq: 0.6}}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: hall, blur: 4, brightness: 0.55, flicker: 1}
+            - {actor: person, id: gleb, x: 600, y: 1760, scale: 2.1, look: *gleb, face: [{at: 0, v: surprised}, {at: "@яму", v: determined}], hold: phone,
+               pose: [{at: 0, v: {a1: [7, 4], a2: [150, 150], l1: [2, 0], l2: [2, 0]}}, {at: "@кармане", v: {a1: [30, 70], a2: [150, 150], l1: [2, 0], l2: [2, 0]}, dur: 0.4}], look_dx: [{at: 0, v: 0}, {at: "@яму", v: -0.6, dur: 0.4}]}
+            - {actor: shape, kind: circle, x: 400, y: 1150, r: 26, fill: "none", stroke: "#c9cfd3", sw: 10, at: "@кармане", enter: {type: rise, dur: 0.3}}
+            - {actor: shape, kind: rect, x: 400, y: 1205, w: 12, h: 70, fill: "#c9cfd3", at: "@кармане", enter: {type: rise, dur: 0.3}}
+            - {actor: shape, kind: rect, x: 368, y: 1150, w: 40, h: 24, fill: "#ffd23a", rot: 20, at: "@кармане", enter: {type: rise, dur: 0.3}}
+            - {actor: mark, x: 395, y: 1175, w: 150, h: 180, space: screen, at: "@кармане+0.1", enter: {type: fade, dur: 0.2}, label: "КЛЮЧ ОТ ШАХТЫ", sub: "ЛЕВЫЙ КАРМАН"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ВОРОНОВА · ВИДЕО", tc: 24510, stage: 1, status: "НЕСООТВЕТСТВИЕ"}
+    sfx:
+      - {sound: alarm, at: "@Жителям", gain: -12}
+      - {sound: footstep, at: "@Слышал", gain: -12}
+      - {sound: buzz, at: "@жужжит", gain: -10}
+      - {sound: click, at: "@отвечает", gain: -12}
+      - {sound: noise_sweep, at: "@ветром", gain: -12}
+      - {sound: click, at: "@кармане", gain: -10}
+
+  # ------------------------------------------------------------------ 7. DILEMMA — спор у лестницы
+  - id: dilemma
+    text: "Петрович, на крыше дождь! А здесь потоп сверху. Система тридцать лет не врала. А если врёт? Тогда ошибёмся все вместе."
+    lines:
+      - {who: gleb, say: "Петрович, на крыше дождь!"}
+      - {who: petrovich, say: "А здесь потоп сверху. Система тридцать лет не врала."}
+      - {who: gleb, say: "А если врёт?"}
+      - {who: petrovich, say: "Тогда ошибёмся все вместе."}
+    shots:
+      - id: d_argue
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.08, x: 380, y: 980}, {t: "@потоп", z: 1.1, x: 700, y: 960, ease: inout}, {t: "@врёт", z: 1.1, x: 400, y: 960, ease: inout}, {t: end, z: 1.12, x: 460, y: 960}], sway: {x: 8, y: 6, roll: 0.5, freq: 0.6}}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: hall, door: 1, flicker: 1}
+            - {actor: water_wall, x: 0, y: 360, w: 1080, h: 1150, n: 11, grow: 0.9}
+            - {actor: person, id: gleb, x: 300, y: 1540, scale: 1.75, look: *gleb, face: [{at: 0, v: determined}, {at: "@врёт", v: neutral}],
+               pose: [{at: 0, v: {a1: [7, 4], a2: [160, -10], l1: [2, 0], l2: [2, 0]}}, {at: "@потоп", v: stand, dur: 0.3}, {at: "@врёт", v: hold, dur: 0.3}]}
+            - {actor: person, id: sonya, x: 500, y: 1520, scale: 1.4, look: *sonya, face: sad, pose: stand,
+               anim: [{at: "@врёт", dur: 0.5, x: 330, y: 1300, ease: out}], air: true}
+            - {actor: person, id: petr, x: 800, y: 1540, scale: 1.7, look: *petr, face: talk,
+               pose: [{at: 0, v: stand}, {at: "@потоп", v: point, dur: 0.3}, {at: "@врала", v: hold, dur: 0.3}], flip: true}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24548, stage: 1, status: "ЭВАКУАЦИЯ 07:00"}
+      - id: d_choice
+        start: "@Тогда-0.22"
+        transition: {type: glitch, dur: 0.25}
+        captions_top: 1440
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.04}]}
+          layers:
+            - {actor: house_section, x: 0, y: 0, water: 2.2, roof: 1, heli: 1, pit: 1, opacity: 0.85}
+            - {<<: *rule, x: 540, y: 300, w: 900, kicker: "ВАРИАНТ А · СИСТЕМА", text: "КРЫША: ВЕРТОЛЁТ, НО ДОЖДЬ", size: 56, at: "@Тогда-0.1"}
+            - {<<: *rule, x: 540, y: 1230, w: 900, kicker: "ВАРИАНТ Б · ЗВОНОК", text: "ЯМА ЛИФТА: СУХО, НО НИКТО НЕ НАЙДЁТ", size: 56, at: "@ошибёмся-0.1"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: doc, src: "ДОК. 07-14 · ВАРИАНТЫ", tc: 24556, stage: 1, status: "РЕШЕНИЕ НЕ ПРИНЯТО"}
+    sfx:
+      - {sound: heartbeat, at: "@врёт", gain: -10}
+      - {sound: impact, at: "@ошибёмся", gain: -10}
+      - {sound: footstep, at: "@вместе", gain: -12}
+
+  # ------------------------------------------------------------------ 8. PIT — яма лифта; квартал отрывается
+  - id: pit
+    text: "Подвал. Глеб отпирает шахту ключом из левого кармана. На дне — сухая стальная кабина. Он заклеивает щели скотчем. Восемь. Семь. Шесть. В семь ноль-ноль сверху гул. Это не вертолёт. Земля под домом мокрая с ночи. И весь квартал отрывается от города."
+    lines:
+      - {who: sonya, say: "Восемь. Семь. Шесть."}
+    caption_marks: {"мокрая с ночи": "#f2f4f6"}
+    shots:
+      - id: c_shaft
+        transition: {type: whip_y}
+        ambience: [{sound: hum, gain: -16}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: "@дне", z: 1.06, x: 540, y: 960}, {t: end, z: 1.18, x: 540, y: 1000}], bob: {freq: 1.7, x: 4, y: 6, roll: 0.5}, sway: {x: 6, y: 6, roll: 0.5, freq: 0.5}}
+          layers:
+            - {actor: lift_pit, x: 0, y: 0, turn: [{at: 0, v: 0}, {at: "@отпирает", v: 1, dur: 0.5}], open: [{at: 0, v: 0}, {at: "@дне-0.3", v: 1, dur: 1.2, ease: inOutSine}], hand: 0}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · ЛИФТЁР П-2", tc: 25080, stage: 1, status: "ПОДВАЛ"}
+      - id: c_tape
+        start: "@заклеивает-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 1000}]}
+          layers:
+            - {actor: lift_cabin, x: 0, y: 0, tape: [{at: 0, v: 0}, {at: "@скотчем", v: 3, dur: 1.6}], floor: [{at: 0, v: 9}, {at: "@Восемь", v: 8}, {at: "@Семь", v: 7}, {at: "@Шесть", v: 6}]}
+            - {actor: person, id: gleb, x: 560, y: 1640, scale: 1.7, view: side, look: *gleb, face: determined, pose: reach}
+            - {actor: person, id: sonya, x: 230, y: 1720, scale: 1.45, look: *sonya, face: [{at: 0, v: sad}, {at: "@Восемь", v: talk}], pose: sit}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM ЛИФТ П-2 · КАБИНА", tc: 25140, stage: 1, status: "ПОДВАЛ"}
+      - id: c_hum
+        start: "@семь#2-0.22"
+        transition: {type: glitch, dur: 0.2}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}], shakes: [{at: "@гул", amp: 14, dur: 1.6, freq: 14}]}
+          layers:
+            - {actor: lift_cabin, x: 0, y: 0, tape: 3, floor: 6, flicker: 1}
+            - {actor: person, id: gleb, x: 420, y: 1640, scale: 1.7, look: *gleb, face: surprised, pose: hold}
+            - {actor: person, id: sonya, x: 430, y: 1460, scale: 1.3, look: *sonya, face: sad, pose: {a1: [100, 120], a2: [100, 120], l1: [40, 60], l2: [30, 60]}, air: true}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM ЛИФТ П-2 · КАБИНА", tc: 25197, stage: 1, status: "07:00:00", glitch: [{at: "@вертолёт-0.1", dur: 0.45, full: true}]}
+      - id: c_tear
+        start: "@Земля-0.22"
+        transition: {type: dip, dur: 0.25}
+        look: {bloom: [0.78, 0.2]}
+        ambience: [{sound: rumble, gain: -12}, {sound: wind, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1100}, {t: end, z: 0.98, x: 540, y: 960, ease: inout}], shakes: [{at: "@Земля", amp: 10, dur: 1.2, freq: 12}, {at: "@отрывается", amp: 16, dur: 1, freq: 10}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#151b21", "#323b44", "#55606b"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1300, par: 0}
+            - {actor: cloud_bank, x: -500, y: -100, w: 2100, h: 700, color: "#4d5761", shade: "#20262c", n: 40, blur: 34, par: 0.05}
+            - {actor: skyline, x: 540, y: 1300, w: 2200, h: 380, color: "#3f4851", color2: "#353d45", lit: 0.08, par: 0.2, seed: 7}
+            - {actor: ground, x: -600, y: 1290, w: 2300, h: 900, color: ["#2a3036", "#1a1e22"], par: 0.2}
+            - {actor: shape, kind: rect, x: 540, y: 1290, w: 2400, h: 220, par: 0.22, fill: {linear: ["rgba(100,112,124,0)", "rgba(100,112,124,0.5)", "rgba(100,112,124,0)"], angle: 180}}
+            # the hole left in the city where the block was
+            - {actor: shape, kind: ellipse, x: 540, y: 1560, w: 980, h: 150, fill: "#07090b", opacity: [{at: 0, v: 0}, {at: "@отрывается", v: 1, dur: 1.2}]}
+            # our block, torn off: buildings on top, soil, pipes and roots underneath
+            - {actor: city_chunk, id: block, x: 80, y: 1560, w: 920, soil: 360, seed: 4, crack: [{at: 0, v: 0}, {at: "@Земля", v: 1, dur: 0.3}], drip: 1,
+               buildings: [{x: 300, floors: 9, cols: 8, cell: [64, 54], seed: 4, lit: 0.25, far: false}, {x: 720, floors: 5, cols: 5, cell: [64, 54], seed: 6, color: "#6e767d"}],
+               anim: [{at: "@отрывается-0.4", dur: 4, y: 1080, ease: inQuad}]}
+            - {actor: particles, kind: dust, region: [80, 1450, 1000, 1700], count: 60, colors: ["#6a6058", "#8a8078"], at: "@Земля"}
+            # neighbours' roofs in the foreground, people lifted off into the clouds
+            - {actor: panel_block, x: 110, y: 2700, scale: 1.3, floors: 9, cols: 3, seed: 15, lit: 0.1, color: "#4a5158"}
+            - {actor: panel_block, x: 990, y: 2740, scale: 1.3, floors: 9, cols: 3, seed: 16, lit: 0.1, color: "#454c53"}
+            - {actor: person, x: 120, y: 1700, scale: 0.4, look: *petr, pose: arms_up, air: true, anim: [{at: "@квартал-0.5", dur: 4, y: 700, x: 160, rot: 20, ease: in}]}
+            - {actor: person, x: 200, y: 1700, scale: 0.36, look: {age: adult, outfit: casual, silhouette: "#1a1e22", color: "#4a4f55"}, pose: arms_up, air: true, anim: [{at: "@квартал-0.2", dur: 4, y: 600, x: 300, rot: -15, ease: in}]}
+            - {actor: person, x: 960, y: 1720, scale: 0.36, look: {age: adult, outfit: casual, silhouette: "#1a1e22", color: "#5a5048", hair: bob}, pose: arms_up, air: true, anim: [{at: "@квартал", dur: 4, y: 640, x: 860, rot: 12, ease: in}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.8, seed: 12}
+            - {<<: *rule, y: 520, at: "@отрывается-0.05", kicker: "07:00:41 · РЕЧНАЯ, 12", text: "КВАРТАЛ ОТОРВАЛСЯ", danger: true, size: 104}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: drone, src: "UAV-3 · МЧС · ВЫСОТА 180 М", tc: 25231, stage: 1, status: "ПОДЪЁМ", glitch: [{at: "@отрывается", dur: 0.2}]}
+    sfx:
+      - {sound: click, at: "@отпирает", gain: -8}
+      - {sound: creak, at: "@дне", gain: -10}
+      - {sound: scrape, at: "@скотчем", gain: -12}
+      - {sound: drip, at: "@Восемь", gain: -14}
+      - {sound: drip, at: "@Шесть", gain: -14}
+      - {sound: groan, at: "@гул", gain: -8}
+      - {sound: glitch, at: "@вертолёт", gain: -12}
+      - {sound: thunder, at: "@Земля", gain: -8}
+      - {sound: boom, at: "@отрывается", gain: -8}
+
+  # ------------------------------------------------------------------ 9. TWIST — верхний город над нижним
+  - id: twist
+    text: "Глеб приоткрывает люк кабины. Дом висит в облаках. Над ним — днища шести таких же кварталов. А внизу город. Точно такой же. Целый. Двор на Речной. Мужчина и девочка с жёлтым зонтом. Шесть сорок одна. Протокол семь завершён. Если вы слышите это, вы в верхнем городе. Нижний город — следующая зона подъёма."
+    lines:
+      - {who: system, say: "Протокол семь завершён. Если вы слышите это, вы в верхнем городе."}
+      - {who: system, say: "Нижний город — следующая зона подъёма."}
+    caption_marks: {"жёлтым зонтом": "#ffd23a", "верхнем городе": "#f2f4f6"}
+    shots:
+      - id: t_hatch
+        transition: {type: dip, dur: 0.5}
+        ambience: [{sound: wind, gain: -14}]
+        look: {bloom: [0.7, 0.4]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1100}, {t: end, z: 1.25, x: 540, y: 900}], bob: {freq: 1.2, x: 3, y: 5, roll: 0.4}}
+          layers:
+            - {actor: lift_cabin, x: 0, y: 0, view: hatch, hatch: [{at: 0, v: 0}, {at: "@приоткрывает", v: 1, dur: 1.4, ease: inOutSine}]}
+            - {actor: cloud_bank, x: 200, y: 560, w: 700, h: 800, color: "#eef3f6", shade: "#b9c6d0", n: 16, blur: 24, speed: 30, opacity: [{at: 0, v: 0}, {at: "@облаках", v: 0.9, dur: 0.8}]}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · ЛИФТЁР П-2", tc: 25260, stage: 2, status: "СВЯЗЬ ПОТЕРЯНА", date: "--.--.----"}
+      - id: t_above
+        start: "@Над-0.22"
+        transition: {type: whip_y}
+        draw:
+          world: [1080, 3400]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 2400}, {t: end, z: 1.0, x: 540, y: 1100, ease: inout}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 3400, hour: 12, colors: ["#0e1216", "#2a333b", "#7b8792"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 3300}
+            - {actor: city_chunk, x: 360, y: 260, w: 360, soil: 160, seed: 31, opacity: 0.35, blur: 4, drip: 0.6, tunnel: false}
+            - {actor: city_chunk, x: 300, y: 650, w: 480, soil: 210, seed: 32, opacity: 0.45, blur: 3, drip: 0.6, tunnel: false}
+            - {actor: cloud_bank, x: -500, y: 700, w: 2100, h: 500, color: "#56606a", shade: "#2a3138", n: 26, blur: 30}
+            - {actor: city_chunk, x: 230, y: 1150, w: 620, soil: 260, seed: 33, opacity: 0.6, blur: 2, drip: 0.7}
+            - {actor: city_chunk, x: 150, y: 1650, w: 780, soil: 320, seed: 34, opacity: 0.75, blur: 1, drip: 0.8}
+            - {actor: cloud_bank, x: -500, y: 1750, w: 2100, h: 500, color: "#66717c", shade: "#2e363e", n: 26, blur: 30, seed: 4}
+            - {actor: city_chunk, x: 60, y: 2250, w: 960, soil: 380, seed: 35, opacity: 0.9, drip: 0.9}
+            - {actor: city_chunk, x: -120, y: 2900, w: 1320, soil: 460, seed: 36, drip: 1}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 200, v: -0.7, alpha: 0.4, seed: 14}
+            - {<<: *rule, y: 760, at: "@шести-0.05", kicker: "ЗОНЫ ПОДЪЁМА 01–06", text: "6 КВАРТАЛОВ ВЫШЕ", danger: true, size: 96}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: cinema, src: "НАШЛЕМНАЯ КАМЕРА · ВЗГЛЯД ВВЕРХ", tc: 25266, stage: 2, status: "СВЯЗЬ ПОТЕРЯНА", date: "--.--.----"}
+      - id: t_below
+        start: "@внизу-0.22"
+        transition: {type: whip_y, dir: back}
+        look: {bloom: [0.8, 0.2]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@двор", z: 1.0, x: 540, y: 960}, {t: "@Мужчина", z: 2.6, x: 430, y: 1480, ease: inout}, {t: end, z: 2.7, x: 430, y: 1490}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#6f7b86", "#a9b3bb"], angle: 180}}
+            - {actor: skyline, x: 540, y: 1180, w: 2200, h: 300, color: "#8a949c", color2: "#7d878f", lit: 0, seed: 21}
+            - {actor: ground, x: -600, y: 1170, w: 2300, h: 900, color: ["#7d868d", "#5d656c"]}
+            - {actor: panel_block, x: 160, y: 1320, scale: 0.42, floors: 9, cols: 8, seed: 3, lit: 0.05, color: "#9aa2a8", stains: 0.2}
+            - {actor: panel_block, x: 880, y: 1300, scale: 0.4, floors: 9, cols: 7, seed: 8, lit: 0.05, color: "#929aa0", stains: 0.2}
+            - {actor: panel_block, x: 470, y: 1500, scale: 0.5, floors: 9, cols: 9, cell: [100, 84], seed: 4, lit: 0.05, entrances: [4], color: "#9aa2a8", stains: 0.2}
+            - {actor: ground, x: -600, y: 1490, w: 2300, h: 600, color: ["#6a737a", "#4d555c"]}
+            - {actor: tree, kind: round, x: 760, y: 1530, h: 160, color: "#4a5a50", trunk: "#3a3430", seed: 3}
+            - {actor: person, x: 455, y: 1515, scale: 0.17, look: *gleb, pose: stand}
+            - {actor: person, x: 495, y: 1515, scale: 0.15, look: *sonya, pose: {a1: [7, 4], a2: [90, 30], l1: [2, 0], l2: [2, 0]}}
+            - {actor: umbrella, x: 506, y: 1488, scale: 0.12, open: 1}
+            # our hanging block above: underside fills the top, dripping upward
+            - {actor: city_chunk, x: -200, y: -300, w: 1480, soil: 520, seed: 4, drip: 1, opacity: 0.95}
+            - {actor: cloud_bank, x: -400, y: 300, w: 1900, h: 500, color: "#c9d1d8", shade: "#8a96a2", n: 22, blur: 30, opacity: 0.55}
+            - {actor: mark, x: 478, y: 1490, w: 140, h: 120, at: "@Мужчина", enter: {type: fade, dur: 0.3}, label: "ЛЮДИ: 2", sub: "06:41 · СУХО", side: top}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: drone, src: "НАШЛЕМНАЯ КАМЕРА · ВЗГЛЯД ВНИЗ", tc: 24060, stage: 2, status: "ВРЕМЯ НЕ СОВПАДАЕТ", date: "14.11.2026"}
+      - id: t_alert
+        start: "@Протокол-0.22"
+        transition: {type: slam}
+        ambience: [{sound: hum, gain: -14}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 500, y: 920}]}
+          layers:
+            - {actor: crt_tv, x: 0, y: 0, screens: [{at: "@Протокол-0.2", lines: ["ВНИМАНИЕ ВСЕМ", "ПРОТОКОЛ 07", "ЗАВЕРШЁН"]}, {at: "@верхнем-0.3", lines: ["ВЫ В", "ВЕРХНЕМ", "ГОРОДЕ"], size: 72}, {at: "@Нижний-0.1", lines: ["НИЖНИЙ ГОРОД —", "СЛЕДУЮЩАЯ", "ЗОНА ПОДЪЁМА"], size: 54}]}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: alert, src: "ЭФИР · ВСЕ КАНАЛЫ · АВТОМАТ", tc: 25290, stage: 2, status: "СБОЙ ПРОТОКОЛА", rec: false, glitch: [{at: "@Нижний-0.15", dur: 0.25}]}
+    sfx:
+      - {sound: breath, at: "@приоткрывает", gain: -12}
+      - {sound: riser, at: "@днища", gain: -12}
+      - {sound: chime, at: "@зонтом", gain: -12}
+      - {sound: alarm, at: "@Протокол", gain: -10}
+      - {sound: boom, at: "@следующая", gain: -8}
+
+  # ------------------------------------------------------------------ 10. CLIFF — он звонит себе
+  - id: cliff
+    text: "Одна палочка связи. Глеб набирает свой номер. Внизу мужчина достаёт телефон. И сбрасывает. Глеб набирает снова. А внизу от земли отрываются первые дома."
+    shots:
+      - id: f_dial
+        transition: {type: dip, dur: 0.3}
+        ambience: [{sound: wind, gain: -16}]
+        draw:
+          bg: "#9aa6b0"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], sway: {x: 8, y: 8, roll: 0.8, freq: 0.6}}
+          layers:
+            - {actor: cloud_bank, x: -400, y: 0, w: 1900, h: 1920, color: "#dfe6eb", shade: "#9aa6b0", n: 40, blur: 40, speed: 20}
+            - {actor: phone_call, x: 540, y: 820, scale: 0.92, state: dialing, bars: [{at: 0, v: 0}, {at: "@палочка", v: 1}], clock: "07:01", name: "Глеб", number: "+7 912 406-17-33", own: "Вызов себе"}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ЭКРАН", tc: 25262, stage: 2, status: "СВЯЗЬ: 1", date: "--.--.----"}
+      - id: f_reject
+        start: "@Внизу-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.1, x: 540, y: 1040}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: "#7d868d"}
+            - {actor: panel_block, x: 380, y: 1330, scale: 1.0, floors: 9, cols: 9, cell: [100, 84], seed: 4, lit: 0.1, entrances: [4], color: "#8f979d", stains: 0.3}
+            - {actor: wet_ground, x: -400, y: 1310, w: 1900, h: 800, color: "#4d555c"}
+            - {actor: tree, kind: round, x: 930, y: 1360, h: 520, color: "#3a4a40", trunk: "#2a2420", seed: 3, sway: 1}
+            - {actor: person, id: lgleb, x: 430, y: 1360, scale: 0.55, look: *gleb, hold: phone, pose: [{at: 0, v: stand}, {at: "@достаёт", v: {a1: [7, 4], a2: [60, 100], l1: [2, 0], l2: [2, 0]}, dur: 0.3}]}
+            - {actor: shape, kind: circle, x: 470, y: 1180, r: 10, fill: "#f2f4f6", glow: {color: "#f2f4f6", r: 18, a: 1}, opacity: [{at: 0, v: 0}, {at: "@достаёт", v: 1}, {at: "@сбрасывает", v: 0}, {at: "@снова", v: 1}]}
+            - {actor: person, x: 600, y: 1370, scale: 0.42, look: *sonya, pose: {a1: [7, 4], a2: [90, 30], l1: [2, 0], l2: [2, 0]}}
+            - {actor: umbrella, x: 628, y: 1300, scale: 0.32, open: [{at: 0, v: 1}, {at: "@снова", v: 0, dur: 0.8}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 200, alpha: 0.45, seed: 16}
+            - {actor: mark, x: 450, y: 1250, w: 160, h: 240, at: "@сбрасывает", enter: {type: fade, dur: 0.2}, label: "ВЫЗОВ ОТКЛОНЁН", sub: "06:41:52", side: top, danger: true}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: drone, src: "UAV-3 · НИЖНИЙ ГОРОД · РЕЧНАЯ, 12", tc: 24108, stage: 2, status: "ВРЕМЯ НЕ СОВПАДАЕТ", date: "14.11.2026"}
+      - id: f_rise
+        start: "@А-0.22"
+        transition: {type: dip, dur: 0.3}
+        look: {bloom: [0.78, 0.2]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.1, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}], shakes: [{at: "@отрываются", amp: 8, dur: 1.4, freq: 12}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#20272e", "#46515b", "#76828d"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1300, par: 0}
+            - {actor: city_chunk, x: -200, y: -260, w: 1480, soil: 480, seed: 4, drip: 1, par: 0.1}
+            - {actor: skyline, x: 540, y: 1250, w: 2200, h: 380, color: "#5d6770", color2: "#525b63", lit: 0.05, par: 0.2, seed: 21}
+            - {actor: ground, x: -600, y: 1240, w: 2300, h: 900, color: ["#4a525a", "#30363c"], par: 0.2}
+            - {actor: panel_block, x: 200, y: 1500, scale: 0.6, floors: 9, cols: 8, seed: 3, lit: 0.1, color: "#8a9298", air: true, anim: [{at: "@отрываются", dur: 4, y: 1380, rot: -2, ease: in}]}
+            - {actor: shape, kind: rect, x: 200, y: 1500, w: 520, h: 14, fill: "#dfe8ee", glow: {color: "#dfe8ee", r: 10, a: 0.8}, opacity: [{at: 0, v: 0}, {at: "@отрываются", v: 0.8, dur: 0.3}]}
+            - {actor: panel_block, x: 820, y: 1520, scale: 0.55, floors: 9, cols: 7, seed: 8, lit: 0.1, color: "#848c92"}
+            - {actor: ground, x: -600, y: 1500, w: 2300, h: 600, color: ["#3f464d", "#262b30"]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, seed: 18, v: [{at: 0, v: 1}, {at: "@первые-0.3", v: 0, dur: 0.4}, {at: "@дома", v: -0.75, dur: 0.6}]}
+            - {<<: *rule, y: 760, at: "@дома-0.05", kicker: "ПРОТОКОЛ 08 · ЗАГРУЖЕН", text: "НЕ ОТВЕЧАЙТЕ НА ЗВОНКИ СО СВОЕГО НОМЕРА", danger: true, size: 66}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: drone, src: "UAV-3 · НИЖНИЙ ГОРОД", tc: 24120, stage: 2, status: "ПРОТОКОЛ 08", date: "14.11.2026", glitch: [{at: "@дома-0.2", dur: 0.2}]}
+    sfx:
+      - {sound: blip, at: "@набирает", gain: -12}
+      - {sound: click, at: "@сбрасывает", gain: -10}
+      - {sound: blip, at: "@снова", gain: -12}
+      - {sound: riser, at: "@отрываются", gain: -10}
+      - {sound: boom, at: "@дома", gain: -8}
+
+  # ------------------------------------------------------------------ 11. CTA — крыша или лифт
+  - id: cta
+    text: "Сирена звала на крышу. Свой голос — в яму лифта. Кого бы послушал ты? Пиши: крыша или лифт."
+    captions_top: 1500
+    shots:
+      - id: q_choice
+        transition: {type: glitch, dur: 0.3}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#0b0d10", "#1d2329"], angle: 180}}
+            - {actor: city_chunk, x: 260, y: 140, w: 560, soil: 220, seed: 33, opacity: 0.3, blur: 3, drip: 0.6}
+            - {actor: rule_card, x: 540, y: 470, w: 900, kicker: "А · СИРЕНА", text: "КРЫША", size: 110, at: "@крышу-0.1", enter: {type: wipe_right, dur: 0.25}, sfx: false}
+            - {actor: rule_card, x: 540, y: 760, w: 900, kicker: "Б · СВОЙ ГОЛОС", text: "ЛИФТ", size: 110, at: "@лифта-0.1", enter: {type: wipe_right, dur: 0.25}, sfx: false}
+            - {actor: phone_call, x: 540, y: 1180, scale: 0.42, state: incoming, clock: "06:41", name: "Глеб", own: "Мой номер", at: "@Свой", enter: {type: fade, dur: 0.3}}
+            - {actor: title_card, x: 540, y: 1000, space: screen, at: "@Пиши-0.1", enter: {type: fade, dur: 0.15}, kicker: "КОГО БЫ ПОСЛУШАЛ ТЫ?", ksize: 44, kcolor: "#8a96a2", text: "", size: 10, w: 900}
+            - {actor: archive, x: 0, y: 0, space: screen, kind: doc, src: "КОНЕЦ ЗАПИСИ 031 / 031", tc: 25300, stage: 2, status: "ЖДЁТ ОТВЕТА", date: "--.--.----", glitch: [{at: "@лифт-0.05", dur: 0.6, full: true, label: "КОНЕЦ ЗАПИСИ"}]}
+    sfx:
+      - {sound: blip, at: "@крышу", gain: -12}
+      - {sound: blip, at: "@лифта", gain: -12}
+      - {sound: impact, at: "@Пиши", gain: -10}
+      - {sound: glitch, at: "@лифт", gain: -10}

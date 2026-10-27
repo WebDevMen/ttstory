@@ -69,7 +69,7 @@
 
 | Ключ | Описание |
 |---|---|
-| `preset` | `scifi` (тёмное неоновое стекло, Exo 2), `minimal` (светлые карточки, Montserrat), `pop` (жирные обводки и жёсткие тени, Unbounded), `documentary` (засечки Playfair, тонкие линии) |
+| `preset` | `scifi` (тёмное неоновое стекло, Exo 2), `minimal` (светлые карточки, Montserrat), `pop` (жирные обводки и жёсткие тени, Unbounded), `documentary` (засечки Playfair, тонкие линии), `archive` (утёкший архив: почти чёрный, сталь, белый; Oswald / IBM Plex Mono / Inter, субтитры без обводки с тенью) |
 | `accent` | цвет по умолчанию (у сцены — свой `accent`) |
 | `captions` | субтитры: `enabled` (true), `style` (`neon_word` · `box_word` · `minimal` · `karaoke` · `outline_pop` · `clean` — жирный белый с обводкой, сказанные слова цветом сцены), `top` (1250), `size` (64), `uppercase` (true), `max_words` (4), `max_chars` (19), `animation` (`pop` · `rise` · `none`), `pop` (0.07, «подпрыгивание» активного слова), `hide: [{from, until}]` (скрыть, например, когда на экране кнопки выбора) |
 

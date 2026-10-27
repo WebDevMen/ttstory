@@ -315,7 +315,7 @@ anim:
 | **three.js r170** | `holo`, HUD `holo3d` | `await H.three()` |
 | SVG, HTML/CSS, Web-шрифты | всё остальное | `H.svg()`, `H.div()`, `H.el()` |
 
-Шрифты: Montserrat, Exo 2, JetBrains Mono, Playfair Display, Unbounded, **Caveat** (рукописный, кириллица), **Klee One** (японский рукописный — мел, тетради), **M PLUS Rounded 1c** (японский/кириллица, округлый). В `text` и подписях: `font: display/mono/tech/serif/wide/hand/jp/round`.
+Шрифты: Montserrat, Exo 2, JetBrains Mono, Playfair Display, Unbounded, **Caveat** (рукописный, кириллица), **Klee One** (японский рукописный — мел, тетради), **M PLUS Rounded 1c** (японский/кириллица, округлый). В `text` и подписях: `font: display/mono/tech/serif/wide/hand/jp/round`/cond/plex/inter`. Для «документальных» и аварийных роликов есть **Oswald** (`cond` — узкие заголовки), **IBM Plex Mono** (`plex` — метки, таймкоды) и **Inter** (`inter` — субтитры); тема HUD `archive` ставит их в субтитры и интерфейс (пример — `projects/tide`).
 
 Почему не Remotion: у нас уже есть то же самое, что делает Remotion (Chromium рисует кадр по времени `t`), но без React-проекта и лицензионных ограничений Remotion для компаний, и с привязкой каждого движения к словам диктора. Любой React/JS-код можно встроить как свой актёр (§9).
 
@@ -344,6 +344,9 @@ export const sunburst = {
 Пример побольше — [`projects/superuser/actors/poker.js`](../projects/superuser/actors/poker.js): окно приложения `monitor` (с вложенными актёрами), таблица `spreadsheet` с бегущими строками и подсветкой, колокол распределения `bell_curve` с выбросом, кассета со звуковой волной `waveform`. Актёры, которые пригодились больше чем одному ролику, переезжают в библиотеку — так автомат и камера наблюдения из «Как обыграть казино телефоном» стали `engine/hud/draw/actors/casino.js` (§7.7). Имена актёров в библиотеке уникальны: повтор имени в двух файлах — ошибка при загрузке.
 
 Внутри доступно всё из `H`: цвета (`H.col`, `H.rgba`, `H.shade`), `H.svg/H.div/H.el`, `H.child(spec, container)` — вложить любой другой актёр со всеми общими свойствами, `H.track`, `H.ease`, `H.noise`, `H.rng(seed)`, `H.asset("file.png")`, `H.json(url)`, `H.anchorOf("id.name")`, `H.TL` (таймлайн, слова диктора). Свои стили — `projects/<id>/draw.css`.
+
+**Время своего актёра.** `it.at` — момент появления элемента, но если `at` в YAML не задан, это **−1e9** (элемент виден «всегда»). Не считайте от него прошедшее время и не интегрируйте по нему (цикл «от it.at до t» зависнет, таймкод уйдёт в мусор): берите `const t0 = it.at > -1e8 ? it.at : (H.shot?.start ?? 0)`. Так сделаны дождь с разворотом вверх (`rain`, скорость — дорожка `v`, положение — интеграл) и таймкод `archive` в `projects/tide/actors/`.
+
 
 Встроенные актёры — в `engine/hud/draw/actors/*.js`; новый файл подключается строкой в `actors/index.js`. Новый библиотечный актёр добавьте в галерею и обновите эталоны стенда (`vg.py bench --update`, §10.5); если у объекта есть реальный размер, объявите `size_m`; если он стоит на земле — `grounded: true`, если он сам поверхность — `surface: true` (§10.6).
 

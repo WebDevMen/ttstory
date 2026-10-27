@@ -16,7 +16,7 @@ function loadCss(href) {
 await loadCss(`/projects/${PID}/draw.css`);
 await Promise.all(["500 20px Montserrat", "700 20px Montserrat", "800 20px Montserrat", "900 20px Montserrat", "italic 900 20px Montserrat",
   "700 20px Exo2", "900 20px Exo2", "400 20px JBM", "700 20px JBM", "600 20px Playfair", "800 20px Playfair", "800 20px Unbounded",
-  "800 20px Rounded", "600 20px Klee", "700 20px Caveat"].map((f) => document.fonts.load(f, "АБВЖЯабвжяABCxyz0123あア起立礼")));
+  "800 20px Rounded", "600 20px Klee", "700 20px Caveat", "500 20px Oswald", "700 20px Oswald", "400 20px 'IBM Plex Mono'", "600 20px 'IBM Plex Mono'", "600 20px Inter", "800 20px Inter"].map((f) => document.fonts.load(f, "АБВЖЯабвжяABCxyz0123あア起立礼")));
 
 if (window.gsap) {
   const plugins = ["MorphSVGPlugin", "MotionPathPlugin", "DrawSVGPlugin", "CustomEase", "SplitText", "TextPlugin", "ScrambleTextPlugin", "CustomWiggle", "CustomBounce"];
@@ -43,7 +43,8 @@ const H = {
   TL, PID, W, H: HH, fps: FPS, actors: ACTORS, palette: PALETTE,
   gsap: window.gsap, d3: window.d3, topojson: window.topojson, lottie: window.lottie,
   fonts: { display: "Montserrat", heavy: "Montserrat", body: "Montserrat", mono: "JBM", tech: "Exo2", serif: "Playfair",
-    round: "Rounded", hand: "Caveat", chalk: "Caveat", jp: "Klee", wide: "Unbounded", caption: "Montserrat" },
+    round: "Rounded", hand: "Caveat", chalk: "Caveat", jp: "Klee", wide: "Unbounded", caption: "Montserrat",
+    cond: "Oswald", plex: "IBM Plex Mono", inter: "Inter" },
   async three() { return import("../vendor/three.module.min.js"); },
   uid(p = "u") { uidN += 1; return `${p}${uidN}`; },
   // any color spec (palette name, named color, #hex, "r,g,b", [r,g,b], css function) -> css color string

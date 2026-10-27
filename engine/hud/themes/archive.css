@@ -1,0 +1,23 @@
+/* EMERGENCY ARCHIVE: leaked survival-protocol footage. Near-black, steel, cold grey, white; red only for danger.
+   Headings Oswald, labels/timecodes IBM Plex Mono, captions Inter. No neon, no game HUD. */
+:root {
+  --font-display: "Oswald", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-caption: "Inter", sans-serif;
+  --ink: 242, 244, 246;
+  --panel-bg: rgba(10, 12, 15, .82);
+  --panel-border-w: 0px;
+  --panel-radius: 2px;
+  --panel-blur: 0px;
+  --panel-shadow: none;
+  --glow: 0;
+  --scan: 0;
+  --title-weight: 700;
+  --label-transform: uppercase;
+  --text-shadow: none;
+}
+.cap-clean .w { font-family: "Inter", sans-serif; font-weight: 800; letter-spacing: -.3px; color: #f2f4f6;
+  -webkit-text-stroke: 0; paint-order: normal; text-shadow: 0 2px 3px rgba(0,0,0,.9), 0 0 18px rgba(0,0,0,.75); }
+.cap-clean .w.on, .cap-clean .w.past { color: #f2f4f6; }
+.cap-clean .w.mk.on, .cap-clean .w.mk.past { color: rgb(var(--mk)); }

@@ -16,7 +16,7 @@ await loadCss("#theme", `themes/${TL.theme.preset || "scifi"}.css`);
 await loadCss("#project-css", `/projects/${PID}/hud.css`);
 await Promise.all(["500 20px Exo2", "700 20px Exo2", "800 20px Exo2", "900 20px Exo2", "italic 900 20px Exo2", "400 20px JBM", "700 20px JBM",
   "500 20px Montserrat", "700 20px Montserrat", "800 20px Montserrat", "900 20px Montserrat", "italic 900 20px Montserrat",
-  "600 20px Playfair", "800 20px Playfair", "italic 600 20px Playfair", "600 20px Unbounded", "800 20px Unbounded"]
+  "600 20px Playfair", "800 20px Playfair", "italic 600 20px Playfair", "600 20px Unbounded", "800 20px Unbounded", "500 20px Oswald", "700 20px Oswald", "400 20px 'IBM Plex Mono'", "600 20px 'IBM Plex Mono'", "600 20px Inter", "800 20px Inter"]
   .map((f) => document.fonts.load(f, "АБВЖЯабвжяABCxyz0123")));
 
 // ------------------------------------------------------------------ helpers shared with components (lib.js)
