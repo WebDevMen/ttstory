@@ -1,0 +1,887 @@
+# ЧЕРНОВИК ПРОЕКТА из projects/sixdays/script.yaml (python3 vg.py script project sixdays).
+# Уже готово: голос, сцены с текстом, кадры со сменой на словах и переходами, музыка по блокам, звуки на словах.
+# Вместо картинки каждый кадр — аниматик-карточка (текст на экране + описание кадра): темп можно проверить сразу
+# (python3 vg.py voice sixdays && python3 vg.py compile sixdays && python3 vg.py preview sixdays --shots).
+# Дальше замените layers каждого кадра настоящей графикой по плану из комментариев (skill make-video, docs/DRAW.md).
+
+title: "Оно появилось 6 дней назад"
+
+voice: {"voice": "ru-RU-DmitryNeural", "rate": "+16%", "pitch": "-4Hz"}
+# голоса героев: реплики сцен (lines) звучат своим голосом, рассказчик — голосом voice
+voices:
+  vera: {"voice": "ru-RU-SvetlanaNeural", "rate": "+10%", "pitch": "+0Hz"}
+  oleg: {"voice": "ru-RU-DmitryNeural", "rate": "+0%", "pitch": "-14Hz"}
+
+theme:
+  preset: documentary
+  accent: "#e8333f"
+  captions: {"style": "clean", "top": "auto", "size": 60, "max_chars": 20, "hide": [{"from": "@cta.start", "until": 140}]}
+
+post: {vignette: 0.36, chromatic: 0.0022, grain: 0.035}
+
+draw:
+  palette: {red: "#ff2a36", ink: "#f1f1ec", night: "#05070c", blue: "#5aa0ff", ok: "#3ddc84", snow: "#c9cdd0", fog: "#9aa0a4"}
+
+# ------------------------------------------------------------------ общие куски
+# записи — серая гамма, единственный цвет — красная точка и REC; офис — синий свет мониторов
+x-title: &title {actor: text, x: 540, y: 400, size: 96, width: 980, lines: 2, color: "#ffffff", weight: 900, stroke: {w: 10, color: "#05070c"}, shadow: "0 0 30px rgba(0,0,0,.8)", space: screen}
+x-tag: &tag {actor: timetag, x: 540, y: 200, size: 34, color: red, space: screen}
+x-rbadge: &rbadge {actor: badge, style: solid, color: red, size: 48, space: screen, enter: stamp, sfx: false}
+x-dbadge: &dbadge {actor: badge, style: dark, color: red, size: 44, space: screen, enter: pop, sfx: false}
+x-who: &who {actor: callout, color: red, size: 46, space: screen, enter: pop, sfx: false}
+x-vhs: &vhs {actor: vhs, x: 0, y: 0, space: screen}
+
+x-look-vera: &vera {age: adult, outfit: casual, color: "#4a4f58", bottom_color: "#22252b", hair: bob, hair_color: "#17141a", skin: light, shoes: "#d8d8d8"}
+x-look-oleg: &oleg {age: adult, outfit: casual, color: "#c9cdd4", bottom_color: "#2b2f3a", hair: short, hair_color: "#8d8f94", beard: "#8d8f94", skin: mid, shoes: "#1d1a1a"}
+
+# снежная равнина метеостанции (запись №1)
+x-snow: &snow
+  - {actor: shape, kind: rect, x: 540, y: 520, w: 1700, h: 1000, fill: {linear: ["#55595d", "#8d9296", "#b4b9bc"], angle: 180}}
+  - {actor: ridge, x: 520, y: 905, w: 1900, h: 250, color: "#7c8287", snow: "#b9bec1", peaks: 7, seed: 4}
+  - {actor: ridge, x: 600, y: 915, w: 1900, h: 130, color: "#91969a", snow: false, peaks: 9, seed: 9}
+  - {actor: shape, kind: rect, x: 540, y: 905, w: 1900, h: 120, fill: {linear: ["rgba(200,205,208,0)", "rgba(206,210,213,.75)", "rgba(200,205,208,0)"], angle: 180}}
+  - {actor: ground, x: -400, y: 900, w: 1900, h: 1100, color: ["#b7bcbf", "#8f9497"]}
+  - {actor: shape, kind: ellipse, x: 250, y: 1130, w: 700, h: 70, fill: "#c6cacd", blur: 6}
+  - {actor: shape, kind: ellipse, x: 900, y: 1260, w: 600, h: 60, fill: "#a5aaad", blur: 6}
+  - {actor: mast, x: 790, y: 1012, h: 400, color: "#3b3e42"}
+  - {actor: shape, kind: line, points: [[150, 1010], [790, 830], [1100, 840]], stroke: "#3b3e42", sw: 2, opacity: 0.6}
+
+# офис ночью: стеклянная стена, за ней город; ковролин; ряды столов
+x-office: &office
+  - {actor: shape, kind: rect, x: 540, y: 600, w: 2400, h: 1400, fill: {linear: ["#04060b", "#0b1220", "#132036"], angle: 180}}
+  - {actor: skyline, x: 540, y: 1060, w: 2400, h: 420, color: "#0d1524", color2: "#111b2e", lit: 0.35, seed: 5, far: true, par: 0.35}
+  - {actor: shape, kind: rect, x: 540, y: 1080, w: 2400, h: 120, par: 0.35, fill: {linear: ["rgba(90,160,255,0)", "rgba(60,110,190,.22)", "rgba(90,160,255,0)"], angle: 180}}
+  - {actor: glass_wall, x: -660, y: 300, w: 2400, h: 900, cols: 8}
+  - {actor: shape, kind: rect, x: 540, y: 1580, w: 2400, h: 820, fill: {linear: ["#0c1018", "#05070b"], angle: 180}}
+
+x-map: &map {actor: map, x: 540, y: 820, w: 1040, h: 760, projection: natural, lon0: -100, land: "#262a31", ocean: "#07090d", stroke: "#3a3f48", graticule: false}
+
+audio:
+  music:
+    key: C#
+    mode: minor
+    bpm: 72
+    gain: -14
+    sections:
+      - {at: 0, style: drone}
+      - {at: "@problem.start", style: tension}
+      - {at: "@day5.start", style: dark}
+      - {at: "@twist.start", style: sub}
+      - {at: "@day6.start", style: dark}
+      - {at: "@cliff.start", style: sub}
+  duck: 0.6
+
+scenes:
+
+  # ------------------------------------------------------------------ hook: Крючок — Шесть дней назад
+  # задача: С первой секунды аномалия на записи и правило с цифрой: каждый день вдвое ближе.
+  # на экране: «ОНО ПОЯВИЛОСЬ · 6 ДНЕЙ»
+  - id: hook
+    accent: "#e8333f"
+    text: "Оно появилось на Земле шесть дней назад. Каждый день оно вдвое ближе к камере."
+    caption_marks: {"шесть дней": "#e8333f", "вдвое ближе": "#e8333f"}
+    shots:
+      - id: h_snow
+        # ВИЗУАЛ: Зернистая чёрно-белая запись камеры метеостанции: бескрайняя снежная равнина, три плана —
+        #         дальние горы в дымке, средний план с мачтой и сугробами, на переднем плане столб ограды;
+        #         позёмка. На горизонте стоит очень высокая тонкая фигура, руки ниже колен, голова набок; вместо
+        #         лица — красная точка, единственный цвет в кадре. Оверлей: REC, таймкод, «ЗАПИСЬ №1».
+        # актёры: sky, ground, new:snowfield, new:creature, particles, cctv, new:vhs
+        # камера: Неподвижная камера наблюдения с микро-дрожью; цифровой наезд рывками на «Земле»
+        # анимация: @start — Позёмка, мигает REC, по кадру ползёт полоса VHS
+        # анимация: @Земле — Цифровой зум ×2 на фигуру — пиксели крупнее, красная точка вспыхивает
+        # анимация: @назад — Помеха: кадр рвётся строками
+        ambience: [{"sound": "wind", "gain": -18}]
+        look: {grade: {contrast: 0.06}}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@Земле", z: 1.02, x: 540, y: 960}, {t: "@Земле+0.14", z: 2.1, x: 420, y: 900, ease: out}, {t: end, z: 2.16, x: 420, y: 900}], sway: {x: 1.5, y: 1, roll: 0.05, freq: 0.6}}
+          layers:
+            - *snow
+            - {actor: creature, id: it, x: 380, y: 958, h: 150, tilt: 22, soft: 0.6}
+            - {actor: shape, kind: rect, x: 110, y: 1560, w: 70, h: 1100, fill: "#2b2d30", par: 1.15}
+            - {actor: shape, kind: line, points: [[110, 1180], [-60, 1260]], stroke: "#2b2d30", sw: 6, par: 1.15}
+            - {actor: particles, kind: snow, region: [-200, 200, 1300, 1800], count: 140, size: [3, 6], speed: 1.4, wind: 260, colors: ["#e8ecee"], seed: 3}
+            - {<<: *vhs, label: "ЗАПИСЬ №1", date: "ДЕНЬ 1", clock: 11530, cam: "МЕТЕОСТАНЦИЯ", tear: [{at: 0, v: 0}, {at: "@назад", v: 0.9, dur: 0.1}, {at: "@назад+0.35", v: 0, dur: 0.2}]}
+            - {<<: *title, text: "ОНО ПОЯВИЛОСЬ", at: 0.15, reveal: {by: word, mode: slam, stagger: 0.12}}
+            - {<<: *title, y: 540, size: 84, color: red, text: "6 ДНЕЙ НАЗАД", at: "@шесть-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+      - id: h_six
+        # ВИЗУАЛ: Сетка из шести тёмных окошек-записей на чёрном фоне (2×3); в каждом та же фигура, и в каждом
+        #         следующем она вдвое крупнее; последнее окошко закрыто помехами. Под каждым — подпись дня и
+        #         метров.
+        # актёры: new:vhs, new:rec_grid, new:creature, text
+        # камера: Медленный наезд на последнее окошко
+        # анимация: @Каждый — Окошки загораются по очереди, фигура растёт скачками
+        # анимация: @вдвое — Между окошками появляются стрелки «×2»
+        # анимация: @камере — Шестое окошко — белый шум, красная точка просвечивает сквозь него
+        start: "@Каждый-0.22"
+        transition: {"type": "glitch"}
+        draw:
+          bg: "#060709"
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 640, y: 1040}]}
+          layers:
+            - {actor: shape, kind: rect, x: 250, y: 620, w: 260, h: 400, radius: 6, fill: "#2b2e31", stroke: "#6d7175", sw: 3, space: screen, at: "@Каждый", enter: pop}
+            - {actor: shape, kind: rect, x: 250, y: 560, w: 250, h: 270, fill: {linear: ["#5a5e62", "#a2a7aa"], angle: 180}, space: screen, at: "@Каждый", enter: fade}
+            - {actor: shape, kind: rect, x: 250, y: 755, w: 250, h: 120, fill: {linear: ["#b4b9bc", "#8a8f92"], angle: 180}, space: screen, at: "@Каждый", enter: fade}
+            - {actor: creature, x: 250, y: 790, h: 40, tilt: 22, soft: 0.4, space: screen, at: "@Каждый", enter: fade}
+            - {actor: text, x: 250, y: 856, size: 26, font: mono, weight: 700, color: "#e8e8e4", text: "ДЕНЬ 1 · 64 М", space: screen, at: "@Каждый", enter: fade}
+            - {actor: shape, kind: rect, x: 540, y: 620, w: 260, h: 400, radius: 6, fill: "#2b2e31", stroke: "#6d7175", sw: 3, space: screen, at: "@Каждый+0.25", enter: pop}
+            - {actor: shape, kind: rect, x: 540, y: 560, w: 250, h: 270, fill: {linear: ["#5a5e62", "#a2a7aa"], angle: 180}, space: screen, at: "@Каждый+0.25", enter: fade}
+            - {actor: shape, kind: rect, x: 540, y: 755, w: 250, h: 120, fill: {linear: ["#b4b9bc", "#8a8f92"], angle: 180}, space: screen, at: "@Каждый+0.25", enter: fade}
+            - {actor: creature, x: 540, y: 790, h: 80, tilt: 22, soft: 0.4, space: screen, at: "@Каждый+0.25", enter: fade}
+            - {actor: text, x: 540, y: 856, size: 26, font: mono, weight: 700, color: "#e8e8e4", text: "ДЕНЬ 2 · 32 М", space: screen, at: "@Каждый+0.25", enter: fade}
+            - {actor: shape, kind: rect, x: 830, y: 620, w: 260, h: 400, radius: 6, fill: "#2b2e31", stroke: "#6d7175", sw: 3, space: screen, at: "@оно", enter: pop}
+            - {actor: shape, kind: rect, x: 830, y: 560, w: 250, h: 270, fill: {linear: ["#5a5e62", "#a2a7aa"], angle: 180}, space: screen, at: "@оно", enter: fade}
+            - {actor: shape, kind: rect, x: 830, y: 755, w: 250, h: 120, fill: {linear: ["#b4b9bc", "#8a8f92"], angle: 180}, space: screen, at: "@оно", enter: fade}
+            - {actor: creature, x: 830, y: 790, h: 160, tilt: 22, soft: 0.4, space: screen, at: "@оно", enter: fade}
+            - {actor: text, x: 830, y: 856, size: 26, font: mono, weight: 700, color: "#e8e8e4", text: "ДЕНЬ 3 · 16 М", space: screen, at: "@оно", enter: fade}
+            - {actor: shape, kind: rect, x: 250, y: 1110, w: 260, h: 400, radius: 6, fill: "#2b2e31", stroke: "#6d7175", sw: 3, space: screen, at: "@вдвое", enter: pop}
+            - {actor: shape, kind: rect, x: 250, y: 1050, w: 250, h: 270, fill: {linear: ["#5a5e62", "#a2a7aa"], angle: 180}, space: screen, at: "@вдвое", enter: fade}
+            - {actor: shape, kind: rect, x: 250, y: 1245, w: 250, h: 120, fill: {linear: ["#b4b9bc", "#8a8f92"], angle: 180}, space: screen, at: "@вдвое", enter: fade}
+            - {actor: creature, x: 250, y: 1280, h: 330, tilt: 22, soft: 0.4, space: screen, at: "@вдвое", enter: fade}
+            - {actor: text, x: 250, y: 1346, size: 26, font: mono, weight: 700, color: "#e8e8e4", text: "ДЕНЬ 4 · 8 М", space: screen, at: "@вдвое", enter: fade}
+            - {actor: shape, kind: rect, x: 540, y: 1110, w: 260, h: 400, radius: 6, fill: "#2b2e31", stroke: "#6d7175", sw: 3, space: screen, at: "@камере-0.6", enter: pop}
+            - {actor: creature_face, x: 410, y: 925, w: 260, h: 370, cy: 700, tilt: 14, space: screen, at: "@камере-0.6", enter: fade}
+            - {actor: text, x: 540, y: 1346, size: 26, font: mono, weight: 700, color: "#e8e8e4", text: "ДЕНЬ 5 · 4 М", space: screen, at: "@камере-0.6", enter: fade}
+            - {actor: shape, kind: rect, x: 830, y: 1110, w: 260, h: 400, radius: 6, fill: "#2b2e31", stroke: "#6d7175", sw: 3, space: screen, at: "@камере", enter: pop}
+            - {actor: vhs, x: 700, y: 910, w: 260, h: 400, text: false, grain: 0.5, snow: 1, space: screen, at: "@камере", enter: fade}
+            - {actor: shape, kind: circle, x: 830, y: 1080, r: 14, fill: red, glow: {color: "#ff2a36", r: 30, a: 1}, space: screen, at: "@камере+0.15", enter: pop, blink: {freq: 3, duty: 0.6, min: 0.2}}
+            - {actor: text, x: 830, y: 1346, size: 26, font: mono, weight: 700, color: red, text: "ДЕНЬ 6 · ?", space: screen, at: "@камере", enter: fade}
+            - {<<: *vhs, text: false, grain: 0.1}
+            - {<<: *title, y: 300, size: 80, text: "×2 БЛИЖЕ КАЖДЫЙ ДЕНЬ", at: "@вдвое-0.05", reveal: {by: word, mode: slam, stagger: 0.08}}
+    sfx:
+      - {"sound": "glitch", "at": "@hook.start", "gain": -14}
+      - {"sound": "click", "at": "@Земле", "gain": -14}
+      - {"sound": "boom", "at": "@шесть", "gain": -14}
+      - {"sound": "blip", "at": "@Каждый", "gain": -14}
+      - {"sound": "impact", "at": "@вдвое", "gain": -14}
+      - {"sound": "noise_sweep", "at": "@камере", "gain": -14}
+
+  # ------------------------------------------------------------------ setup: Завязка — Отдел проверки
+  # задача: Кто и где: Вера проверяет записи на монтаж, смотрит каждую по сорок раз (улика); Олег спрашивает
+  #         «монтаж?» — «ни одной склейки».
+  # на экране: «ПО 40 РАЗ»
+  - id: setup
+    text: "Москва, третья ночь, отдел проверки видео. Мониторы гудят в темноте. Вера, двадцать семь. Ищет подделки в вирусных роликах. Каждую запись смотрит покадрово, по сорок раз."
+    shots:
+      - id: s_office
+        # ВИЗУАЛ: Тёмный опенспейс ночью: дальний план — окна с огнями ночной Москвы в дымке, средний — пустые
+        #         столы с погасшими мониторами на полу-ковролине, передний — стол Веры: три монитора с синим
+        #         светом, кружка, на стене над её столом маленькая камера наблюдения с красным огоньком (ружьё).
+        #         Метка места и времени.
+        # актёры: room, skyline, desk, new:monitor_wall, person, new:wall_camera, timetag
+        # камера: Медленный проезд вдоль столов к Вере
+        # анимация: @Москва — Мониторы мерцают, за окном мигают огни
+        # анимация: @ночь — Красный огонёк камеры над столом мигает
+        # анимация: @отдел — Проезд доходит до стола Веры, видна её спина
+        # анимация: @гудят — Мониторы вспыхивают синим, гул
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "hum", "gain": -18}, {"sound": "room", "gain": -18}]
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 560, y: 960}, {t: end, z: 1.14, x: 900, y: 1020, ease: inout}]}
+          layers:
+            - *office
+            - {actor: office_desk, x: 170, y: 1260, w: 520, h: 260, scale: 0.75}
+            - {actor: monitor, x: 120, y: 1072, w: 260, h: 160, scale: 0.75, on: 0.12, glow: "#203040"}
+            - {actor: monitor, x: 290, y: 1072, w: 260, h: 160, scale: 0.75, on: 0.12, glow: "#203040"}
+            - {actor: office_desk, x: 600, y: 1290, w: 560, h: 280, scale: 0.8}
+            - {actor: monitor, x: 600, y: 1090, w: 280, h: 170, scale: 0.8, on: 0.1, glow: "#203040"}
+            - {actor: shape, kind: rect, x: 1330, y: 950, w: 80, h: 1300, fill: {linear: ["#0f141c", "#1a2230"], angle: 90}}
+            - {actor: wall_cam, x: 1290, y: 620, size: 120, flip: true, led: [{at: 0, v: 0.6}, {at: "@ночь", v: 1, dur: 0.2}]}
+            - {actor: office_desk, x: 1060, y: 1440, w: 760, h: 280}
+            - {actor: monitor, x: 860, y: 1185, w: 300, h: 190, glow: "#5aa0ff", on: [{at: 0, v: 0.55}, {at: "@гудят", v: 1, dur: 0.25}], children: [{actor: shape, kind: rect, x: 150, y: 95, w: 300, h: 190, fill: {linear: ["#2a4a7a", "#14243e"], angle: 180}}]}
+            - {actor: monitor, x: 1080, y: 1185, w: 300, h: 190, glow: "#5aa0ff", on: [{at: 0, v: 0.55}, {at: "@гудят", v: 1, dur: 0.25}], children: [{actor: shape, kind: rect, x: 150, y: 95, w: 300, h: 190, fill: "#9aa0a4"}, {actor: creature, x: 120, y: 150, h: 60, tilt: 22}]}
+            - {actor: monitor, x: 1300, y: 1185, w: 300, h: 190, glow: "#5aa0ff", on: [{at: 0, v: 0.55}, {at: "@гудят", v: 1, dur: 0.25}], children: [{actor: shape, kind: rect, x: 150, y: 95, w: 300, h: 190, fill: {linear: ["#1d3354", "#0d1828"], angle: 180}}]}
+            - {actor: light_pool, x: 1080, y: 1300, r: 700, sy: 0.6, color: "#5aa0ff", a: [{at: 0, v: 0.25}, {at: "@гудят", v: 0.45, dur: 0.25}]}
+            - {actor: back_view, x: 1080, y: 1430, w: 300, rim: "#5aa0ff", top: "#3b3f47", at: "@отдел", enter: fade}
+            - {<<: *tag, text: "МОСКВА · ОТДЕЛ ПРОВЕРКИ · 02:14", at: "@Москва", enter: fade}
+      - id: s_vera
+        # ВИЗУАЛ: Крупнее: Вера (каре, серый худи) в синем свете, на мониторе запись №1 и таймлайн с кадрами; она
+        #         жмёт стрелку — кадр за кадром. Счётчик просмотров на мониторе: «40».
+        # актёры: desk, new:monitor_wall, person, new:creature, new:vhs, callout, new:view_counter
+        # камера: Наезд через плечо на монитор
+        # анимация: @Вера — Вера наклоняется к монитору
+        # анимация: @подделки — На мониторе рамка проверки обходит фигуру
+        # анимация: @роликах — Сбоку листается лента вирусных роликов с метками «ФЕЙК»
+        # анимация: @покадрово — Таймлайн щёлкает по кадру
+        # анимация: @сорок — Счётчик просмотров докручивается до 40
+        start: "@Вера-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 560, y: 900, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {linear: ["#03050a", "#0b1424"], angle: 180}}
+            - {actor: light_pool, x: 540, y: 820, r: 900, sy: 0.8, color: "#3a78d8", a: 0.35}
+            - {actor: monitor, id: mon, x: 540, y: 1250, w: 840, h: 520, glow: "#5aa0ff", children: [{actor: shape, kind: rect, x: 420, y: 140, w: 840, h: 280, fill: {linear: ["#55595d", "#9da2a5"], angle: 180}}, {actor: ridge, x: 420, y: 250, w: 900, h: 90, color: "#7c8287", snow: "#b9bec1", peaks: 6, seed: 4}, {actor: shape, kind: rect, x: 420, y: 380, w: 840, h: 260, fill: {linear: ["#b7bcbf", "#8f9497"], angle: 180}}, {actor: creature, x: 330, y: 268, h: 70, tilt: 22}, {actor: mast, x: 600, y: 300, h: 170}, {actor: shape, id: chk, kind: rect, x: 330, y: 230, w: 90, h: 120, fill: none, stroke: "#3ddc84", sw: 4, dash: "10 8", at: "@подделки", enter: draw}, {actor: shape, kind: rect, x: 420, y: 470, w: 840, h: 60, fill: "#0b0d12"}, {actor: shape, kind: rect, x: 420, y: 470, w: 800, h: 8, fill: "#3a3f48"}, {actor: shape, kind: rect, x: [{at: 0, v: 120}, {at: "@покадрово", v: 160, dur: 0.05, ease: step}, {at: "@покадрово+0.3", v: 200, dur: 0.05, ease: step}, {at: "@покадрово+0.6", v: 240, dur: 0.05, ease: step}, {at: "@раз", v: 280, dur: 0.05, ease: step}], y: 470, w: 6, h: 44, fill: "#ff2a36"}, {actor: text, x: 690, y: 40, size: 28, font: mono, weight: 700, color: "#e8e8e4", text: "👁 {n}", count: {from: 31, to: 40, at: "@сорок", dur: 0.8}}]}
+            - {actor: stack, dir: h, gap: 26, x: 540, y: 520, space: screen, at: "@роликах", children: [{actor: badge, title: "ФЕЙК", style: outline, color: "#8d9196", size: 34}, {actor: badge, title: "ФЕЙК", style: outline, color: "#8d9196", size: 34}, {actor: badge, title: "НЕ ФЕЙК?", style: solid, color: red, size: 34}], enter: slide_up}
+            - {actor: back_view, id: vera, x: 170, y: 2180, w: 560, rim: "#5aa0ff", top: "#3b3f47", par: 1.1}
+            - {<<: *who, title: "ВЕРА, 27 · ПРОВЕРКА ВИДЕО", x: 540, y: 1300, target: "vera.head", at: "@Вера"}
+            - {<<: *rbadge, title: "ПО 40 РАЗ", x: 540, y: 330, at: "@сорок"}
+    sfx:
+      - {"sound": "click", "at": "@Москва", "gain": -14}
+      - {"sound": "click", "at": "@покадрово", "gain": -14}
+      - {"sound": "blip", "at": "@сорок", "gain": -14}
+
+  # ------------------------------------------------------------------ nocut: Доказательство — Ни одной склейки
+  # задача: Олег входит с паспортом; проверка доказывает: записи — не монтаж.
+  # на экране: «НИ ОДНОЙ СКЛЕЙКИ»
+  - id: nocut
+    text: "Олег, пятьдесят, её начальник. Двадцать лет в новостях. Это монтаж? Нет. Ни одной склейки."
+    lines:                       # реплики героев: голос из voices, подпись говорящего на экране
+      - {who: oleg, say: "Это монтаж?"}
+      - {who: vera, say: "Нет. Ни одной склейки."}
+    shots:
+      - id: s_oleg
+        # ВИЗУАЛ: Олег (седая щетина, рукава закатаны) подходит со стаканом кофе и наклоняется над её плечом; на
+        #         мониторе — сравнение кадров с наложением, зелёные метки «склеек нет».
+        # актёры: desk, new:monitor_wall, person, callout, checklist
+        # камера: Двухплановый кадр, лёгкий наезд на монитор на «склейки»
+        # анимация: @Олег — Олег входит в кадр справа
+        # анимация: @новостях — Олег ставит кофе и наклоняется к экрану
+        # анимация: @монтаж — Олег тычет пальцем в фигуру на экране
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 960}, {t: end, z: 1.08, x: 760, y: 1000, ease: inout}]}
+          layers:
+            - *office
+            - {actor: office_desk, x: 760, y: 1400, w: 760, h: 300}
+            - {actor: monitor, x: 640, y: 1110, w: 360, h: 220, glow: "#5aa0ff", children: [{actor: shape, kind: rect, x: 180, y: 110, w: 360, h: 220, fill: "#9aa0a4"}, {actor: creature, x: 150, y: 170, h: 70, tilt: 22}]}
+            - {actor: light_pool, x: 640, y: 1150, r: 600, sy: 0.6, color: "#5aa0ff", a: 0.35}
+            - {actor: person, id: oleg, x: 1220, y: 1400, scale: 2.1, look: *oleg, face: [{at: 0, v: neutral}, {at: "@монтаж", v: talk}], pose: [{at: 0, v: stand}, {at: "@новостях", v: think, dur: 0.4}, {at: "@монтаж", v: point, dur: 0.3}], talk: [["@Это", "@монтаж.end"]], at: "@Олег-0.1", enter: slide_left}
+            - {actor: back_view, x: 430, y: 2300, w: 560, rim: "#5aa0ff", top: "#3b3f47"}
+            - {<<: *who, title: "ОЛЕГ, 50 · НАЧАЛЬНИК", x: 540, y: 520, target: "oleg.head", at: "@Олег"}
+            - {<<: *dbadge, title: "20 ЛЕТ В НОВОСТЯХ", x: 540, y: 330, at: "@новостях"}
+      - id: s_check
+        # ВИЗУАЛ: Монитор крупно: два кадра наложены друг на друга, по стыкам бегут зелёные метки проверки, шкала
+        #         шумов ровная; в углу — архивная справка «Слендермен, 2009: монтаж» перечёркнута.
+        # актёры: new:monitor_wall, new:creature, checklist, text
+        # камера: Наезд на шкалу шумов
+        # анимация: @Нет — Зелёные метки бегут по стыкам кадров
+        # анимация: @склейки — Шкала шумов ровная, штамп «СКЛЕЕК НЕТ»
+        start: "@Нет-0.22"
+        transition: {"type": "dip"}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 940}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {linear: ["#03050a", "#0b1424"], angle: 180}}
+            - {actor: monitor, x: 540, y: 1180, w: 840, h: 520, stand: false, glow: "#3ddc84", children: [{actor: shape, kind: rect, x: 420, y: 140, w: 840, h: 280, fill: {linear: ["#55595d", "#9da2a5"], angle: 180}}, {actor: ridge, x: 420, y: 250, w: 900, h: 90, color: "#7c8287", snow: "#b9bec1", peaks: 6, seed: 4}, {actor: shape, kind: rect, x: 420, y: 380, w: 840, h: 260, fill: {linear: ["#b7bcbf", "#8f9497"], angle: 180}}, {actor: creature, x: 330, y: 268, h: 70, tilt: 22}, {actor: mast, x: 600, y: 300, h: 170}, {actor: shape, kind: rect, x: 420, y: 260, w: 840, h: 520, fill: "rgba(61,220,132,.06)"}, {actor: shape, kind: line, points: [[0, 160], [840, 160]], stroke: "#3ddc84", sw: 3, dash: "14 10", at: "@Нет", enter: draw}, {actor: shape, kind: line, points: [[0, 320], [840, 320]], stroke: "#3ddc84", sw: 3, dash: "14 10", at: "@Нет+0.2", enter: draw}, {actor: shape, kind: line, points: [[420, 0], [420, 520]], stroke: "#3ddc84", sw: 3, dash: "14 10", at: "@Нет+0.4", enter: draw}]}
+            - {actor: checklist, x: 290, y: 1250, width: 500, size: 40, origin: top-left, color: "#3ddc84", ink: "#e8e8e4", space: screen, items: [{text: "СКЛЕЙКИ: НЕТ", at: "@Нет"}, {text: "ШУМ: РОВНЫЙ", at: "@одной"}]}
+            - {<<: *title, text: "НИ ОДНОЙ СКЛЕЙКИ", y: 400, at: "@склейки-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+    sfx:
+      - {"sound": "footstep", "at": "@Олег", "gain": -14}
+      - {"sound": "click", "at": "@Нет", "gain": -14}
+      - {"sound": "impact", "at": "@склейки", "gain": -14}
+
+  # ------------------------------------------------------------------ problem: Раскрытие — Запись первая
+  # задача: Запись 1: фигура описана одной деталью — красная точка вместо лица, 64 метра.
+  # на экране: «ДЕНЬ 1 · 64 М»
+  - id: problem
+    text: "День первый. Шпицберген, метеостанция, в динамике воет ветер. На снегу фигура, шестьдесят четыре метра. Руки ниже колен, голова набок. Вместо лица — красная точка, как огонёк записи."
+    caption_marks: {"шестьдесят четыре": "#e8333f", "красная точка": "#e8333f"}
+    shots:
+      - id: p_snow
+        # ВИЗУАЛ: Запись №1 на весь экран: снежная равнина метеостанции, фигура вдали; по фигуре — рамка захвата с
+        #         дальномером «64 М».
+        # актёры: sky, ground, new:snowfield, new:creature, particles, cctv, new:vhs
+        # камера: Статика камеры, цифровой зум на «фигура»
+        # анимация: @Шпицберген — Позёмка, VHS-полоса
+        # анимация: @ветер — Порыв: снег бьёт в объектив, кадр дрожит
+        # анимация: @фигура — Рамка захвата наводится на фигуру
+        # анимация: @метра — Дальномер докручивает 64 М
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "wind", "gain": -18}]
+        look: {grade: {contrast: 0.06}}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@фигура", z: 1.0}, {t: "@фигура+0.14", z: 1.6, x: 450, y: 930, ease: out}, {t: end, z: 1.66, x: 450, y: 930}], sway: {x: 1.5, y: 1, roll: 0.05, freq: 0.6}, shakes: [{at: "@ветер", amp: 10, dur: 0.6}]}
+          layers:
+            - *snow
+            - {actor: creature, id: it, x: 380, y: 958, h: 150, tilt: 22, soft: 0.6}
+            - {actor: particles, kind: snow, region: [-200, 200, 1300, 1800], count: 140, size: [3, 6], speed: 1.4, wind: 260, colors: ["#e8ecee"], seed: 4}
+            - {actor: particles, kind: snow, region: [-200, 200, 1300, 1800], count: 220, size: [4, 8], speed: 2.6, wind: 900, colors: ["#f2f4f5"], seed: 8, at: "@ветер", until: "@ветер+1.6", enter: fade, exit: fade}
+            - {actor: shape, kind: rect, x: 380, y: 880, w: 110, h: 190, fill: none, stroke: red, sw: 4, at: "@фигура", enter: zoom}
+            - {<<: *vhs, label: "ЗАПИСЬ №1", date: "ДЕНЬ 1", clock: 11602, cam: "МЕТЕОСТАНЦИЯ"}
+            - {<<: *tag, text: "ДЕНЬ 1 · ШПИЦБЕРГЕН", at: "@День", enter: fade}
+            - {<<: *rbadge, title: "64 МЕТРА", x: 540, y: 330, at: "@метра"}
+      - id: p_face
+        # ВИЗУАЛ: Стоп-кадр крупно, зерно и пиксели: силуэт — длинные руки ниже колен, голова склонена набок,
+        #         вместо лица одна красная точка; рядом выноски-стрелки «руки», «голова», «точка». Красная точка
+        #         мигает в такт с REC в углу.
+        # актёры: new:creature, new:vhs, callout, shape
+        # камера: Медленный наезд на голову
+        # анимация: @Руки — Выноска к рукам
+        # анимация: @голова — Выноска к голове
+        # анимация: @точка — Красная точка вспыхивает, REC в углу мигает одновременно
+        start: "@Руки-0.22"
+        look: {grade: {contrast: 0.08}}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 900, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {linear: ["#6a6e72", "#9da2a5", "#a9aeb1"], angle: 180}, blur: 6}
+            - {actor: ridge, x: 540, y: 1100, w: 1900, h: 300, color: "#868b90", snow: "#b4b9bc", peaks: 5, seed: 6, blur: 5}
+            - {actor: ground, x: -400, y: 1090, w: 1900, h: 900, color: ["#b2b7ba", "#8f9497"]}
+            - {actor: creature, id: it, x: 540, y: 1300, h: 960, tilt: [{at: 0, v: 16}, {at: "@голова", v: 30, dur: 0.6}], soft: 1.4, dot: [{at: 0, v: 0.7}, {at: "@точка", v: 1, dur: 0.15}]}
+            - {actor: particles, kind: snow, region: [-200, 200, 1300, 1800], count: 90, size: [3, 7], speed: 1.2, wind: 220, colors: ["#e8ecee"], seed: 6}
+            - {<<: *vhs, label: "ЗАПИСЬ №1 · ×6", date: "ДЕНЬ 1", clock: 11610, cam: "СТОП-КАДР", tear: [{at: 0, v: 0.5}, {at: "@Руки", v: 0, dur: 0.3}, {at: "@точка", v: 0.6, dur: 0.05}, {at: "@точка+0.4", v: 0, dur: 0.2}]}
+            - {<<: *who, title: "РУКИ НИЖЕ КОЛЕН", x: 360, y: 1000, target: "it.box:0.25,0.82", at: "@Руки"}
+            - {<<: *who, title: "ГОЛОВА НАБОК", x: 780, y: 640, target: "it.box:0.6,0.08", at: "@голова"}
+            - {<<: *who, title: "КАК ОГОНЁК ЗАПИСИ", x: 540, y: 300, target: "it.dot", at: "@точка"}
+    sfx:
+      - {"sound": "glitch", "at": "@День", "gain": -14}
+      - {"sound": "blip", "at": "@метра", "gain": -14}
+      - {"sound": "click", "at": "@Руки", "gain": -14}
+      - {"sound": "heartbeat", "at": "@точка", "gain": -14}
+
+  # ------------------------------------------------------------------ days23: Эскалация — Тридцать два, шестнадцать
+  # задача: Записи 2–3: расстояние честно сокращается вдвое, места всё ближе к людям.
+  # на экране: «32 → 16 М»
+  - id: days23
+    text: "День второй. Чили, видеорегистратор. Тридцать два метра. День третий. Осака, метро. Шестнадцать."
+    caption_marks: {"тридцать два": "#e8333f", "шестнадцать": "#e8333f"}
+    shots:
+      - id: p_chile
+        # ВИЗУАЛ: Запись видеорегистратора ночью: мокрая трасса, фары выхватывают обочину, дальний план — силуэты
+        #         Анд и огни посёлка; фигура стоит на обочине, ближе, чем на снегу. Рамка «32 М».
+        # актёры: sky, new:road_night, streetlight, new:creature, cctv, new:vhs
+        # камера: Камера едет вперёд (дорога течёт), фигура проплывает мимо
+        # анимация: @Чили — Разметка бежит, дворники
+        # анимация: @Тридцать — Рамка захвата на фигуре, 32 М
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "rain", "gain": -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.05, x: 540, y: 960}], sway: {x: 3, y: 3, roll: 0.15, freq: 0.5}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 500, w: 1400, h: 1000, fill: {linear: ["#0c0d0f", "#2a2c2f"], angle: 180}}
+            - {actor: ridge, x: 540, y: 905, w: 1900, h: 300, color: "#1d1f22", snow: "#3c3f43", peaks: 5, seed: 12}
+            - {actor: shape, kind: rect, x: 540, y: 900, w: 1900, h: 60, fill: {linear: ["rgba(90,94,98,0)", "rgba(90,94,98,.5)", "rgba(90,94,98,0)"], angle: 180}}
+            - {actor: shape, kind: circle, x: 860, y: 880, r: 4, fill: "#d8d8d0", glow: {color: "#d8d8d0", r: 10, a: 0.8}}
+            - {actor: shape, kind: circle, x: 905, y: 884, r: 3, fill: "#d8d8d0", glow: {color: "#d8d8d0", r: 10, a: 0.8}}
+            - {actor: shape, kind: circle, x: 940, y: 879, r: 4, fill: "#d8d8d0", glow: {color: "#d8d8d0", r: 10, a: 0.8}}
+            - {actor: highway, x: 0, y: 0, hz: 900, speed: 1.6, glow: 0.85}
+            - {actor: creature, id: it, x: [{at: 0, v: 700}, {at: "@end", v: 1180, dur: 4.2, ease: in}], y: [{at: 0, v: 1000}, {at: "@end", v: 1700, dur: 4.2, ease: in}], h: [{at: 0, v: 160}, {at: "@end", v: 900, dur: 4.2, ease: in}], tilt: 20, soft: 0.8}
+            - {actor: particles, kind: dust, region: [-100, 300, 1180, 1700], count: 120, size: [2, 4], speed: 4, colors: ["#bfc3c6"], seed: 2}
+            - {<<: *vhs, label: "ЗАПИСЬ №2", date: "ДЕНЬ 2", clock: 79220, cam: "72 КМ/Ч"}
+            - {<<: *tag, text: "ДЕНЬ 2 · ЧИЛИ", at: "@День", enter: fade}
+            - {<<: *rbadge, title: "32 МЕТРА", x: 540, y: 330, at: "@Тридцать"}
+      - id: p_osaka
+        # ВИЗУАЛ: Камера наблюдения на платформе метро: перспектива платформы с колоннами, табло, дальний конец
+        #         тоннеля в темноте; фигура стоит у дальней колонны, голова почти касается потолка. Рамка «16 М».
+        # актёры: new:metro_platform, new:creature, person, cctv, new:vhs
+        # камера: Статика, рывковый цифровой зум на «Шестнадцать»
+        # анимация: @Осака — Мигает лампа на платформе
+        # анимация: @Шестнадцать — Зум на фигуру, полоса помех
+        start: "@День#2-0.22"
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "hum", "gain": -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@Шестнадцать", z: 1.0}, {t: "@Шестнадцать+0.14", z: 1.45, x: 470, y: 900, ease: out}, {t: end, z: 1.5, x: 470, y: 900}]}
+          layers:
+            - {actor: corridor, kind: metro, vx: 520, vy: 820, lamp: [{at: 0, v: 0}, {at: "@Осака", v: 1}]}
+            - {actor: creature, id: it, x: 470, y: 1100, h: 360, tilt: 24, soft: 0.6}
+            - {actor: person, x: 760, y: 1500, scale: 1.25, look: {age: adult, outfit: suit, hair: short, skin: mid}, pose: stand, hold: phone, face: neutral, grayscale: 1, brightness: 0.75}
+            - {<<: *vhs, label: "ЗАПИСЬ №3", date: "ДЕНЬ 3", clock: 11460, cam: "CAM 14 · ПЛАТФОРМА"}
+            - {<<: *tag, text: "ДЕНЬ 3 · ОСАКА", at: "@День", enter: fade}
+            - {<<: *rbadge, title: "16 МЕТРОВ", x: 540, y: 330, at: "@Шестнадцать"}
+    sfx:
+      - {"sound": "glitch", "at": "@День", "gain": -14}
+      - {"sound": "blip", "at": "@Тридцать", "gain": -14}
+      - {"sound": "glitch", "at": "@День#2", "gain": -14}
+      - {"sound": "impact", "at": "@Шестнадцать", "gain": -14}
+
+  # ------------------------------------------------------------------ rule: Правило мира — Вдвое ближе
+  # задача: Правило 1 проверено линейкой: вдвое выше — вдвое ближе; зритель сам досчитывает 8 → 4 → 2.
+  # на экране: «×2 ВЫШЕ = ×2 БЛИЖЕ»
+  - id: rule
+    text: "Вера кладёт кадры рядом. Каждые сутки фигура ровно вдвое выше. Значит, расстояние делится пополам."
+    caption_marks: {"вдвое": "#e8333f", "пополам": "#e8333f"}
+    shots:
+      - id: r_ruler
+        # ВИЗУАЛ: Монитор Веры: три кадра рядом, фигура в каждом вдвое выше; Вера проводит красную линейку по
+        #         экрану — отметки ×2; под кадрами цепочка 64 → 32 → 16 и пустые места для 8 → 4 → 2.
+        # актёры: new:monitor_wall, new:creature, shape, text, chart
+        # камера: Плавная панорама по трём кадрам слева направо
+        # анимация: @рядом — Три кадра встают в ряд
+        # анимация: @вдвое — Красная линейка меряет фигуры, отметки ×2
+        # анимация: @пополам — Цепочка дописывает 8 → 4 → 2 серым, будущим
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 920}, {t: end, z: 1.05, x: 540, y: 920, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1500, h: 2100, fill: {linear: ["#05070c", "#0d1626"], angle: 180}}
+            - {<<: *tag, text: "СРАВНЕНИЕ КАДРОВ · №1–3", at: "@rule.start", enter: fade}
+            - {actor: shape, kind: rect, x: 200, y: 840, w: 300, h: 440, radius: 6, fill: {linear: ["#5a5e62", "#a2a7aa", "#b4b9bc"], angle: 180}, stroke: "#6d7175", sw: 3, at: "@рядом", enter: pop}
+            - {actor: creature, x: 200, y: 1030, h: 70, tilt: 22, soft: 0.4, at: "@рядом", enter: fade}
+            - {actor: shape, kind: rect, x: 540, y: 840, w: 300, h: 440, radius: 6, fill: {linear: ["#5a5e62", "#a2a7aa", "#b4b9bc"], angle: 180}, stroke: "#6d7175", sw: 3, at: "@рядом+0.15", enter: pop}
+            - {actor: creature, x: 540, y: 1030, h: 140, tilt: 22, soft: 0.4, at: "@рядом+0.15", enter: fade}
+            - {actor: shape, kind: rect, x: 880, y: 840, w: 300, h: 440, radius: 6, fill: {linear: ["#5a5e62", "#a2a7aa", "#b4b9bc"], angle: 180}, stroke: "#6d7175", sw: 3, at: "@рядом+0.3", enter: pop}
+            - {actor: creature, x: 880, y: 1030, h: 280, tilt: 22, soft: 0.4, at: "@рядом+0.3", enter: fade}
+            - {actor: shape, kind: line, points: [[365, 1030], [365, 960]], stroke: red, sw: 6, at: "@вдвое", enter: draw}
+            - {actor: shape, kind: line, points: [[705, 1030], [705, 890]], stroke: red, sw: 6, at: "@вдвое+0.2", enter: draw}
+            - {actor: shape, kind: line, points: [[1045, 1030], [1045, 750]], stroke: red, sw: 6, at: "@вдвое+0.4", enter: draw}
+            - {actor: text, x: 370, y: 700, size: 44, font: mono, weight: 800, color: red, text: "×2", at: "@вдвое+0.2", enter: pop}
+            - {actor: text, x: 710, y: 700, size: 44, font: mono, weight: 800, color: red, text: "×2", at: "@вдвое+0.4", enter: pop}
+            - {<<: *title, text: "×2 ВЫШЕ = ×2 БЛИЖЕ", at: "@вдвое-0.05", reveal: {by: word, mode: slam, stagger: 0.08}}
+            - {actor: text, x: 540, y: 1200, size: 54, font: mono, weight: 800, color: "#e8e8e4", space: screen, text: "64 → 32 → 16 → [8 → 4 → 2](#6d7175)", at: "@пополам", reveal: {by: word, mode: rise, stagger: 0.12}}
+            - {actor: text, x: 540, y: 1290, size: 34, font: mono, weight: 700, color: "#8d9196", space: screen, text: "МЕТРОВ ДО ОБЪЕКТИВА", at: "@пополам+0.5", enter: fade}
+    sfx:
+      - {"sound": "click", "at": "@рядом", "gain": -14}
+      - {"sound": "blip", "at": "@вдвое", "gain": -14}
+      - {"sound": "riser", "at": "@пополам", "gain": -14}
+
+  # ------------------------------------------------------------------ seoul: Доказательство — Ему нужен объектив
+  # задача: Правило 2 проверено на стороже: оно обходит человека и идёт к камере.
+  # на экране: «ЕМУ НУЖЕН ОБЪЕКТИВ»
+  - id: seoul
+    text: "День четвёртый. Сеул, парковка, трещат лампы. Сторож стоит между ним и камерой. Восемь метров. Оно обходит сторожа, не повернув головы. Людей оно не трогает. Ему нужен объектив."
+    caption_marks: {"восемь метров": "#e8333f", "объектив": "#e8333f"}
+    shots:
+      - id: r_seoul
+        # ВИЗУАЛ: Запись камеры подземной парковки: ряды колонн, машины, люминесцентные лампы, дальний пандус в
+        #         темноте; сторож с фонарём стоит в середине кадра между камерой и фигурой. Рамка «8 М».
+        # актёры: new:parking, new:creature, person, torch, cctv, new:vhs
+        # камера: Статика камеры наблюдения, лёгкий зум на «Восемь»
+        # анимация: @Сеул — Мигает лампа, по полу ползёт свет фонаря
+        # анимация: @Сторож — Сторож поднимает фонарь в сторону фигуры
+        # анимация: @Восемь — Рамка захвата: 8 М
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "hum", "gain": -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@Восемь", z: 1.0}, {t: "@Восемь+0.14", z: 1.25, x: 560, y: 1000, ease: out}, {t: end, z: 1.28, x: 560, y: 1000}]}
+          layers:
+            - {actor: corridor, kind: parking, vx: 540, vy: 840, lamp: [{at: 0, v: 0}, {at: "@трещат", v: 1}]}
+            - {actor: creature, id: it, x: 600, y: 1200, h: 560, tilt: 20, soft: 0.6}
+            - {actor: person, id: guard, x: 470, y: 1420, scale: 1.45, look: {age: adult, outfit: suit, color: "#2b2f36", hair: buzz, skin: mid, hat: cap, cap_color: "#1c1e22"}, face: neutral, pose: [{at: 0, v: stand}, {at: "@Сторож", v: point, dur: 0.4}], grayscale: 1, brightness: 0.8}
+            - {actor: light_pool, x: 620, y: 1250, r: 300, sy: 0.4, color: "#e9ecee", a: [{at: 0, v: 0}, {at: "@Сторож", v: 0.35, dur: 0.3}]}
+            - {<<: *vhs, label: "ЗАПИСЬ №4", date: "ДЕНЬ 4", clock: 8410, cam: "CAM B2-07"}
+            - {<<: *tag, text: "ДЕНЬ 4 · СЕУЛ", at: "@День", enter: fade}
+            - {actor: shape, kind: rect, x: 600, y: 920, w: 200, h: 600, fill: none, stroke: red, sw: 4, at: "@Восемь", enter: zoom}
+            - {<<: *rbadge, title: "8 МЕТРОВ", x: 540, y: 330, at: "@Восемь"}
+      - id: r_around
+        # ВИЗУАЛ: Та же парковка: фигура в три длинных шага огибает сторожа по дуге, его фонарь светит в пустоту;
+        #         голова фигуры всё время повёрнута прямо в объектив, красная точка растёт. Пунктир траектории
+        #         дугой вокруг сторожа к камере.
+        # актёры: new:parking, new:creature, person, torch, cctv, new:vhs, shape
+        # камера: Статика, кадр дрожит на каждом шаге
+        # анимация: @обходит — Фигура шагает по дуге вокруг сторожа
+        # анимация: @повернув — Голова не двигается — точка смотрит в камеру
+        # анимация: @трогает — Сторож оборачивается — фигуры за ним уже нет
+        start: "@обходит-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.0, x: 540, y: 960}], shakes: [{at: "@обходит+0.3", amp: 6, dur: 0.2}, {at: "@обходит+0.9", amp: 6, dur: 0.2}, {at: "@повернув", amp: 8, dur: 0.25}]}
+          layers:
+            - {actor: corridor, kind: parking, vx: 540, vy: 840, lamp: [{at: 0, v: 0}, {at: "@трещат", v: 1}]}
+            - {actor: shape, kind: path, d: "M600,1200 Q920,1300 820,1520 Q760,1700 560,1880", fill: none, stroke: red, sw: 5, dash: "16 12", at: "@обходит", enter: draw, enter_dur: 1.0}
+            - {actor: person, id: guard, x: 470, y: 1420, scale: 1.45, look: {age: adult, outfit: suit, color: "#2b2f36", hair: buzz, skin: mid, hat: cap, cap_color: "#1c1e22"}, face: [{at: 0, v: neutral}, {at: "@трогает", v: surprised}], pose: point, grayscale: 1, brightness: 0.8, flip: [{at: 0, v: false}, {at: "@трогает", v: true}]}
+            - {actor: creature, id: it, x: [{at: 0, v: 600}, {at: "@обходит", v: 830, dur: 1.2, ease: inOutSine}, {at: "@повернув", v: 620, dur: 1.4, ease: in}], y: [{at: 0, v: 1200}, {at: "@обходит", v: 1450, dur: 1.2, ease: inOutSine}, {at: "@повернув", v: 1960, dur: 1.4, ease: in}], h: [{at: 0, v: 560}, {at: "@обходит", v: 690, dur: 1.2}, {at: "@повернув", v: 1500, dur: 1.4, ease: in}], walk: [{at: 0, v: 0}, {at: "@обходит", v: 1.4}], tilt: 20, soft: 0.8}
+            - {<<: *vhs, label: "ЗАПИСЬ №4", date: "ДЕНЬ 4", clock: 8418, cam: "CAM B2-07", tear: [{at: 0, v: 0}, {at: "@трогает", v: 0.7, dur: 0.1}, {at: "@трогает+0.4", v: 0.1, dur: 0.3}]}
+            - {<<: *rbadge, title: "ЛЮДЕЙ НЕ ТРОГАЕТ", x: 540, y: 330, at: "@обходит"}
+      - id: r_lens
+        # ВИЗУАЛ: Стоп-кадр: красная точка фигуры в отражении линзы камеры парковки — крупный объектив, в стекле
+        #         изогнутое отражение силуэта; кольца диафрагмы.
+        # актёры: new:lens, new:creature, new:vhs, text
+        # камера: Резкий наезд в зрачок объектива
+        # анимация: @объектив — Диафрагма сжимается, отражение фигуры заполняет линзу
+        start: "@Ему-0.22"
+        transition: {"type": "zoom"}
+        draw:
+          camera: {keys: [{t: 0, z: 0.9, x: 540, y: 900}, {t: end, z: 1.25, x: 540, y: 900, ease: in}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {linear: ["#020203", "#0b0c0e"], angle: 180}}
+            - {actor: lens, x: 540, y: 900, r: 400, close: [{at: 0, v: 0}, {at: "@объектив", v: 0.75, dur: 0.6, ease: out}], reflect: [{at: 0, v: 0.3}, {at: "@объектив", v: 1, dur: 0.8}]}
+            - {<<: *vhs, text: false, grain: 0.12}
+            - {<<: *title, y: 330, text: "ЕМУ НУЖЕН ОБЪЕКТИВ", at: "@Ему-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+    sfx:
+      - {"sound": "glitch", "at": "@День", "gain": -14}
+      - {"sound": "blip", "at": "@Восемь", "gain": -14}
+      - {"sound": "footstep", "at": "@обходит", "gain": -14}
+      - {"sound": "creature", "at": "@повернув", "gain": -14}
+      - {"sound": "boom", "at": "@объектив", "gain": -14}
+
+  # ------------------------------------------------------------------ day5: Эскалация — Четыре метра
+  # задача: Запись 5 с чужого телефона: оно закрывает полэкрана — следующая будет ещё ближе.
+  # на экране: «ДЕНЬ 5 · 4 М»
+  - id: day5
+    text: "День пятый. Чужой телефон, четыре метра. Рука дрожит. Оно закрывает полэкрана."
+    caption_marks: {"четыре метра": "#e8333f"}
+    shots:
+      - id: d_phone
+        # ВИЗУАЛ: Вертикальная запись с чужого телефона: тёмный двор панельного дома, качели, фонарь; фигура в
+        #         четырёх метрах закрывает половину экрана, красная точка размыта автофокусом; рука снимающего
+        #         дрожит. Рамка «4 М».
+        # актёры: new:phone_rec, house, streetlight, ground, new:creature, new:vhs
+        # камера: Ручная тряска, автофокус «дышит»
+        # анимация: @телефон — Камера дрожит, фокус гуляет
+        # анимация: @четыре — Рамка захвата, 4 М
+        # анимация: @полэкрана — Фигура делает шаг, закрывая половину кадра, запись обрывается
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "wind", "gain": -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.04, x: 540, y: 960}], sway: {x: 16, y: 18, freq: 0.35}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 500, w: 1500, h: 1100, fill: {linear: ["#050608", "#15171a"], angle: 180}}
+            - {actor: building, x: 300, y: 1030, floors: 9, cols: 5, color: "#1c1e21", win_off: "#0c0d0f", win_on: "#8f8c80", lit: 0.25, seed: 4}
+            - {actor: building, x: 880, y: 1030, floors: 9, cols: 4, color: "#191b1e", win_off: "#0c0d0f", win_on: "#8f8c80", lit: 0.2, seed: 9}
+            - {actor: ground, x: -400, y: 1010, w: 1900, h: 1000, color: ["#2a2c2f", "#141518"]}
+            - {actor: streetlight, x: 140, y: 1230, h: 600, on: 1, color: "#c9c6bb"}
+            - {actor: light_pool, x: 170, y: 1230, r: 380, sy: 0.35, color: "#c9c6bb", a: 0.35}
+            - {actor: creature, id: it, x: [{at: 0, v: 600}, {at: "@полэкрана", v: 560, dur: 0.5, ease: out}], y: [{at: 0, v: 1700}, {at: "@полэкрана", v: 2500, dur: 0.5, ease: out}], h: [{at: 0, v: 1050}, {at: "@полэкрана", v: 2300, dur: 0.5, ease: out}], tilt: 16, soft: [{at: 0, v: 3}, {at: "@телефон", v: 1.2, dur: 0.6}, {at: "@дрожит", v: 4, dur: 0.3}, {at: "@дрожит+0.5", v: 1.5, dur: 0.3}]}
+            - {actor: cam_ui, x: 0, y: 0, mode: phone, timer: 3, space: screen}
+            - {<<: *vhs, text: false, grain: 0.18, scan: 0.12, snow: [{at: 0, v: 0}, {at: "@полэкрана+0.5", v: 1, dur: 0.1}], tear: [{at: 0, v: 0}, {at: "@полэкрана", v: 1, dur: 0.1}]}
+            - {<<: *tag, text: "ДЕНЬ 5 · ЗАПИСЬ С ТЕЛЕФОНА", y: 340, at: "@День", enter: fade}
+            - {<<: *rbadge, title: "4 МЕТРА", x: 540, y: 470, at: "@четыре"}
+    sfx:
+      - {"sound": "glitch", "at": "@День", "gain": -14}
+      - {"sound": "heartbeat", "at": "@четыре", "gain": -14}
+      - {"sound": "noise_sweep", "at": "@полэкрана", "gain": -14}
+
+  # ------------------------------------------------------------------ dilemma: Эскалация — Выложить или стереть
+  # задача: Пятая запись (4 м) и спор Олега и Веры: у каждого своя правда; Вера снова ставит запись на повтор.
+  # на экране: «ВЫЛОЖИТЬ ИЛИ СТЕРЕТЬ?»
+  - id: dilemma
+    text: "Олег кладёт на стол флешку. Выкладываем подборку. Люди должны знать, как оно выглядит. А если ему нужно, чтобы на него смотрели? Тогда пусть знают, куда не смотреть. Вера включает пятую запись снова. Сорок первый раз."
+    lines:                       # реплики героев: голос из voices, подпись говорящего на экране
+      - {who: oleg, say: "Выкладываем подборку. Люди должны знать, как оно выглядит."}
+      - {who: vera, say: "А если ему нужно, чтобы на него смотрели?"}
+      - {who: oleg, say: "Тогда пусть знают, куда не смотреть."}
+    shots:
+      - id: d_drive
+        # ВИЗУАЛ: Стол Веры сверху: рука Олега кладёт флешку с красной наклейкой «ПОДБОРКА»; на мониторе папка из
+        #         пяти записей.
+        # актёры: desk, new:monitor_wall, human_hand, prop, text
+        # камера: Вид сверху, лёгкий наезд на флешку
+        # анимация: @кладёт — Флешка ложится на стол с тенью
+        # анимация: @Выкладываем — На мониторе прогресс загрузки замер на 0%
+        draw:
+          camera: {keys: [{t: 0, z: 1.06, x: 540, y: 980}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#2a3240", "#11151c"]}}
+            - {actor: shape, kind: rect, x: 540, y: 300, w: 980, h: 240, radius: 14, fill: "#0f1218", stroke: "#2a2f38", sw: 3, glow: {color: "#5aa0ff", r: 40, a: 0.4}}
+            - {actor: shape, kind: rect, x: 520, y: 1260, w: 760, h: 240, radius: 16, fill: "#1a1d23", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 900, y: 1250, w: 120, h: 190, radius: 50, fill: "#1a1d23", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 300, y: 880, w: 120, h: 150, radius: 14, fill: "#cfd3d8", rot: -8}
+            - {actor: shape, kind: rect, id: drv, x: [{at: 0, v: 760}, {at: "@кладёт", v: 600, dur: 0.6, ease: out}], y: [{at: 0, v: 300}, {at: "@кладёт", v: 860, dur: 0.6, ease: out}], w: 90, h: 220, radius: 12, fill: "#1b1d22", stroke: "#3a3f48", sw: 3, rot: 12, shadow: {x: 10, y: 14, blur: 14, a: 0.6}}
+            - {actor: shape, kind: rect, x: [{at: 0, v: 760}, {at: "@кладёт", v: 600, dur: 0.6, ease: out}], y: [{at: 0, v: 335}, {at: "@кладёт", v: 895, dur: 0.6, ease: out}], w: 90, h: 90, fill: red, rot: 12}
+            - {actor: human_hand, x: [{at: 0, v: 800}, {at: "@кладёт", v: 640, dur: 0.6, ease: out}, {at: "@подборку", v: 900, dur: 0.6, ease: in}], y: [{at: 0, v: 200}, {at: "@кладёт", v: 760, dur: 0.6, ease: out}, {at: "@подборку", v: -300, dur: 0.6, ease: in}], rot: 170, scale: 1.3, skin: "#d9b49a", sleeve: "#c9cdd4"}
+            - {<<: *rbadge, title: "ПОДБОРКА · 5 ЗАПИСЕЙ", x: 540, y: 600, at: "@Выкладываем"}
+      - id: d_argue
+        # ВИЗУАЛ: Двухплановый спор у стола: Олег стоит, руки в карманах, освещён тёплой лампой; Вера сидит в
+        #         синем свете монитора и смотрит на экран, а не на него. Между ними на экране — замёрший кадр
+        #         фигуры. Подписи говорящих.
+        # актёры: desk, new:monitor_wall, person, new:creature, callout
+        # камера: Медленный наезд, на каждой реплике — смена фокуса между героями
+        # анимация: @Люди — Олег говорит, жест рукой на экран
+        # анимация: @если — Вера поворачивается к нему
+        start: "@Люди-0.22"
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 700, y: 960}, {t: "@если", z: 1.06, x: 820, y: 940, ease: inout}, {t: end, z: 1.06, x: 760, y: 940}]}
+          layers:
+            - *office
+            - {actor: light_pool, x: 380, y: 700, r: 500, sy: 0.9, color: "#ffb36a", a: 0.22}
+            - {actor: person, id: oleg, x: 420, y: 1400, scale: 2.2, look: *oleg, face: talk, talk: [["@Выкладываем", "@выглядит.end"]], pose: [{at: 0, v: stand}, {at: "@Люди", v: point, dur: 0.35}]}
+            - {actor: office_desk, x: 1060, y: 1400, w: 700, h: 300}
+            - {actor: monitor, x: 860, y: 1110, w: 320, h: 200, glow: "#5aa0ff", children: [{actor: shape, kind: rect, x: 160, y: 100, w: 320, h: 200, fill: "#9aa0a4"}, {actor: creature, x: 160, y: 190, h: 150, tilt: 16}]}
+            - {actor: light_pool, x: 960, y: 1150, r: 520, sy: 0.6, color: "#5aa0ff", a: 0.35}
+            - {actor: person, id: vera, view: side, flip: true, x: 1180, y: 1400, scale: 2.0, look: *vera, pose: sit, face: [{at: 0, v: neutral}, {at: "@если", v: talk}], talk: [["@если", "@смотрели.end"]], look_dx: -1}
+            - {actor: stack, dir: h, gap: 40, x: 540, y: 330, space: screen, at: "@если", enter: pop, children: [{actor: badge, title: "ВЫЛОЖИТЬ", style: solid, color: "#e8e8e4", size: 44}, {actor: badge, title: "СТЕРЕТЬ", style: solid, color: red, size: 44}]}
+      - id: d_oleg2
+        # ВИЗУАЛ: Крупно Олег в тёплом свете лампы, за ним тёмные окна офиса с огнями города; он выпрямляется и
+        #         забирает флешку со стола.
+        # актёры: room, skyline, person, prop, callout
+        # камера: Медленный наезд на лицо Олега
+        # анимация: @Тогда — Олег выпрямляется
+        # анимация: @куда — Олег забирает флешку со стола
+        start: "@Тогда-0.22"
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.02, x: 600, y: 940}, {t: end, z: 1.05, x: 580, y: 940, ease: inout}]}
+          layers:
+            - *office
+            - {actor: light_pool, x: 380, y: 760, r: 600, sy: 0.9, color: "#ffb36a", a: 0.3}
+            - {actor: person, id: oleg, x: 440, y: 1380, scale: 2.2, look: *oleg, face: talk, talk: [["@Тогда", "@смотреть.end"]], pose: [{at: 0, v: point}, {at: "@куда", v: hold, dur: 0.4}]}
+            - {<<: *dbadge, title: "КУДА НЕ СМОТРЕТЬ", x: 540, y: 330, at: "@куда"}
+      - id: d_replay
+        # ВИЗУАЛ: Монитор крупно: пятая запись на повторе, счётчик просмотров щёлкает с 40 на 41; в отражении
+        #         экрана — лицо Веры и маленький красный огонёк камеры над её столом.
+        # актёры: new:monitor_wall, new:creature, new:view_counter, new:wall_camera, new:vhs
+        # камера: Наезд на счётчик
+        # анимация: @снова — Значок повтора крутится
+        # анимация: @Сорок — Счётчик щёлкает 40 → 41, в отражении мигает красный огонёк
+        start: "@Вера-0.22"
+        transition: {"type": "dip"}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 640, y: 760, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {linear: ["#03050a", "#0b1424"], angle: 180}}
+            - {actor: monitor, x: 540, y: 1250, w: 840, h: 520, glow: "#5aa0ff", children: [{actor: shape, kind: rect, x: 420, y: 260, w: 840, h: 520, fill: "#141518"}, {actor: creature_face, x: 220, y: 0, w: 400, h: 520, cy: 760, tilt: 12}, {actor: shape, kind: circle, x: 760, y: 60, r: 9, fill: red, glow: {color: "#ff2a36", r: 26, a: 0.9}, blink: {freq: 0.8, duty: 0.6, min: 0.2}}, {actor: shape, kind: ellipse, x: 650, y: 140, w: 200, h: 240, fill: "rgba(160,190,230,.06)"}, {actor: text, x: 420, y: 470, size: 56, color: "#e8e8e4", text: "⟳", spin: 180, at: "@снова", enter: pop}, {actor: text, x: 690, y: 40, size: 30, font: mono, weight: 700, color: "#e8e8e4", text: [{at: 0, v: "👁 40"}, {at: "@Сорок", v: "👁 41"}]}]}
+            - {<<: *rbadge, title: "ПРОСМОТР №41", x: 540, y: 330, at: "@Сорок"}
+    sfx:
+      - {"sound": "click", "at": "@кладёт", "gain": -14}
+      - {"sound": "heartbeat", "at": "@если", "gain": -14}
+      - {"sound": "click", "at": "@куда", "gain": -14}
+      - {"sound": "click", "at": "@снова", "gain": -14}
+      - {"sound": "ping", "at": "@Сорок", "gain": -14}
+
+  # ------------------------------------------------------------------ twist: Поворот — Карта просмотров
+  # задача: Улика щёлкает: каждая следующая запись — там, где предыдущую смотрели больше всех; пятую больше всех
+  #         смотрела Вера.
+  # на экране: «ОНО ИДЁТ НА ВЗГЛЯД»
+  - id: twist
+    text: "Вера открывает карту просмотров. Первую запись больше всех смотрели в Чили. Вторую — в Осаке. Третью — в Сеуле. Оно выходит туда, где на него смотрели больше всех. Пятую больше всех смотрел один адрес. Её стол."
+    caption_marks: {"больше всех": "#e8333f", "Её стол": "#e8333f"}
+    shots:
+      - id: t_map
+        # ВИЗУАЛ: Тёмная карта мира на мониторе, точки просмотров светятся; от Шпицбергена красная дуга к Чили, от
+        #         Чили — к Осаке, от Осаки — к Сеулу; в каждом городе вспыхивает самый большой кружок просмотров.
+        # актёры: map, shape, text, new:vhs
+        # камера: Панорама по карте вслед за дугами
+        # анимация: @карту — Карта загорается точками просмотров
+        # анимация: @Чили — Дуга Шпицберген → Чили, самый большой кружок в Чили
+        # анимация: @Осаке — Дуга Чили → Осака
+        # анимация: @Сеуле — Дуга Осака → Сеул
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 860}, {t: end, z: 1.08, x: 540, y: 840, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1500, h: 2100, fill: "#05070c"}
+            - {<<: *map, pins: [{lon: 15.6, lat: 78.2, label: "№1", at: "@карту", color: "#8d9196"}, {lon: -70.6, lat: -33.4, label: "№2", at: "@Чили", color: "#ff2a36"}, {lon: 135.5, lat: 34.7, label: "№3", at: "@Осаке", color: "#ff2a36"}, {lon: 127.0, lat: 37.5, label: "№4", at: "@Сеуле", color: "#ff2a36"}], routes: [{src: [15.6, 78.2], dst: [-70.6, -33.4], at: "@Чили-0.4", dur: 0.8, color: "#ff2a36", width: 4}, {src: [-70.6, -33.4], dst: [135.5, 34.7], at: "@Осаке-0.4", dur: 0.8, color: "#ff2a36", width: 4}, {src: [135.5, 34.7], dst: [127.0, 37.5], at: "@Сеуле-0.3", dur: 0.5, color: "#ff2a36", width: 4}]}
+            - {<<: *tag, text: "КАРТА ПРОСМОТРОВ", at: "@карту", enter: fade}
+            - {<<: *dbadge, title: "№1 → БОЛЬШЕ ВСЕХ: ЧИЛИ", x: 540, y: 1300, at: "@Чили", until: "@Осаке-0.1", exit: fade}
+            - {<<: *dbadge, title: "№2 → БОЛЬШЕ ВСЕХ: ОСАКА", x: 540, y: 1300, at: "@Осаке", until: "@Сеуле-0.1", exit: fade}
+            - {<<: *dbadge, title: "№3 → БОЛЬШЕ ВСЕХ: СЕУЛ", x: 540, y: 1300, at: "@Сеуле"}
+      - id: t_rule
+        # ВИЗУАЛ: Схема-правило на карте: глаз-кружок просмотров → стрелка → силуэт фигуры в следующем городе;
+        #         крупная подпись.
+        # актёры: map, new:creature, shape, text
+        # камера: Наезд на схему
+        # анимация: @выходит — Силуэт фигуры встаёт в кружке просмотров
+        # анимация: @смотрели#2 — Все кружки просмотров на карте пульсируют красным
+        start: "@Оно-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 940}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1500, h: 2100, fill: "#05070c"}
+            - {<<: *map, opacity: 0.35}
+            - {actor: shape, kind: circle, x: 300, y: 860, r: 120, fill: "rgba(255,42,54,.15)", stroke: red, sw: 5, at: "@Оно", enter: pop, pulse: {amp: 0.06, freq: 1.2}}
+            - {actor: text, x: 300, y: 860, size: 90, text: "👁", at: "@Оно", enter: pop}
+            - {actor: text, x: 300, y: 1030, size: 30, font: mono, weight: 700, color: "#e8e8e4", text: "БОЛЬШЕ ВСЕХ", at: "@Оно", enter: fade}
+            - {actor: shape, kind: arrow, points: [[450, 860], [650, 860]], stroke: red, sw: 8, at: "@выходит", enter: draw}
+            - {actor: shape, kind: rect, x: 790, y: 1130, w: 260, h: 30, fill: "#2a2c2f", at: "@выходит", enter: fade}
+            - {actor: creature, x: 790, y: 1120, h: 400, tilt: 22, at: "@выходит", enter: fade}
+            - {<<: *title, text: "ОНО ИДЁТ НА ВЗГЛЯД", at: "@выходит-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+      - id: t_address
+        # ВИЗУАЛ: Карта приближается к Москве, к одному зданию, к одному этажу: кружок просмотров пятой записи —
+        #         огромный, рядом цифра «41 · ОДИН АДРЕС»; план офиса с одним столом, подсвеченным красным.
+        # актёры: map, new:office_plan, text, badge
+        # камера: Быстрый зум с карты мира в план офиса
+        # анимация: @пятую — Карта летит к Москве
+        # анимация: @адрес — Кружок сжимается до одного здания, план этажа
+        start: "@пятую-0.22"
+        transition: {"type": "zoom"}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 820}, {t: "@адрес", z: 1.0}, {t: end, z: 1.5, x: 540, y: 820, ease: in}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1500, h: 2100, fill: "#05070c"}
+            - {actor: map, x: 540, y: 820, w: 900, h: 900, projection: orthographic, rotate: [37.6, 50], highlight: ["Russia"], land: "#262a31", ocean: "#07090d", stroke: "#3a3f48", pins: [{lon: 37.6, lat: 55.75, label: "МОСКВА", at: "@пятую", color: "#ff2a36"}]}
+            - {<<: *rbadge, title: "41 ПРОСМОТР · ОДИН АДРЕС", x: 540, y: 330, at: "@адрес"}
+      - id: t_desk
+        # ВИЗУАЛ: План этажа превращается в настоящий офис сверху: среди тёмных столов один — стол Веры — залит
+        #         красным; Вера за ним поднимает голову; над столом мигает огонёк камеры.
+        # актёры: new:office_plan, room, desk, person, new:wall_camera, text
+        # камера: Резкий наезд на стол сверху
+        # анимация: @Её — Стол Веры вспыхивает красным
+        # анимация: @стол — Вера поднимает голову к камере над столом
+        start: "@Её-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.25, x: 640, y: 1000}, {t: end, z: 1.0, x: 540, y: 920, ease: out}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1500, h: 2100, fill: "#07090d"}
+            - {actor: shape, kind: rect, x: 540, y: 920, w: 860, h: 860, fill: none, stroke: "#3a3f48", sw: 4}
+            - {actor: shape, kind: rect, x: 240, y: 620, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 240, y: 820, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 240, y: 1020, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 240, y: 1220, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 440, y: 620, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 440, y: 820, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 440, y: 1020, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 440, y: 1220, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 640, y: 620, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 640, y: 820, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 640, y: 1220, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 840, y: 620, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 840, y: 820, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 840, y: 1020, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 840, y: 1220, w: 150, h: 90, radius: 6, fill: "#1a1e26", stroke: "#2c313a", sw: 3}
+            - {actor: shape, kind: rect, x: 640, y: 1020, w: 150, h: 90, radius: 6, fill: red, glow: {color: "#ff2a36", r: 40, a: 1}, at: "@Её", enter: pop}
+            - {actor: wall_cam, x: 760, y: 950, size: 90, at: "@стол", enter: pop}
+            - {<<: *title, text: "ЕЁ СТОЛ", y: 1500, at: "@стол-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+    sfx:
+      - {"sound": "blip", "at": "@Чили", "gain": -14}
+      - {"sound": "blip", "at": "@Осаке", "gain": -14}
+      - {"sound": "blip", "at": "@Сеуле", "gain": -14}
+      - {"sound": "impact", "at": "@выходит", "gain": -14}
+      - {"sound": "whoosh", "at": "@пятую", "gain": -14}
+      - {"sound": "blip", "at": "@адрес", "gain": -14}
+      - {"sound": "boom", "at": "@стол", "gain": -14}
+
+  # ------------------------------------------------------------------ day6: Раскрытие — День шестой
+  # задача: Шестая запись снята над её столом, а Олег уже выложил подборку.
+  # на экране: «ДЕНЬ 6 · 2 М»
+  - id: day6
+    text: "День шестой. Запись камеры над её столом. Красный огонёк. Два метра. Олег, удали подборку! Я выложил её час назад."
+    lines:                       # реплики героев: голос из voices, подпись говорящего на экране
+      - {who: vera, say: "Олег, удали подборку!"}
+      - {who: oleg, say: "Я выложил её час назад."}
+    caption_marks: {"два метра": "#e8333f"}
+    shots:
+      - id: c_cam
+        # ВИЗУАЛ: Запись камеры наблюдения сверху: Вера за столом в синем свете мониторов, затылком к камере; в
+        #         тёмном проходе между столами, в двух метрах за её спиной, стоит фигура — голова упирается в
+        #         потолок, красная точка смотрит в объектив. REC, таймкод 03:33.
+        # актёры: room, desk, new:monitor_wall, person, new:creature, cctv, new:vhs
+        # камера: Статика камеры наблюдения, медленный цифровой зум
+        # анимация: @запись — Кадр включается с помехой
+        # анимация: @столом — Зум: в проходе проступает фигура
+        # анимация: @два — Рамка захвата на фигуре: 2 М
+        transition: {"type": "glitch"}
+        ambience: [{"sound": "hum", "gain": -18}]
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 960}, {t: "@столом", z: 1.0}, {t: end, z: 1.06, x: 760, y: 960, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 800, y: 960, w: 2000, h: 2100, fill: {linear: ["#55585b", "#6a6d70"], angle: 180}}
+            - {actor: glass_wall, x: -200, y: 260, w: 2000, h: 600, cols: 6, color: "#2a2c2f"}
+            - {actor: shape, kind: rect, x: 800, y: 1400, w: 2000, h: 1100, fill: {linear: ["#7a7d80", "#8e9194"], angle: 180}}
+            - {actor: office_desk, x: 260, y: 1030, w: 520, h: 260, scale: 0.7}
+            - {actor: office_desk, x: 1350, y: 1030, w: 520, h: 260, scale: 0.7}
+            - {actor: creature, id: it, x: 560, y: 1300, h: 900, tilt: 26, soft: 0.8, dot: [{at: 0, v: 0}, {at: "@огонёк", v: 1, dur: 0.3}]}
+            - {actor: office_desk, x: 940, y: 1450, w: 700, h: 300}
+            - {actor: monitor, x: 840, y: 1160, w: 300, h: 210, glow: "#b9bec1", children: [{actor: shape, kind: rect, x: 170, y: 105, w: 340, h: 210, fill: "#8d9296"}]}
+            - {actor: monitor, x: 1100, y: 1160, w: 260, h: 210, glow: "#b9bec1", children: [{actor: shape, kind: rect, x: 150, y: 105, w: 300, h: 210, fill: "#6d7175"}]}
+            - {actor: back_view, x: 960, y: 1440, w: 320, rim: "#d0d3d6", top: "#45484d"}
+            - {<<: *vhs, label: "ЗАПИСЬ №6", date: "ДЕНЬ 6", clock: 12780, cam: "CAM 03 · ОТДЕЛ"}
+            - {<<: *tag, text: "ДЕНЬ 6 · КАМЕРА НАД ЕЁ СТОЛОМ", y: 330, at: "@запись", enter: fade}
+            - {actor: shape, kind: rect, x: 560, y: 820, w: 260, h: 880, fill: none, stroke: red, sw: 4, at: "@метра", enter: zoom}
+            - {<<: *rbadge, title: "2 МЕТРА", x: 540, y: 460, at: "@метра"}
+      - id: c_oleg
+        # ВИЗУАЛ: Вера вскакивает, оборачивается — проход пуст; Олег в дверях с телефоном, на телефоне —
+        #         опубликованная подборка и счётчик, который несётся: 1 000 000 просмотров.
+        # актёры: room, desk, person, phone, new:view_counter
+        # камера: Резкий разворот камеры за Верой, затем наезд на телефон Олега
+        # анимация: @Олег — Вера вскакивает, стул откатывается
+        # анимация: @выложил — Олег поворачивает к ней экран телефона
+        # анимация: @час — Счётчик просмотров разгоняется до миллиона
+        start: "@Олег-0.22"
+        transition: {"type": "whip_x"}
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.1, x: 600, y: 980}, {t: "@выложил", z: 1.1, x: 700, y: 980}, {t: "@час", z: 1.12, x: 960, y: 1000, ease: inout}, {t: end, z: 1.14, x: 960, y: 1000}], shakes: [{at: "@Олег", amp: 14, dur: 0.35}]}
+          layers:
+            - *office
+            - {actor: office_desk, x: 540, y: 1400, w: 700, h: 300}
+            - {actor: light_pool, x: 540, y: 1150, r: 520, sy: 0.6, color: "#5aa0ff", a: 0.35}
+            - {actor: person, id: vera, x: 520, y: 1400, scale: 2.1, look: *vera, pose: [{at: 0, v: stand}, {at: "@удали", v: point, dur: 0.3}], face: [{at: 0, v: surprised}, {at: "@Олег", v: talk}, {at: "@выложил", v: surprised}], talk: [["@Олег", "@подборку.end"]]}
+            - {actor: person, id: oleg, x: 1180, y: 1400, scale: 2.2, look: *oleg, face: talk, talk: [["@Я", "@назад.end"]], pose: hold, hold: phone}
+            - {actor: card, x: 380, y: 640, w: 380, style: dark, color: red, title: "ПОДБОРКА: 6 ДНЕЙ", sub: "ОПУБЛИКОВАНО 1 Ч НАЗАД", at: "@выложил", enter: pop, space: screen}
+            - {actor: text, x: 540, y: 330, size: 80, font: mono, weight: 800, color: red, space: screen, text: "👁 {n}", count: {from: 1200, to: 1000000, at: "@час", dur: 1.4, sep: " "}, at: "@час", enter: pop}
+    sfx:
+      - {"sound": "glitch", "at": "@День", "gain": -14}
+      - {"sound": "heartbeat", "at": "@два", "gain": -14}
+      - {"sound": "slam", "at": "@Олег", "gain": -14}
+      - {"sound": "riser", "at": "@час", "gain": -14}
+
+  # ------------------------------------------------------------------ cliff: Обрыв — Стекло твоего телефона
+  # задача: Правило 1 доводится до зрителя: метр, полметра, стекло телефона — и камера над ним; существо
+  #         поворачивается к объективу.
+  # на экране: «СТЕКЛО ТВОЕГО ТЕЛЕФОНА»
+  - id: cliff
+    text: "Завтра будет метр. Потом — полметра. Потом — стекло твоего телефона. Над ним тоже есть камера."
+    caption_marks: {"твоего телефона": "#e8333f"}
+    shots:
+      - id: c_count
+        # ВИЗУАЛ: Чёрный экран с VHS-полосами: цепочка расстояний 64 → 32 → 16 → 8 → 4 → 2 → 1 → 0,5, последняя
+        #         ячейка — силуэт смартфона; красная точка катится по цепочке к телефону.
+        # актёры: new:vhs, text, shape, phone
+        # камера: Панорама вдоль цепочки к телефону
+        # анимация: @метр — Загорается «1 М»
+        # анимация: @полметра — Загорается «0,5 М»
+        # анимация: @стекло — Красная точка упирается в стекло телефона, стекло трескается помехой
+        transition: {"type": "glitch"}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 900}, {t: end, z: 1.08, x: 540, y: 1000, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: "#040506"}
+            - {actor: stack, dir: v, gap: 26, x: 540, y: 690, space: screen, children: [{actor: badge, title: "ДЕНЬ 6 · 2 М", style: dark, color: "#8d9196", size: 44}, {actor: badge, title: "ДЕНЬ 7 · 1 М", style: solid, color: red, size: 44, at: "@метр", enter: stamp}, {actor: badge, title: "ДЕНЬ 8 · 0,5 М", style: solid, color: red, size: 44, at: "@полметра", enter: stamp}]}
+            - {actor: shape, kind: rect, x: 540, y: 1180, w: 260, h: 380, radius: 36, fill: "#0b0c0e", stroke: "#e8e8e4", sw: 6, at: "@стекло", enter: zoom}
+            - {actor: shape, kind: rect, x: 540, y: 1012, w: 70, h: 14, radius: 7, fill: "#e8e8e4", at: "@стекло", enter: fade}
+            - {actor: shape, kind: circle, x: 540, y: 1180, r: 16, fill: red, glow: {color: "#ff2a36", r: 40, a: 1}, at: "@стекло+0.2", enter: pop}
+            - {actor: shape, kind: polyline, points: [[470, 1060], [520, 1140], [500, 1200], [580, 1290]], stroke: "#e8e8e4", sw: 3, fill: none, at: "@стекло+0.3", enter: draw}
+            - {<<: *vhs, text: false, grain: 0.12, tear: [{at: 0, v: 0}, {at: "@стекло", v: 0.8, dur: 0.1}, {at: "@стекло+0.5", v: 0, dur: 0.3}]}
+            - {<<: *title, y: 330, text: "СТЕКЛО ТВОЕГО ТЕЛЕФОНА", at: "@стекло-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+      - id: c_face
+        # ВИЗУАЛ: Весь экран — существо вплотную, как с фронтальной камеры: голова наклонена, лица нет, только
+        #         красная точка точно по центру (x = 540) смотрит прямо на зрителя; тело тонет в зерне; рамка
+        #         интерфейса фронтальной камеры по краям. REC мигает.
+        # актёры: new:creature, new:vhs, new:selfie_ui, particles
+        # камера: Очень медленный наезд на красную точку, микро-дрожь
+        # анимация: @Над — Голова существа медленно выпрямляется к объективу
+        # анимация: @камера — Красная точка расширяется, зерно усиливается
+        start: "@Над-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.05, x: 540, y: 900}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#1b1c1f", "#040405"]}}
+            - {actor: creature_face, x: 0, y: 0, space: screen, tilt: [{at: 0, v: 26}, {at: "@Над", v: 0, dur: 1.4, ease: inOutSine}], open: [{at: 0, v: 0}, {at: "@камера", v: 0.6, dur: 0.6}]}
+            - {actor: cam_ui, x: 0, y: 0, mode: selfie, space: screen}
+            - {<<: *vhs, text: false, grain: 0.16, scan: 0.18}
+    sfx:
+      - {"sound": "blip", "at": "@метр", "gain": -14}
+      - {"sound": "blip", "at": "@полметра", "gain": -14}
+      - {"sound": "glitch", "at": "@стекло", "gain": -14}
+      - {"sound": "creature", "at": "@Над", "gain": -14}
+      - {"sound": "heartbeat", "at": "@камера", "gain": -14}
+
+  # ------------------------------------------------------------------ cta: Призыв — Оно знает твоё лицо
+  # задача: Финальная надпись по концепции и вопрос-выбор по дилемме одним словом.
+  # на экране: «ОНО УЖЕ ЗНАЕТ ТВОЁ ЛИЦО»
+  - id: cta
+    text: "Если ты видишь это видео — оно уже знает твоё лицо. Олег выложил. Вера бы стёрла. А ты бы выложил или стёр?"
+    caption_marks: {"твоё лицо": "#e8333f"}
+    shots:
+      - id: e_face
+        # ВИЗУАЛ: Тот же кадр вплотную: красная точка по центру; поверх — белый машинописный текст, красным
+        #         выделено «ТВОЁ ЛИЦО». Помехи стихают, остаётся только зерно и гул.
+        # актёры: new:creature, new:vhs, new:selfie_ui, text
+        # камера: Почти неподвижно, медленный наезд
+        # анимация: @Если — Текст печатается по буквам
+        # анимация: @лицо — «ТВОЁ ЛИЦО» вспыхивает красным, точка мигает
+        draw:
+          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 900}, {t: end, z: 1.1, x: 540, y: 880}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#1b1c1f", "#040405"]}}
+            - {actor: creature_face, x: 0, y: 0, space: screen, tilt: 0, open: [{at: 0, v: 0.6}, {at: "@лицо", v: 1, dur: 0.5}]}
+            - {actor: cam_ui, x: 0, y: 0, mode: selfie, space: screen}
+            - {<<: *vhs, text: false, grain: 0.16, scan: 0.18}
+            - {actor: text, x: 540, y: 430, size: 56, font: mono, weight: 700, color: "#f1f1ec", space: screen, text: "ЕСЛИ ТЫ ВИДИШЬ ЭТО ВИДЕО —", width: 900, at: "@Если", reveal: {by: char, mode: type, stagger: 0.035}}
+            - {<<: *title, y: 1250, size: 82, width: 860, text: "ОНО УЖЕ ЗНАЕТ [ТВОЁ ЛИЦО](#ff2a36)", at: "@знает-0.05", reveal: {by: word, mode: slam, stagger: 0.1}}
+      - id: e_choice
+        # ВИЗУАЛ: Финальный кадр, перекликается с первым: снежная запись №1 снова на мониторе — но теперь фигура
+        #         стоит у самой камеры, и это тот же кадр, что в начале; внизу две кнопки «ВЫЛОЖИТЬ» и «СТЕРЕТЬ».
+        # актёры: new:snowfield, new:creature, cctv, new:vhs, hud:choices
+        # камера: Статика, VHS-полоса проходит сверху вниз; петля к первому кадру
+        # анимация: @Олег — Кнопки выезжают снизу
+        # анимация: @ты#2 — Кнопки мигают по очереди
+        start: "@Олег-0.22"
+        transition: {"type": "glitch"}
+        draw:
+          camera: {keys: [{t: 0, z: 1.1, x: 540, y: 880}, {t: end, z: 1.14, x: 540, y: 870}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#1b1c1f", "#040405"]}}
+            - {actor: creature_face, x: 0, y: 0, space: screen, tilt: 0, open: 1}
+            - {actor: cam_ui, x: 0, y: 0, mode: selfie, space: screen}
+            - {<<: *vhs, text: false, grain: 0.16, scan: 0.18}
+            - {actor: text, x: 540, y: 430, size: 56, font: mono, weight: 700, color: "#f1f1ec", space: screen, text: "ЕСЛИ ТЫ ВИДИШЬ ЭТО ВИДЕО —", width: 900, at: 0}
+            - {<<: *title, y: 1250, size: 82, width: 860, text: "ОНО УЖЕ ЗНАЕТ [ТВОЁ ЛИЦО](#ff2a36)", at: 0}
+            - {actor: stack, dir: h, gap: 40, x: 540, y: 1490, space: screen, at: "@Олег", enter: slide_up, children: [{actor: badge, title: "ВЫЛОЖИТЬ", style: solid, color: "#e8e8e4", size: 46}, {actor: badge, title: "СТЕРЕТЬ", style: solid, color: red, size: 46}]}
+            - {actor: text, x: 540, y: 1395, size: 46, font: mono, weight: 700, color: "#f1f1ec", space: screen, text: "А ТЫ БЫ? ОДНО СЛОВО", at: "@ты#2", enter: fade}
+    sfx:
+      - {"sound": "typing", "at": "@Если", "gain": -14}
+      - {"sound": "boom", "at": "@лицо", "gain": -14}
+      - {"sound": "click", "at": "@Олег", "gain": -14}
+      - {"sound": "glitch", "at": "@стёр", "gain": -14}

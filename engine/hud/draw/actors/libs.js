@@ -148,7 +148,7 @@ export const chart = {
 };
 
 // ------------------------------------------------------------------ map (D3-geo, Natural Earth countries)
-// focus: country name(s) / ISO numeric id(s) to frame, highlight: [...], projection: mercator|natural|orthographic, rotate (track [lon, lat] for globes),
+// focus: country name(s) / ISO numeric id(s) to frame, highlight: [...], projection: mercator|natural|orthographic, rotate (track [lon, lat] for globes), lon0 (centre longitude of a flat map),
 // w, h, land, ocean, stroke, hi (highlight color), detail: 50|110, pad, pins: [{lon, lat, label, at, color}]. Anchors: pin:i, lonlat:lon,lat
 export const map = {
   origin: "center",
@@ -160,7 +160,10 @@ export const map = {
     const proj = p.projection === "orthographic" ? d3.geoOrthographic() : p.projection === "natural" ? d3.geoNaturalEarth1() : d3.geoMercator();
     const pad = p.pad ?? 40;
     if (p.projection === "orthographic") { proj.rotate([-(p.rotate?.[0] ?? 138), -(p.rotate?.[1] ?? 36)]).fitExtent([[pad, pad], [w - pad, h - pad]], { type: "Sphere" }); }
-    else proj.fitExtent([[pad, pad], [w - pad, h - pad]], { type: "FeatureCollection", features: p.focus ? all.filter((f) => match(f, p.focus)) : all });
+    else {
+      if (p.lon0 != null) proj.rotate([-p.lon0, 0]);   // flat map centred on a longitude (routes across the Pacific stay whole)
+      proj.fitExtent([[pad, pad], [w - pad, h - pad]], { type: "FeatureCollection", features: p.focus ? all.filter((f) => match(f, p.focus)) : all });
+    }
     const path = d3.geoPath(proj);
     const svg = H.svg("", w, h);
     svg.style.overflow = "hidden";

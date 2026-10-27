@@ -257,7 +257,7 @@ anim:
 | `lottie` | анимация Lottie/Bodymovin | `src` (json в проекте) или `data`, `w h speed loop segment start` |
 | `sketch` | «нарисовано от руки» (rough.js) | `kind: rect circle ellipse line polygon curve path arrow`, `w h points d stroke sw fill fill_style roughness bowing hachure_gap seed`, `boil` (перерисовок в секунду — «живая» линия), `draw` |
 | `chart` | графики (D3) | `type: bar hbar line pie donut`, `data: [{label, value, color}]`, `w h max suffix decimals size ink values grow: {at, dur, stagger}` |
-| `map` | карта/глобус (D3-geo, Natural Earth) | `focus` (страны), `highlight`, `projection: mercator natural orthographic`, `rotate` (дорожка для глобуса), `land ocean stroke hi graticule detail pins: [{lon, lat, label, at, color}]`, `routes: [{src: [lon, lat], dst: [lon, lat], at, dur, color, width, packets, period}]` — дуга большого круга рисуется во времени, по ней бегут «пакеты» |
+| `map` | карта/глобус (D3-geo, Natural Earth) | `focus` (страны), `highlight`, `projection: mercator natural orthographic`, `rotate` (дорожка для глобуса), `lon0` (долгота центра плоской карты: `lon0: -100` — Тихий океан целиком, маршрут Чили → Япония не рвётся по краю), `land ocean stroke hi graticule detail pins: [{lon, lat, label, at, color}]`, `routes: [{src: [lon, lat], dst: [lon, lat], at, dur, color, width, packets, period}]` — дуга большого круга рисуется во времени, по ней бегут «пакеты» |
 | `holo` | 3D-модель (three.js) | `model: globe still tanker` (или своя из `engine/hud/models`), `params` (дорожки), `opts`, `color w h` |
 | `particles` | частицы внутри сцены | `kind: petals snow confetti leaves bubbles dust embers steam sparkles stars burst hearts`, `region count size speed sway wind colors alpha seed from rise drift` |
 

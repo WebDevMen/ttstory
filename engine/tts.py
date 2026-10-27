@@ -145,7 +145,7 @@ def run(pid, force=False):
             if m.get("key") == key and os.path.exists(mp3):
                 report.append((sc["id"], m["words"][-1]["end"], "cached"))
                 continue
-        words = synth_dialogue(text, lines, v, voices, mp3) if lines else synth(text, v["voice"], v["rate"], v["pitch"], mp3)
+        words = synth_dialogue(text, lines, v, voices, mp3) if lines else _synth_robust(text, v["voice"], v["rate"], v["pitch"], mp3)
         json.dump({"key": key, "text": text, "voice": v["voice"], "words": words}, open(meta, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         report.append((sc["id"], words[-1]["end"], "new"))
     total = 0
