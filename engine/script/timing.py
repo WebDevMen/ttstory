@@ -73,8 +73,8 @@ def tts_speech(pid, beat_id, text, v):
             words = m["words"]
     if words is None:
         _patch_certifi(pid)
-        from ..tts import synth
-        words = synth(text, v["voice"], v["rate"], v["pitch"], os.path.join(d, f"{beat_id}.mp3"))
+        from ..tts import _synth_robust     # same pitch-nudge retry as the real voice-over (DmitryNeural refuses some requests)
+        words = _synth_robust(text, v["voice"], v["rate"], v["pitch"], os.path.join(d, f"{beat_id}.mp3"))
         json.dump({"key": key, "words": words}, open(f, "w", encoding="utf-8"), ensure_ascii=False)
     out, shift, t0 = [], 0.0, words[0]["start"]
     for i, w in enumerate(words):
