@@ -26,13 +26,20 @@ def normalize(s, iss):
     if s.get("story") is None:
         return
     st = model._as(iss, s, "story", dict, "")
-    model._text(iss, st, "story", "premise", "paradox", "genre", "tone")
-    for key, fields in (("world_rules", ("id", "rule", "shown_in", "basis")),
-                        ("characters", ("id", "name", "role", "want", "fear", "flaw", "look", "arc")),
-                        ("twists", ("id", "what", "setup", "payoff")),
+    model._text(iss, st, "story", "premise", "paradox", "genre", "tone", "logline", "retell", "pov")
+    for key, fields in (("world_rules", ("id", "rule", "shown_in", "basis", "test")),
+                        ("characters", ("id", "name", "role", "want", "fear", "flaw", "look", "arc", "intro")),
+                        ("twists", ("id", "what", "payoff")),
+                        ("dilemmas", ("id", "beat", "who", "question")),
                         ("stakes", ("beat", "level", "what"))):
         for i, x in enumerate(model._dicts(iss, st, key, "story")):
             model._text(iss, x, f"story.{key}[{i}]", *fields)
+    for i, t in enumerate(st.get("twists") or []):
+        if isinstance(t, dict) and t.get("setup") is not None and not isinstance(t["setup"], (str, list)):
+            iss.error("schema", f"story.twists[{i}].setup", "setup: id блока или список id (подсказка посеяна несколько раз)")
+    for i, d in enumerate(st.get("dilemmas") or []):
+        if isinstance(d, dict) and d.get("options") is not None and not isinstance(d["options"], list):
+            iss.error("schema", f"story.dilemmas[{i}].options", "options: список вариантов выбора")
     if st.get("series") is not None:
         se = model._as(iss, st, "series", dict, "story")
         model._text(iss, se, "story.series", "name", "prev", "next", "answers", "cliff")
@@ -138,17 +145,26 @@ def check(s, iss, M, beats, by_id, total, draft, pid, tts=False):
         iss.error("story", "story.twists", "нет поворотов: хотя бы один, с подготовкой (setup) и выстрелом (payoff)")
     for t in tw:
         w = f"story.twists.{t.get('id')}"
-        su, po = t.get("setup"), t.get("payoff")
-        for k, v in (("setup", su), ("payoff", po)):
-            if not v:
-                iss.error("story", w, f"нет {k}: поворот без {'подготовки — обман' if k == 'setup' else 'выстрела — пустое ружьё'}")
-            elif v not in idx:
-                iss.error("ref", w, f"{k}: нет блока '{v}'")
-        if su in idx and po in idx:
-            if idx[su] >= idx[po]:
-                iss.error("story", w, "подготовка (setup) должна быть раньше выстрела (payoff)")
-            elif pos(po) < 0.4:
-                iss.warn("story", w, "поворот срабатывает в первых 40% ролика — держите его ближе к концу")
+        sus, po = t.get("setup"), t.get("payoff")
+        sus = sus if isinstance(sus, list) else [sus] if sus else []
+        if not sus:
+            iss.error("story", w, "нет setup: поворот без подготовки — обман")
+        if not po:
+            iss.error("story", w, "нет payoff: поворот без выстрела — пустое ружьё")
+        elif po not in idx:
+            iss.error("ref", w, f"payoff: нет блока '{po}'")
+        for su in sus:
+            if su not in idx:
+                iss.error("ref", w, f"setup: нет блока '{su}'")
+            elif po in idx and idx[su] >= idx[po]:
+                iss.error("story", w, f"подготовка ({su}) должна быть раньше выстрела ({po})")
+        if po in idx and pos(po) < 0.4:
+            iss.warn("story", w, "поворот срабатывает в первых 40% ролика — держите его ближе к концу")
+        if t is tw[0] and len(sus) < 2 and not draft:
+            iss.warn("story", w, "главная подсказка посеяна один раз — зритель её забудет: покажите улику 2–3 раза разными способами "
+                                 "(слово → предмет → голос), тогда разгадка «щёлкает»")
+
+    drama(s, iss, M, beats, idx, total, draft, chars)
 
     # stakes climb
     levels = K["stakes_levels"]
@@ -224,3 +240,135 @@ def check(s, iss, M, beats, by_id, total, draft, pid, tts=False):
             M[f"series_{k}"] = other
             if abs(other - total) > 0.06 * max(total, other):
                 iss.warn("series", f"story.series.{k}", f"части неравные: эта {total:.1f} с, '{sib}' {other:.1f} с — выровняйте (±6%)")
+
+
+_NUM = re.compile(r"\d|\b(один|одна|два|две|три|четыре|пять|шесть|семь|восемь|девять|десять|двенадцать|двадцать|тридцать|сорок|"
+                  r"пятьдесят|сто|двести|триста|тысяч|минут|час|сутки|суток|дн|недел|метр|литр|шаг|раз)", re.I)
+
+
+def _sents(text):
+    return [x.strip() for x in re.split(r"(?<=[.!?…])\s+", text or "") if x.strip()]
+
+
+def drama(s, iss, M, beats, idx, total, draft, chars):
+    """Clarity and drama of an invented story (docs/SCRIPTING.md §14.6): logline and a short retell, scenes instead of
+    summaries, characters introduced with a «passport», dialogue that clashes, a dilemma the viewer can vote on, a budget of
+    new concepts per minute, rules tested on a character with a concrete consequence."""
+    K = kb()
+    D = K["drama"]
+    st = s.get("story") or {}
+    story_beats = [b for b in beats if b.get("role") not in ("hook", "cta", "loop")]
+    all_vo = " ".join(b.get("vo") or "" for b in beats)
+
+    # 1. clarity: logline + retell
+    ll = str(st.get("logline") or "")
+    if not ll or "TODO" in ll:
+        iss.error("clarity", "story.logline", "нет логлайна: «<Герой, кто он> хочет/должен <цель>, но <препятствие>; если не успеет — <цена>». "
+                                               "Не получается одной фразой — сюжета нет, зритель его тоже не поймёт")
+    else:
+        if not re.search(r"\b(но|однако|а)\b", ll.lower()):
+            iss.warn("clarity", "story.logline", "в логлайне нет препятствия («…, но …») — без конфликта нет истории")
+        if chars and norm_word(str(chars[0].get("name") or ""))[:4] not in " ".join(_vo_words(ll)):
+            iss.warn("clarity", "story.logline", "логлайн не начинается с главного героя — история про человека, а не про явление")
+    rt = str(st.get("retell") or "")
+    if not rt or "TODO" in rt:
+        iss.error("clarity", "story.retell", "нет пересказа: эта часть в 3 предложениях так, как зритель перескажет другу. "
+                                              "Тест понятности — если пересказ требует больше, сюжет перегружен")
+    else:
+        n_s, n_w = len(_sents(rt)), len(_vo_words(rt))
+        if n_s > D["retell_sentences"] or n_w > D["retell_words"]:
+            iss.warn("clarity", "story.retell", f"пересказ — {n_s} предл., {n_w} слов (норма ≤ {D['retell_sentences']} и ≤ {D['retell_words']}): "
+                                                 "сюжет не помещается в пересказ — уберите линии и понятия, оставьте одну")
+
+    # 2. concept budget: new rules, named people, twists per minute
+    named = [c for c in chars if norm_word(str(c.get("name") or ""))[:4] in " ".join(_vo_words(all_vo))]
+    load = len(st.get("world_rules") or []) + len(named) + len(st.get("twists") or [])
+    mins = max(0.5, total / 60) if not draft else max(0.5, float((s.get("meta") or {}).get("duration") or 60) / 60)
+    M["concepts_per_min"] = round(load / mins, 1)
+    if load / mins > D["concepts_per_min"]:
+        iss.warn("clarity", "story", f"перегруз: {load} новых сущностей (правил мира, названных героев, поворотов) на {mins:.1f} мин "
+                                     f"= {load / mins:.1f}/мин, норма ≤ {D['concepts_per_min']}. Зритель не успевает понять — "
+                                     "уберите лишнее или дайте части больше времени (сюжетной части нужно 90–150 с)")
+    if len(st.get("world_rules") or []) > D["rules_per_part"] and (st.get("series") or {}):
+        iss.warn("clarity", "story.world_rules", f"в одной части {len(st['world_rules'])} новых правил мира — в серии вводите ≤ {D['rules_per_part']} "
+                                                  "на часть, остальные — в следующих частях")
+
+    # 3. rules are tested on a character with a concrete consequence
+    for r in st.get("world_rules") or []:
+        w = f"story.world_rules.{r.get('id')}"
+        tst = str(r.get("test") or "")
+        if not tst:
+            iss.warn("rule", w, "у правила нет проверки (test): кто из героев его нарушает или соблюдает и что происходит — "
+                                "правило, которое не проверили на человеке, остаётся абстракцией")
+        elif not _NUM.search(tst + " " + str(r.get("rule") or "")):
+            iss.warn("rule", w, "правило без конкретики — нет числа, срока или меры («семь минут», «два литра в день», «один шаг»): "
+                                "зритель должен уметь «посчитать» по правилу сам")
+
+    # 4. characters arrive with a passport: name + who they are (age/role) + one concrete trait
+    for c in named:
+        w = f"story.characters.{c.get('id') or c.get('name')}"
+        if not c.get("intro"):
+            iss.warn("cast", w, f"не задан паспорт героя (intro): «{c.get('name')}, <возраст>, <кто он>. <одна деталь/поступок>» — "
+                                "иначе зритель не отличит героев")
+            continue
+        first = next((b for b in beats if norm_word(str(c.get("name")))[:4] in " ".join(_vo_words(b.get("vo") or ""))), None)
+        if first and not draft:
+            iv = set(_vo_words(c["intro"]))
+            fv = set(_vo_words(first.get("vo") or ""))
+            if len(iv & fv) < max(2, len(iv) // 3):
+                iss.warn("cast", w, f"паспорт героя не звучит при первом появлении (блок {first.get('id')}): назовите имя, кто он и одну деталь")
+
+    # 5. scenes, not summaries
+    with_scene = [b for b in story_beats if isinstance(b.get("scene"), dict) and (b["scene"].get("where") or b["scene"].get("when"))]
+    if story_beats and len(with_scene) / len(story_beats) < D["scene_share"] and not draft:
+        iss.warn("scene", "beats", f"сцена (scene: {{when, where}}) задана у {len(with_scene)} из {len(story_beats)} сюжетных блоков — "
+                                   "каждый блок — это сцена: где и когда, кто действует сейчас, что меняется («День третий. Убежище. Кирилл стучит по баку»)")
+    for b in story_beats:
+        vo = b.get("vo") or ""
+        hits = _hits(vo, D["summary_cues"])
+        if hits:
+            iss.warn("scene", f"beats.{b.get('id')}", "пересказ вместо сцены: " + ", ".join(f"«{x}…»" for x in hits)
+                     + " — покажите момент, когда это происходит, глазами героя (действие, реплика, звук), а не итог")
+
+    # 6. dialogue: characters speak, lines clash
+    ids = {c.get("id") for c in chars}
+    lines, exch = 0, 0
+    for b in beats:
+        ls = [x for x in b.get("lines") or [] if isinstance(x, dict)]
+        who = {x.get("who") for x in ls}
+        if len(who) >= 2:
+            exch += 1
+        vo_n = " ".join(_vo_words(b.get("vo") or ""))
+        for x in ls:
+            lines += 1
+            w = f"beats.{b.get('id')}.lines"
+            if x.get("who") not in ids:
+                iss.error("ref", w, f"реплика героя '{x.get('who')}' — нет такого id в story.characters")
+            say = " ".join(_vo_words(str(x.get("say") or "")))
+            if say and say not in vo_n:
+                iss.error("dialogue", w, f"реплика «{x.get('say')}» не входит в текст диктора (vo) этого блока — впишите её дословно")
+            if len(say.split()) > D["line_words"]:
+                iss.warn("dialogue", w, f"реплика длиннее {D['line_words']} слов — в живой речи говорят коротко: «Семь минут. Закрываю.»")
+    M["dialogue_lines"] = lines
+    if lines < D["min_lines"]:
+        iss.warn("dialogue", "beats", f"реплик героев {lines} (нужно ≥ {D['min_lines']}, beats[].lines: [{{who, say}}]) — без живой речи "
+                                     "персонажи остаются фигурками, а сюжет — пересказом")
+    elif exch < D["min_exchanges"]:
+        iss.warn("dialogue", "beats", f"обменов репликами {exch} (нужно ≥ {D['min_exchanges']}): в споре двух героев зритель видит выбор и характеры")
+
+    # 7. a dilemma the viewer can take a side on, and the call asks exactly that
+    dl = [d for d in st.get("dilemmas") or [] if isinstance(d, dict)]
+    M["dilemmas"] = len(dl)
+    if not dl:
+        iss.warn("dilemma", "story.dilemmas", "нет дилеммы: момент, где герой выбирает между двумя плохими вариантами "
+                                             "(открыть дверь — впустить заражённый воздух; не открыть — человек умрёт). Выбор с ценой = драйв")
+    for d in dl:
+        w = f"story.dilemmas.{d.get('id')}"
+        if d.get("beat") and d["beat"] not in idx:
+            iss.error("ref", w, f"нет блока '{d['beat']}'")
+        if len(d.get("options") or []) < 2:
+            iss.warn("dilemma", w, "дилемма без двух вариантов (options) и их цены")
+    cta = " ".join(b.get("vo") or "" for b in beats if b.get("role") in ("cta", "loop")).lower()
+    if cta and not any(c in cta for c in D["choice_cues"]):
+        iss.warn("dilemma", "beats", "финальный вопрос не просит зрителя выбрать или предположить («А вы бы открыли?», «Кто должен был идти?», "
+                                     "«Куда ушёл …? Пишите версии») — «ответ в следующей части» не даёт повода написать комментарий")

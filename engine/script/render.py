@@ -189,6 +189,10 @@ def run(s, iss, M, tl, pid):
             w(f"**Серия «{se.get('name', '')}», часть {se.get('part')}/{se.get('of')}**"
               + (f" · отвечает на: {se['answers']}" if se.get("answers") else "") + (f" · обрыв: {se['cliff']}" if se.get("cliff") else ""))
             w("")
+        if st.get("logline"):
+            w(f"- **Логлайн:** {st['logline']}")
+        if st.get("retell"):
+            w(f"- **Пересказ другу:** {st['retell']}")
         w(f"- **Премиса:** {st.get('premise', '—')}")
         w(f"- **Парадокс:** {st.get('paradox', '—')}")
         if st.get("genre"):
@@ -197,20 +201,27 @@ def run(s, iss, M, tl, pid):
         if st.get("world_rules"):
             w("### Правила мира")
             w("")
-            o += table(["#", "Правило", "Показано в блоке", "Опора"],
-                       [[r.get("id"), r.get("rule"), r.get("shown_in") or "—", r.get("basis") or "вымысел"] for r in st["world_rules"]])
+            o += table(["#", "Правило", "Проверка на герое", "Показано в блоке", "Опора"],
+                       [[r.get("id"), r.get("rule"), r.get("test") or "—", r.get("shown_in") or "—", r.get("basis") or "вымысел"] for r in st["world_rules"]])
             w("")
         if st.get("characters"):
             w("### Персонажи")
             w("")
-            o += table(["Кто", "Роль", "Хочет", "Боится", "Вид", "Арка"],
-                       [[c.get("name"), c.get("role"), c.get("want"), c.get("fear"), c.get("look"), c.get("arc")] for c in st["characters"]])
+            o += table(["Кто", "Паспорт", "Хочет", "Боится", "Вид", "Арка"],
+                       [[c.get("name"), c.get("intro") or c.get("role"), c.get("want"), c.get("fear"), c.get("look"), c.get("arc")] for c in st["characters"]])
             w("")
         if st.get("twists"):
             w("### Повороты: подготовка → выстрел")
             w("")
             o += table(["#", "Поворот", "Подготовка", "Выстрел"],
-                       [[t.get("id"), t.get("what"), t.get("setup"), t.get("payoff")] for t in st["twists"]])
+                       [[t.get("id"), t.get("what"), ", ".join(t["setup"]) if isinstance(t.get("setup"), list) else t.get("setup"), t.get("payoff")]
+                        for t in st["twists"]])
+            w("")
+        if st.get("dilemmas"):
+            w("### Дилеммы")
+            w("")
+            o += table(["#", "Блок", "Кто выбирает", "Вопрос", "Варианты"],
+                       [[d.get("id"), d.get("beat"), d.get("who"), d.get("question"), " / ".join(map(str, d.get("options") or []))] for d in st["dilemmas"]])
             w("")
         if st.get("stakes"):
             names = {"personal": "личное", "family": "семья", "community": "община", "world": "мир"}
@@ -260,8 +271,17 @@ def run(s, iss, M, tl, pid):
             w(" · ".join(meta_line))
             w("")
         pace = len(tb["words"]) / max(0.1, tb["speech"])
+        if isinstance(b.get("scene"), dict):
+            sc = b["scene"]
+            w("🎬 **Сцена:** " + " · ".join(str(sc[k]) for k in ("when", "where", "who") if sc.get(k)))
+            w("")
         w(f"> 🎙 {str(b.get('vo') or '').strip()}")
         w(">")
+        for x in b.get("lines") or []:
+            if isinstance(x, dict):
+                w(f"> — **{x.get('who')}:** «{x.get('say')}»")
+        if b.get("lines"):
+            w(">")
         w(f"> <sub>речь {tm(tb['vo_start'])}–{tm(tb['vo_end'])} · {len(tb['words'])} слов · {pace:.1f} слов/с</sub>")
         w("")
         if b.get("on_screen"):
