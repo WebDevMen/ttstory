@@ -142,6 +142,8 @@ anim:
 
 **Easing:** `linear in out inout back expo inQuad outQuad inOutSine outBounce outElastic step` — и **любая строка GSAP**: `"back.out(2)"`, `"elastic.out(1,0.4)"`, `"power3.inOut"`, `"steps(5)"`, `"bounce.out"`.
 
+**Общие куски сцены.** Список слоёв можно вынести в якорь YAML (`x-forge-in: &forge_in [ … ]`) и вставить в шот строкой `- *forge_in` — вложенный список разворачивается в слои шота (пример: `projects/shadow`).
+
 ## 6. Якоря и выноски
 
 Ссылка на точку актёра: `"id"` (точка привязки), `"id.имя"` или `"id.имя:аргументы"`:

@@ -62,6 +62,14 @@ def _motion_rel(obj, start):
     return obj
 
 
+def _flat(layers):
+    """A YAML anchor of a list of layers (`- *forge_inside`) arrives as a nested list: splice it into the shot's layers."""
+    out = []
+    for it in layers or []:
+        out.extend(_flat(it) if isinstance(it, list) else [it])
+    return out
+
+
 def _stale_anims(layers, start, path=""):
     """Plain-number `at` in a draw item's anim steps and value tracks is ABSOLUTE video time. In a shot that starts later,
     a step written as `at: 0` / `at: 0.1` has already finished before the shot is on screen (a walk-in that never happens).
@@ -202,6 +210,7 @@ def run(pid):
         sh, ctx = x.pop("raw"), (x["start"], x["end"])
         if sh.get("draw") is not None:                             # code-drawn shot (engine/hud/draw)
             d = deep_merge(draw_defaults, sh["draw"])
+            d["layers"] = _flat(d.get("layers"))
             for msg in _stale_anims(d.get("layers"), x["start"]):
                 print(f"  ! {x['id']}: {msg} — числа в at абсолютные (секунды ролика): используйте \"@слово\" или \"@{x['scene']}.start\"")
             raw_cam = d.pop("camera", None)

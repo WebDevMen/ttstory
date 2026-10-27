@@ -83,6 +83,12 @@ def build(s, pid):
     w(f"title: {q(meta.get('title') or pid)}")
     w("")
     w(f"voice: {flow(voice)}")
+    voices = {k: v for k, v in ((s.get("production") or {}).get("voices") or {}).items() if k != "narrator" and isinstance(v, dict)}
+    if voices:
+        w("# голоса героев: реплики сцен (lines) звучат своим голосом, рассказчик — голосом voice")
+        w("voices:")
+        for k, v in voices.items():
+            w(f"  {k}: {flow(v)}")
     w("")
     w("theme:")
     w(f"  preset: {theme.get('preset', 'minimal')}")
@@ -122,6 +128,11 @@ def build(s, pid):
         if b.get("accent"):
             w(f"    accent: {q(b['accent'])}")
         w(f"    text: {q(' '.join(str(b.get('vo') or '').split()))}")
+        if b.get("lines"):
+            w("    lines:                       # реплики героев: голос из voices, подпись говорящего на экране")
+            for ln in b["lines"]:
+                if isinstance(ln, dict):
+                    w(f"      - {{who: {ln.get('who')}, say: {q(' '.join(str(ln.get('say') or '').split()))}}}")
         if isinstance(b.get("marks"), dict) and b["marks"]:
             w(f"    caption_marks: {flow(b['marks'])}")
         if b.get("gap_after") is not None:
