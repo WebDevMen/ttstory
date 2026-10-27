@@ -21,7 +21,7 @@ meta:
   duration: 178
   format: fiction
   style: draw
-  voice: {voice: ru-RU-DmitryNeural, rate: "+12%", pitch: "-6Hz"}
+  voice: {voice: ru-RU-SvetlanaNeural, rate: "+18%", pitch: "-4Hz"}
   genre: fiction
   status: checked
 
@@ -913,10 +913,10 @@ production:
       - "Шрифты: заголовки Oswald, бирки и метки IBM Plex Mono, субтитры Inter; плёночное зерно, виньетка, лёгкая анаморфная полоса блика"
   music: {key: D, mode: minor, bpm: 92}
   voices:
-    narrator: {voice: ru-RU-DmitryNeural, rate: "+12%", pitch: "-6Hz"}
-    savva: {voice: ru-RU-DmitryNeural, rate: "+16%", pitch: "+6Hz"}
-    vais: {voice: de-DE-FlorianMultilingualNeural, rate: "+0%", pitch: "-6Hz"}
-    ada: {voice: ru-RU-SvetlanaNeural, rate: "+10%", pitch: "-10Hz"}
+    narrator: {voice: ru-RU-SvetlanaNeural, rate: "+18%", pitch: "-4Hz"}
+    savva: {voice: en-US-BrianMultilingualNeural, rate: "+8%"}
+    vais: {voice: de-DE-FlorianMultilingualNeural, rate: "+8%", pitch: "-6Hz"}
+    ada: {voice: de-DE-SeraphinaMultilingualNeural, rate: "+6%", pitch: "-6Hz"}
     clock: {voice: en-US-AndrewMultilingualNeural, rate: "+4%", pitch: "-10Hz"}
   assets:
     - "Своя графика без ИИ. Новые актёры проекта (projects/market/actors): нуар-оверлей (зерно, виньетка, блик), цех-рынок хладокомбината, фасад комбината, портовые краны, контейнеры, мол с маяком, коробка-лот с бечёвкой и пломбой, бирка с тремя строками, часы смерти, зеркало +24, патроны в кассете, стол оценщика, лазерная точка и луч, след пули, фура"
