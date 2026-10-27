@@ -250,6 +250,7 @@ export const lamp_post = {
 // w, h, color, lights: [[x, color, width]], lines (road marking y or false), curb (y of the curb, or false)
 export const wet_ground = {
   origin: "top-left",
+  surface: true,
   create(p, H) {
     const w = p.w ?? 1600, h = p.h ?? 700, id = H.uid("wg"), R = H.rng(p.seed ?? 3), col = p.color ?? "#2b3036";
     let s = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${H.shade(col, 0.12)}"/><stop offset="1" stop-color="${H.shade(col, -0.45)}"/></linearGradient>
@@ -268,6 +269,7 @@ export const wet_ground = {
 // drip (0..1): water and dirt fall UP from the underside; crack (0..1): glow line along the tear; ground (asphalt colour)
 export const city_chunk = {
   origin: "top-left",
+  surface: true,
   async create(p, H) {
     const w = p.w ?? 900, soil = p.soil ?? 420, R = H.rng(p.seed ?? 8), id = H.uid("cc");
     const el = H.div(`width:${w}px;height:${soil + 40}px`);

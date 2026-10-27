@@ -17,7 +17,7 @@ voices:
 theme:
   preset: archive
   accent: "#d9e2ea"
-  captions: {style: clean, top: 1330, size: 64, max_chars: 20}
+  captions: {style: clean, top: auto, size: 64, max_chars: 20}
 
 post: {vignette: 0.18, chromatic: 0, grain: 0.02}
 
@@ -65,10 +65,9 @@ scenes:
       - id: k_car
         transition: {type: fade, dur: 0.2}
         ambience: [{sound: rain, gain: -14}, {sound: city, gain: -22}]
-        captions_top: 1360
         draw:
           camera: {keys: [{t: 0, z: 1.06, x: 540, y: 1010}, {t: "@вверх", z: 1.1, x: 560, y: 980}, {t: end, z: 1.12, x: 570, y: 900}],
-                   shakes: [{at: 0.55, amp: 18, dur: 0.5}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.6}}
+                   shakes: [{at: 0.55, amp: 18, dur: 0.5, freq: 5}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.6}}
           layers:
             - *sky_rain
             - *clouds
@@ -103,7 +102,7 @@ scenes:
             - {actor: cloud_bank, x: -500, y: 900, w: 2100, h: 700, color: "#5d6873", shade: "#2c343b", n: 30, seed: 7}
             - {actor: skyline, x: 540, y: 2620, w: 2200, h: 520, color: "#3d464e", color2: "#333b42", lit: 0.12, seed: 9}
             - {actor: ground, x: -600, y: 2610, w: 2300, h: 400, color: ["#2c333a", "#1d2227"]}
-            - {actor: sedan, x: 600, y: 1700, scale: 0.55, rot: -18, color: "#59656f", drip_up: 1, anim: [{at: "@Иначе-0.2", dur: 3, y: 1250, rot: -32, ease: linear}]}
+            - {actor: sedan, x: 600, y: 1700, air: true, scale: 0.55, rot: -18, color: "#59656f", drip_up: 1, anim: [{at: "@Иначе-0.2", dur: 3, y: 1250, rot: -32, ease: linear}]}
             - {actor: shape, kind: rect, x: 300, y: 1950, w: 120, h: 70, fill: "#3c4650", rot: 24, anim: [{at: "@Иначе-0.2", dur: 3, y: 1500, rot: 60, ease: linear}]}
             - {actor: shape, kind: rect, x: 860, y: 2150, w: 60, h: 90, fill: "#2c333a", rot: -12, anim: [{at: "@Иначе-0.2", dur: 3, y: 1780, rot: -50, ease: linear}]}
             - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.75, seed: 8}
@@ -142,7 +141,7 @@ scenes:
             - {actor: tree, kind: round, x: 930, y: 1360, h: 520, color: "#2c3a33", trunk: "#2a2420", seed: 3, sway: 1}
             - {actor: puddle, x: 560, y: 1520, w: 460, h: 80}
             - {actor: puddle, x: 180, y: 1680, w: 300, h: 56, seed: 7}
-            - {actor: sedan, x: -300, y: 1600, scale: 1.1, color: "#4a545e", lights: 1, at: "@ночь", anim: [{at: "@ночь", dur: 3.5, x: 1500, ease: linear}]}
+            - {actor: sedan, x: -300, y: 1600, scale: 1.1, color: "#4a545e", lights: 1, at: "@ночь", enter: {type: fade, dur: 0.3}, anim: [{at: "@ночь", dur: 3.5, x: 1500, ease: linear}]}
             - {actor: rain, x: 0, y: 0, space: screen, count: 300}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 03 · РЕЧНАЯ, 12 · ДВОР", tc: 24063}
       - id: s_gleb
@@ -186,10 +185,9 @@ scenes:
       - id: s_call
         start: "@жужжит-0.22"
         transition: {type: dip, dur: 0.25}
-        captions_top: 1440
         draw:
           bg: "#0e1114"
-          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@жужжит", amp: 6, dur: 0.6}, {at: "@Звонит", amp: 5, dur: 0.6}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@жужжит", amp: 6, dur: 0.6, freq: 5}, {at: "@Звонит", amp: 5, dur: 0.6, freq: 5}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
           layers:
             - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#2a3138", "#0e1114"]}}
             - {actor: rain, x: 0, y: 0, count: 120, alpha: 0.35, seed: 9}
@@ -229,7 +227,7 @@ scenes:
         start: "@Лужи-0.22"
         ambience: [{sound: wind, gain: -18}]
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1040}, {t: end, z: 1.04, x: 540, y: 880}], shakes: [{at: "@бьётся", amp: 14, dur: 0.4}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1040}, {t: end, z: 1.04, x: 540, y: 880}], shakes: [{at: "@бьётся", amp: 14, dur: 0.4, freq: 5}]}
           layers:
             - *sky_rain
             - *clouds
@@ -263,7 +261,7 @@ scenes:
         start: "@Пап-0.22"
         transition: {type: whip_x}
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.1, x: 540, y: 920}], shakes: [{at: "@ловит", amp: 16, dur: 0.4}], sway: {x: 14, y: 10, roll: 1.4, freq: 0.9}}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.1, x: 540, y: 920}], shakes: [{at: "@ловит", amp: 16, dur: 0.4, freq: 5}], sway: {x: 14, y: 10, roll: 1.4, freq: 0.9}}
           layers:
             - *sky_rain
             - *clouds
@@ -302,7 +300,7 @@ scenes:
         transition: {type: whip_x}
         ambience: [{sound: room, gain: -18}]
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 540, y: 760}], shakes: [{at: "@затаскивает", amp: 10, dur: 0.3}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 540, y: 760}], shakes: [{at: "@затаскивает", amp: 10, dur: 0.3, freq: 5}]}
           layers:
             - {actor: stairwell, x: 0, y: 0, view: hall, flicker: 1}
             - {actor: intercom, x: 540, y: 520, r: 60, talk: [{at: 0, v: 0}, {at: "@динамика", v: 1}]}
@@ -311,7 +309,6 @@ scenes:
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24166, stage: 1, status: "ТРЕВОГА"}
       - id: r_speaker
         start: "@Всё-0.22"
-        captions_top: 1440
         draw:
           bg: "#2a2f35"
           camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}]}
@@ -389,7 +386,7 @@ scenes:
       - id: w_ceiling
         start: "@потолке-0.22"
         draw:
-          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1000}, {t: end, z: 1.12, x: 540, y: 900}], shakes: [{at: "@стук", amp: 12, dur: 0.35}, {at: "@стук+0.45", amp: 10, dur: 0.3}], sway: {x: 8, y: 8, roll: 0.8, freq: 0.6}}
+          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1000}, {t: end, z: 1.12, x: 540, y: 900}], shakes: [{at: "@стук", amp: 12, dur: 0.35, freq: 5}, {at: "@стук+0.45", amp: 10, dur: 0.3, freq: 5}], sway: {x: 8, y: 8, roll: 0.8, freq: 0.6}}
           layers:
             - {actor: stairwell, x: 0, y: 0, view: ceiling, swing: [{at: 0, v: 0}, {at: "@стук", v: 9, dur: 0.2}]}
             - {actor: footprints, x: 0, y: 0, show: [{at: 0, v: 0}, {at: "@следы-0.3", v: 4, dur: 1.2}, {at: "@ног", v: 6, dur: 0.8}]}
@@ -418,7 +415,6 @@ scenes:
                timer: [{at: 0, v: ""}, {at: "@шесть", v: "8 ЭТ. · 06:00"}], danger: [{at: 0, v: 0}, {at: "@спускается", v: 1}]}
             - {<<: *rule, y: 1600, w: 940, at: "@Этаж-0.05", kicker: "ПРАВИЛО 02", text: "ЭТАЖ ЗА 6 МИНУТ", danger: true, size: 96}
             - {actor: archive, x: 0, y: 0, space: screen, kind: doc, src: "ДОК. 07-14 · СХЕМА ЗАТОПЛЕНИЯ", tc: 24420, stage: 1, status: "ТРЕВОГА"}
-        captions_top: 1440
     sfx:
       - {sound: drip, at: "@ползёт", gain: -12}
       - {sound: kick, at: "@стук", gain: -6}
@@ -440,7 +436,6 @@ scenes:
     shots:
       - id: d_alert
         transition: {type: glitch, dur: 0.3}
-        captions_top: 1440
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 540, y: 700}]}
           layers:
@@ -462,10 +457,9 @@ scenes:
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 05 · ПОДЪЕЗД 2 · ЛЕСТНИЦА", tc: 24484, stage: 1, status: "ЭВАКУАЦИЯ 07:00"}
       - id: d_call
         start: "@Телефон-0.22"
-        captions_top: 1440
         draw:
           bg: "#0e1114"
-          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], shakes: [{at: "@жужжит", amp: 6, dur: 0.6}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], shakes: [{at: "@жужжит", amp: 6, dur: 0.6, freq: 5}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
           layers:
             - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#262c32", "#0b0d10"]}}
             - {actor: phone_call, x: 540, y: 820, scale: 0.92, state: [{at: 0, v: incoming}, {at: "@отвечает", v: active}], tap: [{at: 0, v: 0}, {at: "@отвечает-0.2", v: 1}, {at: "@отвечает+0.3", v: 0}],
@@ -519,7 +513,6 @@ scenes:
       - id: d_choice
         start: "@Тогда-0.22"
         transition: {type: glitch, dur: 0.25}
-        captions_top: 1440
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.04}]}
           layers:
@@ -560,7 +553,7 @@ scenes:
         start: "@семь#2-0.22"
         transition: {type: glitch, dur: 0.2}
         draw:
-          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}], shakes: [{at: "@гул", amp: 14, dur: 1.6, freq: 14}]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}], shakes: [{at: "@гул", amp: 14, dur: 1.6, freq: 5}]}
           layers:
             - {actor: lift_cabin, x: 0, y: 0, tape: 3, floor: 6, flicker: 1}
             - {actor: person, id: gleb, x: 420, y: 1640, scale: 1.7, look: *gleb, face: surprised, pose: hold}
@@ -572,7 +565,7 @@ scenes:
         look: {bloom: [0.78, 0.2]}
         ambience: [{sound: rumble, gain: -12}, {sound: wind, gain: -18}]
         draw:
-          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1100}, {t: end, z: 0.98, x: 540, y: 960, ease: inout}], shakes: [{at: "@Земля", amp: 10, dur: 1.2, freq: 12}, {at: "@отрывается", amp: 16, dur: 1, freq: 10}]}
+          camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}], shakes: [{at: "@Земля", amp: 10, dur: 1.2, freq: 5}, {at: "@отрывается", amp: 16, dur: 1, freq: 5}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#151b21", "#323b44", "#55606b"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1300, par: 0}
             - {actor: cloud_bank, x: -500, y: -100, w: 2100, h: 700, color: "#4d5761", shade: "#20262c", n: 40, blur: 34, par: 0.05}
@@ -717,7 +710,7 @@ scenes:
         transition: {type: dip, dur: 0.3}
         look: {bloom: [0.78, 0.2]}
         draw:
-          camera: {keys: [{t: 0, z: 1.1, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}], shakes: [{at: "@отрываются", amp: 8, dur: 1.4, freq: 12}]}
+          camera: {keys: [{t: 0, z: 1.1, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}], shakes: [{at: "@отрываются", amp: 8, dur: 1.4, freq: 5}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#20272e", "#46515b", "#76828d"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1300, par: 0}
             - {actor: city_chunk, x: -200, y: -260, w: 1480, soil: 480, seed: 4, drip: 1, par: 0.1}
@@ -740,7 +733,6 @@ scenes:
   # ------------------------------------------------------------------ 11. CTA — крыша или лифт
   - id: cta
     text: "Сирена звала на крышу. Свой голос — в яму лифта. Кого бы послушал ты? Пиши: крыша или лифт."
-    captions_top: 1500
     shots:
       - id: q_choice
         transition: {type: glitch, dur: 0.3}
