@@ -82,7 +82,7 @@ scenes:
             - {actor: puddle, x: 860, y: 1700, w: 360, h: 60, seed: 5, up: [{at: 0, v: 0}, {at: "@вверх+0.2", v: 1, dur: 0.6}]}
             - {actor: lamp_post, x: 760, y: 1310, h: 700, left: true}
             # the sedan hits the pole and, instead of stopping, floats up
-            - {actor: sedan, id: car, x: 120, y: 1330, scale: 1.05, color: "#59656f", lights: 1, drip_up: [{at: 0, v: 0}, {at: "@вверх", v: 1, dur: 0.8}],
+            - {actor: sedan, id: car, air: true, x: 120, y: 1330, scale: 1.05, color: "#59656f", lights: 1, drip_up: [{at: 0, v: 0}, {at: "@вверх", v: 1, dur: 0.8}],
                anim: [{at: 0, dur: 0.55, x: 515, ease: in}, {at: 0.55, dur: 0.2, x: 500, rot: -3, ease: out}, {at: "@вверх-0.2", dur: 5, y: 760, rot: -11, ease: inOutSine}]}
             - {actor: rain, x: 0, y: 0, space: screen, count: 320, v: [{at: 0, v: 1}, {at: 0.6, v: 0, dur: 0.5}, {at: "@вверх", v: -0.7, dur: 1.2}]}
             - {<<: *rule, at: "@Высохните-0.05", until: end, kicker: "ПРАВИЛО 00 · ДОЖДЬ ИДЁТ ВВЕРХ", text: "3 МИНУТЫ, ЧТОБЫ ВЫСОХНУТЬ", danger: true}
@@ -100,8 +100,8 @@ scenes:
             - {actor: city_chunk, x: 120, y: 150, w: 860, soil: 380, seed: 21, opacity: 0.45, blur: 3, drip: 0.8, buildings: []}
             - {actor: cloud_bank, x: -500, y: 300, w: 2100, h: 800, color: "#4d5761", shade: "#20262c", n: 40, blur: 34}
             - {actor: cloud_bank, x: -500, y: 900, w: 2100, h: 700, color: "#5d6873", shade: "#2c343b", n: 30, seed: 7}
-            - {actor: skyline, x: 540, y: 2620, w: 2200, h: 520, color: "#3d464e", color2: "#333b42", lit: 0.12, seed: 9}
-            - {actor: ground, x: -600, y: 2610, w: 2300, h: 400, color: ["#2c333a", "#1d2227"]}
+            - {actor: skyline, x: 540, y: 2620, w: 2200, h: 520, color: "#3d464e", color2: "#333b42", lit: 0.12, seed: 9, par: 0.3}
+            - {actor: ground, x: -600, y: 2610, w: 2300, h: 400, color: ["#2c333a", "#1d2227"], par: 0.3}
             - {actor: sedan, x: 600, y: 1700, air: true, scale: 0.55, rot: -18, color: "#59656f", drip_up: 1, anim: [{at: "@Иначе-0.2", dur: 3, y: 1250, rot: -32, ease: linear}]}
             - {actor: shape, kind: rect, x: 300, y: 1950, w: 120, h: 70, fill: "#3c4650", rot: 24, anim: [{at: "@Иначе-0.2", dur: 3, y: 1500, rot: 60, ease: linear}]}
             - {actor: shape, kind: rect, x: 860, y: 2150, w: 60, h: 90, fill: "#2c333a", rot: -12, anim: [{at: "@Иначе-0.2", dur: 3, y: 1780, rot: -50, ease: linear}]}
@@ -240,7 +240,7 @@ scenes:
             - {actor: lamp_post, x: 860, y: 1330, h: 640, left: true}
             - {actor: puddle, x: 420, y: 1500, w: 460, h: 80, up: 1}
             - {actor: puddle, x: 760, y: 1660, w: 360, h: 60, up: 1, seed: 4}
-            - {actor: sedan, x: 560, y: 1360, scale: 1.0, color: "#6a5a4a", drip_up: [{at: 0, v: 0.3}, {at: "@всплывает", v: 1, dur: 0.5}],
+            - {actor: sedan, x: 560, y: 1360, air: true, scale: 1.0, color: "#6a5a4a", drip_up: [{at: 0, v: 0.3}, {at: "@всплывает", v: 1, dur: 0.5}],
                anim: [{at: "@Лужи", dur: 0.8, x: 640, ease: in}, {at: "@бьётся", dur: 0.25, x: 620, rot: -2}, {at: "@всплывает", dur: 3.5, y: 900, rot: 14, ease: inOutSine}]}
             - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.75, seed: 2}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 03 · РЕЧНАЯ, 12 · ДВОР", tc: 24127, stage: 1, status: "СОБЫТИЕ"}

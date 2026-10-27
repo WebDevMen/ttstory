@@ -259,6 +259,8 @@ def _motion(d):
                 win = cs[i:i + 9]
                 if any(seq[i + k][1]["moving"] for k in range(len(win))):
                     continue
+                if any((seq[i + k][2] or {}).get("shake", 0) > 0.5 for k in range(len(win))):
+                    continue                   # a declared camera shake (camera.shakes) moves everything on purpose
                 dx = [win[k + 1][0] - win[k][0] for k in range(8)] + [win[k + 1][1] - win[k][1] for k in range(8)]
                 flips = sum(1 for k in range(1, 8) if dx[k] * dx[k - 1] < 0 and 0.6 < abs(dx[k]) < 7) + \
                         sum(1 for k in range(9, 16) if dx[k] * dx[k - 1] < 0 and 0.6 < abs(dx[k]) < 7)

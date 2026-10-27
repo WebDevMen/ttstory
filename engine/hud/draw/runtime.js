@@ -343,7 +343,7 @@ window.drawLayout = async (shotId, frame) => {
   const out = [];
   st.items.forEach((it, i) => { it.index = i; layoutOf(it, out, "", false); });
   const cam = camState(st.shot, frame / FPS);
-  return { cam: { x: cam.x, y: cam.y, z: cam.z }, realScene: !!(st.shot.draw && st.shot.draw.px_per_m), items: out };
+  return { cam: { x: cam.x, y: cam.y, z: cam.z, shake: Math.round((Math.abs(cam.sx || 0) + Math.abs(cam.sy || 0)) * 10) / 10 }, realScene: !!(st.shot.draw && st.shot.draw.px_per_m), items: out };
 };
 window.drawInfo = { shots: TL.shots.filter((s) => s.draw && s.draw.engine !== "motion").map((s) => s.id), fps: FPS, actors: Object.keys(ACTORS).sort() };
 window.drawReady = true;
