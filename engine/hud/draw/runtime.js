@@ -290,6 +290,7 @@ function layoutOf(it, out, parentPath, parentMoving) {
   for (let e = it.wrap; e && !e.classList.contains("stage"); e = e.parentElement) op *= parseFloat(getComputedStyle(e).opacity || "1");
   const r = it.fx.getBoundingClientRect();
   const rec = { actor: it.spec.actor, id: it.id || null, path, space: it.spec.space || "world", op: Math.round(op * 100) / 100, moving,
+    backdrop: !!(it.def && it.def.backdrop),
     blur: Math.round(it.v("blur", 0) * 10) / 10,
     box: [r.left, r.top, r.right, r.bottom].map((v) => Math.round(v)), texty: TEXTY.has(it.spec.actor), lines: [], text: "", overflow: false };
   if (rec.texty || it.spec.actor === "text") {

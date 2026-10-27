@@ -186,7 +186,7 @@ def _check_frame(fr, prev=None):
             if any(_overlap(_ink(cb), _ink(l)) > 0.05 * min(_area(cb), _area(l)) for l in it["_lines"]):
                 out.append(("warn", "caption", it["path"], f"субтитры «{cap['text'][:24]}» наезжают на надпись {_label(it)}", [cb, it["_box"]]))
         for it in items:
-            if it["actor"] in BACKDROP or it["moving"] or it["op"] < 0.7 or it.get("blur", 0) >= 1:
+            if it["actor"] in BACKDROP or it.get("backdrop") or it["moving"] or it["op"] < 0.7 or it.get("blur", 0) >= 1:
                 continue
             b = it["box"]
             if _area(b) > 0.6 * W * H:
@@ -303,7 +303,7 @@ def _captions_auto(pid, d, data):
                     if it["op"] < 0.35 or it["moving"]:
                         continue
                     texty = it["texty"] or it["actor"] == "text"
-                    if not texty and (it["actor"] in BACKDROP or _area(it["box"]) > 0.6 * W * H or it.get("blur", 0) >= 1):
+                    if not texty and (it["actor"] in BACKDROP or it.get("backdrop") or _area(it["box"]) > 0.6 * W * H or it.get("blur", 0) >= 1):
                         continue
                     boxes = it["lines"] if texty and it["lines"] else [it["box"]]
                     cost += sum(_overlap(band, b) for b in boxes) * (3 if texty else 1)

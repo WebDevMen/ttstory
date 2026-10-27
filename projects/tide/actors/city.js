@@ -8,6 +8,7 @@ const pad2 = (v) => String(v).padStart(2, "0");
 // floors, cols, cell [w, h], color (panel), lit (share of lit windows, track), seed, entrances [col…], loggias (every n-th col),
 // stains (rain streaks 0..1), wet (darker plinth), roof (antennas), far (simplified: fewer details for distant planes)
 export const panel_block = {
+  backdrop: true,
   origin: "bottom",
   grounded: true,
   size_m: { h: 28 },
@@ -133,6 +134,7 @@ export const sedan = {
 // region [x0, y0, w, h] (local, origin top-left), count, len, speed (px/s), color, alpha, width;
 // v (track, -1..1): direction and speed share; 1 down, 0 frozen (round drops), -1 up. Positions integrate v over time.
 export const rain = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = p.w ?? 1080, h = p.h ?? 1920, n = p.count ?? 260, R = H.rng(p.seed ?? 5);
@@ -178,6 +180,7 @@ export const rain = {
 
 // ------------------------------------------------------------------ puddle: dark mirror with ripples; up (track 0..1) -> jets of rain upwards
 export const puddle = {
+  backdrop: true,
   origin: "center",
   create(p, H) {
     const w = p.w ?? 360, h = p.h ?? 70, R = H.rng(p.seed ?? 2), id = H.uid("pd");
@@ -227,6 +230,7 @@ export const umbrella = {
 
 // ------------------------------------------------------------------ lamp_post: concrete pole with a cobra-head lamp; on (track), light cone
 export const lamp_post = {
+  backdrop: true,
   origin: "bottom",
   grounded: true,
   size_m: { h: 8 },
@@ -249,6 +253,7 @@ export const lamp_post = {
 // ------------------------------------------------------------------ wet_ground: asphalt band with reflections of lights; origin top-left
 // w, h, color, lights: [[x, color, width]], lines (road marking y or false), curb (y of the curb, or false)
 export const wet_ground = {
+  backdrop: true,
   origin: "top-left",
   surface: true,
   create(p, H) {
@@ -268,6 +273,7 @@ export const wet_ground = {
 // w, soil (depth px), buildings: [{x, floors, cols, color, seed}] (panel_block, x from the left edge), view: side;
 // drip (0..1): water and dirt fall UP from the underside; crack (0..1): glow line along the tear; ground (asphalt colour)
 export const city_chunk = {
+  backdrop: true,
   origin: "top-left",
   surface: true,
   async create(p, H) {
@@ -317,6 +323,7 @@ export const city_chunk = {
 // ------------------------------------------------------------------ cloud_bank: soft heavy rain clouds (blurred blobs), drifting; origin top-left
 // w, h, color, shade (underside), n, blur, speed (px/s), seed
 export const cloud_bank = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = p.w ?? 1600, h = p.h ?? 600, n = p.n ?? 26, R = H.rng(p.seed ?? 3), col = p.color ?? "#7b8590", sh = p.shade ?? "#3a434c";

@@ -302,10 +302,10 @@ scenes:
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 540, y: 760}], shakes: [{at: "@затаскивает", amp: 10, dur: 0.3, freq: 5}]}
           layers:
-            - {actor: stairwell, x: 0, y: 0, view: hall, flicker: 1}
-            - {actor: intercom, x: 540, y: 520, r: 60, talk: [{at: 0, v: 0}, {at: "@динамика", v: 1}]}
-            - {actor: person, id: gleb, x: 380, y: 1520, scale: 1.75, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [110, -20], l1: [2, 0], l2: [2, 0]}}
-            - {actor: person, id: sonya, x: 580, y: 1420, scale: 1.4, air: true, look: *sonya_wet, face: sad, pose: {a1: [150, -10], a2: [40, 20], l1: [8, 10], l2: [-6, 14]}, float: {amp: 10, freq: 0.4}}
+            - {actor: stairwell, x: 0, y: 0, view: hall, floor_y: 1400, flicker: 1}
+            - {actor: intercom, x: 540, y: 420, r: 60, talk: [{at: 0, v: 0}, {at: "@динамика", v: 1}]}
+            - {actor: person, id: gleb, x: 380, y: 1420, scale: 1.55, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [110, -20], l1: [2, 0], l2: [2, 0]}}
+            - {actor: person, id: sonya, x: 600, y: 1300, scale: 1.25, air: true, look: *sonya_wet, face: sad, pose: {a1: [150, -10], a2: [40, 20], l1: [8, 10], l2: [-6, 14]}, float: {amp: 10, freq: 0.4}}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24166, stage: 1, status: "ТРЕВОГА"}
       - id: r_speaker
         start: "@Всё-0.22"
@@ -323,11 +323,11 @@ scenes:
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 640, y: 980}, {t: end, z: 1.1, x: 720, y: 940}]}
           layers:
-            - {actor: stairwell, x: 0, y: 0, view: hall, door: [{at: 0, v: 0}, {at: "@Аркадий", v: 1, dur: 0.6}]}
-            - {actor: person, id: petr, x: 900, y: 1520, scale: 1.7, look: *petr, face: [{at: 0, v: surprised}, {at: "@Сюда", v: talk}],
+            - {actor: stairwell, x: 0, y: 0, view: hall, floor_y: 1400, door: [{at: 0, v: 0}, {at: "@Аркадий", v: 1, dur: 0.6}]}
+            - {actor: person, id: petr, x: 900, y: 1420, scale: 1.55, look: *petr, face: [{at: 0, v: surprised}, {at: "@Сюда", v: talk}],
                pose: [{at: 0, v: stand}, {at: "@семьдесят", v: {a1: [7, 4], a2: [120, 120], l1: [2, 0], l2: [2, 0]}, dur: 0.3}, {at: "@метеостанции", v: stand, dur: 0.3}, {at: "@Сюда", v: wave, dur: 0.25}],
                at: "@Аркадий+0.2", enter: {type: fade, dur: 0.3}}
-            - {actor: person, id: gleb, x: 300, y: 1540, scale: 1.75, look: *gleb, face: neutral, pose: stand, look_dx: 0.6}
+            - {actor: person, id: gleb, x: 300, y: 1420, scale: 1.55, look: *gleb, face: neutral, pose: stand, look_dx: 0.6}
             - {actor: mark, x: 900, y: 860, w: 280, h: 300, space: screen, at: "@Аркадий+0.1", enter: {type: fade, dur: 0.2}, label: "А. П. ВОРОНОВ, 70", sub: "КВ. 1 · МЕТЕОСТАНЦИЯ 30 ЛЕТ", align: right}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24178, stage: 1, status: "ТРЕВОГА"}
       - id: r_scale
@@ -339,7 +339,7 @@ scenes:
             - {actor: kitchen, x: 0, y: 0, floor_y: 1420}
             - {actor: person, id: sonya, x: 540, y: 1300, scale: 1.25, look: *sonya_wet, face: sad, pose: {a1: [7, 4], a2: [7, 4], l1: [2, 0], l2: [2, 0]}}
             - {actor: bath_scale, x: 540, y: 1460, w: 560, kg: [{at: 0, v: 22}, {at: "@девять-0.6", v: 9, dur: 0.6, ease: out}], alarm: [{at: 0, v: 0}, {at: "@девять", v: 1}]}
-            - {actor: person, id: gleb, x: 280, y: 1560, scale: 1.6, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [100, 20], l1: [2, 0], l2: [2, 0]}}
+            - {actor: person, id: gleb, x: 280, y: 1440, scale: 1.5, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [100, 20], l1: [2, 0], l2: [2, 0]}}
             - {<<: *rule, y: 700, at: "@девять-0.05", kicker: "ВЕС · СОНЯ, 7 ЛЕТ", text: "22 → 9 КГ", danger: true, size: 120}
             - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ВОРОНОВА · ВИДЕО", tc: 24196, stage: 1, status: "ТРЕВОГА"}
       - id: r_dry
@@ -353,7 +353,7 @@ scenes:
             - {actor: particles, kind: steam, region: [80, 700, 340, 820], count: 18, at: "@Газ"}
             - {actor: person, id: sonya, x: 600, y: 1300, scale: 1.25, look: *sonya, face: [{at: 0, v: sad}, {at: "@Сухое", v: smile}], pose: {a1: [7, 4], a2: [7, 4], l1: [2, 0], l2: [2, 0]}}
             - {actor: bath_scale, x: 600, y: 1460, w: 560, kg: [{at: 0, v: 9}, {at: "@минуту", v: 20, dur: 1.6, ease: inOutSine}]}
-            - {actor: person, id: petr, x: 860, y: 1600, scale: 1.75, look: *petr, face: talk, pose: {a1: [7, 4], a2: [110, 60], l1: [2, 0], l2: [2, 0]}}
+            - {actor: person, id: petr, x: 860, y: 1440, scale: 1.5, look: *petr, face: talk, pose: {a1: [7, 4], a2: [110, 60], l1: [2, 0], l2: [2, 0]}}
             - {actor: shape, kind: rect, x: 780, y: 1020, w: 110, h: 150, fill: "#c9d3da", rot: 12, anim: [{at: "@Полотенца", dur: 0.5, x: 700, rot: -10}]}
             - {<<: *rule, y: 700, at: "@Сухое-0.05", kicker: "ПРАВИЛО 01 · ПРОВЕРЕНО", text: "СУХОЕ — ТЯЖЁЛОЕ", size: 104}
             - {actor: archive, x: 0, y: 0, space: screen, kind: phone, src: "ТЕЛЕФОН ВОРОНОВА · ВИДЕО", tc: 24215, stage: 1, status: "ТРЕВОГА"}
@@ -379,9 +379,9 @@ scenes:
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1100}, {t: end, z: 1.1, x: 500, y: 900}]}
           layers:
-            - {actor: stairwell, x: 0, y: 0, view: hall, flicker: 1}
-            - {actor: water_wall, x: 0, y: 360, w: 1080, h: 1150, n: 11, grow: [{at: 0, v: 0}, {at: "@ползёт", v: 0.25, dur: 1.2}, {at: "@стене", v: 0.75, dur: 2.2, ease: inOutSine}]}
-            - {actor: shape, kind: rect, x: 540, y: 1505, w: 1200, h: 22, fill: "#9fc4dc", opacity: [{at: 0, v: 0}, {at: "@ползёт", v: 0.5, dur: 0.6}]}
+            - {actor: stairwell, x: 0, y: 0, view: hall, floor_y: 1400, flicker: 1}
+            - {actor: water_wall, x: 0, y: 260, w: 1080, h: 1150, n: 11, grow: [{at: 0, v: 0}, {at: "@ползёт", v: 0.25, dur: 1.2}, {at: "@стене", v: 0.75, dur: 2.2, ease: inOutSine}]}
+            - {actor: shape, kind: rect, x: 540, y: 1405, w: 1200, h: 22, fill: "#9fc4dc", opacity: [{at: 0, v: 0}, {at: "@ползёт", v: 0.5, dur: 0.6}]}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24402, stage: 1, status: "ТРЕВОГА"}
       - id: w_ceiling
         start: "@потолке-0.22"
@@ -397,11 +397,11 @@ scenes:
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 600, y: 980}, {t: end, z: 1.1, x: 700, y: 900}]}
           layers:
-            - {actor: stairwell, x: 0, y: 0, view: hall, door: 1, flicker: 1}
-            - {actor: water_wall, x: 0, y: 360, w: 1080, h: 1150, n: 11, grow: 0.8}
-            - {actor: person, id: gleb, x: 300, y: 1540, scale: 1.75, look: *gleb, face: neutral, pose: hold, look_dx: 0.3}
-            - {actor: person, id: sonya, x: 330, y: 1250, scale: 1.2, air: true, look: *sonya, face: sad, pose: {a1: [40, 60], a2: [40, 60], l1: [40, 60], l2: [30, 60]}}
-            - {actor: person, id: petr, x: 820, y: 1540, scale: 1.7, look: *petr, face: [{at: 0, v: neutral}, {at: "@промок", v: talk}],
+            - {actor: stairwell, x: 0, y: 0, view: hall, floor_y: 1400, door: 1, flicker: 1}
+            - {actor: water_wall, x: 0, y: 260, w: 1080, h: 1150, n: 11, grow: 0.8}
+            - {actor: person, id: gleb, x: 300, y: 1420, scale: 1.55, look: *gleb, face: neutral, pose: hold, look_dx: 0.3}
+            - {actor: person, id: sonya, x: 330, y: 1160, scale: 1.1, air: true, look: *sonya, face: sad, pose: {a1: [40, 60], a2: [40, 60], l1: [40, 60], l2: [30, 60]}}
+            - {actor: person, id: petr, x: 820, y: 1420, scale: 1.55, look: *petr, face: [{at: 0, v: neutral}, {at: "@промок", v: talk}],
                pose: [{at: 0, v: stand}, {at: "@ходят", v: raise, dur: 0.3}], tilt: [{at: 0, v: 0}, {at: "@промок", v: -10, dur: 0.4}]}
             - {actor: particles, kind: dust, region: [500, 200, 1000, 600], count: 22, colors: ["#d9dcd6"], at: "@ходят"}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24414, stage: 1, status: "ТРЕВОГА"}
@@ -471,8 +471,8 @@ scenes:
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.12, x: 470, y: 1080}], sway: {x: 8, y: 8, roll: 0.6, freq: 0.6}}
           layers:
-            - {actor: stairwell, x: 0, y: 0, view: hall, blur: 4, brightness: 0.55, flicker: 1}
-            - {actor: person, id: gleb, x: 600, y: 1760, scale: 2.1, look: *gleb, face: [{at: 0, v: surprised}, {at: "@яму", v: determined}], hold: phone,
+            - {actor: stairwell, x: 0, y: 0, view: hall, floor_y: 1400, blur: 4, brightness: 0.55, flicker: 1}
+            - {actor: person, id: gleb, x: 640, y: 1620, scale: 1.8, look: *gleb, face: [{at: 0, v: surprised}, {at: "@яму", v: determined}], hold: phone,
                pose: [{at: 0, v: {a1: [7, 4], a2: [150, 150], l1: [2, 0], l2: [2, 0]}}, {at: "@кармане", v: {a1: [30, 70], a2: [150, 150], l1: [2, 0], l2: [2, 0]}, dur: 0.4}], look_dx: [{at: 0, v: 0}, {at: "@яму", v: -0.6, dur: 0.4}]}
             - {actor: shape, kind: circle, x: 400, y: 1150, r: 26, fill: "none", stroke: "#c9cfd3", sw: 10, at: "@кармане", enter: {type: rise, dur: 0.3}}
             - {actor: shape, kind: rect, x: 400, y: 1205, w: 12, h: 70, fill: "#c9cfd3", at: "@кармане", enter: {type: rise, dur: 0.3}}
@@ -501,13 +501,13 @@ scenes:
         draw:
           camera: {keys: [{t: 0, z: 1.08, x: 380, y: 980}, {t: "@потоп", z: 1.1, x: 700, y: 960, ease: inout}, {t: "@врёт", z: 1.1, x: 400, y: 960, ease: inout}, {t: end, z: 1.12, x: 460, y: 960}], sway: {x: 8, y: 6, roll: 0.5, freq: 0.6}}
           layers:
-            - {actor: stairwell, x: 0, y: 0, view: hall, door: 1, flicker: 1}
-            - {actor: water_wall, x: 0, y: 360, w: 1080, h: 1150, n: 11, grow: 0.9}
-            - {actor: person, id: gleb, x: 300, y: 1540, scale: 1.75, look: *gleb, face: [{at: 0, v: determined}, {at: "@врёт", v: neutral}],
+            - {actor: stairwell, x: 0, y: 0, view: hall, floor_y: 1400, door: 1, flicker: 1}
+            - {actor: water_wall, x: 0, y: 260, w: 1080, h: 1150, n: 11, grow: 0.9}
+            - {actor: person, id: gleb, x: 300, y: 1420, scale: 1.55, look: *gleb, face: [{at: 0, v: determined}, {at: "@врёт", v: neutral}],
                pose: [{at: 0, v: {a1: [7, 4], a2: [160, -10], l1: [2, 0], l2: [2, 0]}}, {at: "@потоп", v: stand, dur: 0.3}, {at: "@врёт", v: hold, dur: 0.3}]}
-            - {actor: person, id: sonya, x: 500, y: 1520, scale: 1.4, look: *sonya, face: sad, pose: stand,
-               anim: [{at: "@врёт", dur: 0.5, x: 330, y: 1300, ease: out}], air: true}
-            - {actor: person, id: petr, x: 800, y: 1540, scale: 1.7, look: *petr, face: talk,
+            - {actor: person, id: sonya, x: 500, y: 1420, scale: 1.25, look: *sonya, face: sad, pose: stand,
+               anim: [{at: "@врёт", dur: 0.5, x: 330, y: 1200, ease: out}], air: true}
+            - {actor: person, id: petr, x: 800, y: 1420, scale: 1.55, look: *petr, face: talk,
                pose: [{at: 0, v: stand}, {at: "@потоп", v: point, dur: 0.3}, {at: "@врала", v: hold, dur: 0.3}], flip: true}
             - {actor: archive, x: 0, y: 0, space: screen, kind: cctv, src: "CAM 04 · ПОДЪЕЗД 2 · ХОЛЛ", tc: 24548, stage: 1, status: "ЭВАКУАЦИЯ 07:00"}
       - id: d_choice

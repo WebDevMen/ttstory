@@ -21,6 +21,7 @@ const LOOK = {
 };
 
 export const archive = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = 1080, h = 1920, L = LOOK[p.kind ?? "cctv"] ?? LOOK.cctv;
@@ -241,6 +242,7 @@ export const title_card = {
 // crt_tv: old CRT television on the floor of a dark room, red emergency screen with pixel-mono text.
 // screens: [{at, lines: [..], color}] — the text on screen switches at each `at`; glow follows the screen colour.
 export const crt_tv = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = 1080, h = 1920, id = H.uid("crt");

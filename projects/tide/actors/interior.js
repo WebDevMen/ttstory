@@ -10,6 +10,7 @@ const MONO = `"IBM Plex Mono", monospace`;
 // view: hall | stairs | ceiling; door (track 0..1: flat door opens, warm light), lamp (track 0..1), swing (track: lamp swing amp),
 // wall (lower paint colour), floor_y
 export const stairwell = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = p.w ?? 1080, h = p.h ?? 1920, view = p.view ?? "hall", R = H.rng(p.seed ?? 11), id = H.uid("sw");
@@ -103,6 +104,7 @@ export const stairwell = {
 
 // ------------------------------------------------------------------ intercom: round speaker grille on a steel plate; talk (track 0..1) pulses a ring + level bars
 export const intercom = {
+  backdrop: true,
   origin: "center",
   create(p, H) {
     const r = p.r ?? 120, w = r * 2 + 60, h = r * 2 + 60, c = w / 2;
@@ -122,6 +124,7 @@ export const intercom = {
 
 // ------------------------------------------------------------------ kitchen: tiled Soviet kitchen, window with rain on the right, towels on a line, barometer
 export const kitchen = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = 1080, h = 1920, fy = p.floor_y ?? 1480, R = H.rng(4), id = H.uid("kt");
@@ -168,6 +171,7 @@ export const bath_scale = {
 
 // ------------------------------------------------------------------ stove: Soviet gas stove (front, slightly from above); fire (track 0..1) — blue flames
 export const stove = {
+  backdrop: true,
   origin: "bottom",
   create(p, H) {
     const w = 460, h = 720;
@@ -196,6 +200,7 @@ export const stove = {
 // ------------------------------------------------------------------ water_wall: tongues of water crawling UP a wall from the floor
 // w, h (region; origin top-left, water starts at the bottom), n tongues, grow (track 0..1), color
 export const water_wall = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = p.w ?? 1080, h = p.h ?? 1200, n = p.n ?? 9, R = H.rng(p.seed ?? 6), id = H.uid("ww");
@@ -228,6 +233,7 @@ export const water_wall = {
 // ------------------------------------------------------------------ footprints: wet bare footprints appearing one by one (on a ceiling, seen from below)
 // path: [[x, y, angle], …] (local px), show (track: number of prints visible, fractional = fading in)
 export const footprints = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const pts = p.path ?? [[300, 1400, -10], [420, 1250, -10], [330, 1080, -8], [460, 920, -8], [380, 760, -5], [520, 600, -5]];
@@ -245,6 +251,7 @@ export const footprints = {
 // ------------------------------------------------------------------ lift_pit: helmet-cam view in the basement: shaft door with a key, opens onto the dry cabin
 // turn (track 0..1: key turns), open (track 0..1: doors slide), light (cabin light)
 export const lift_pit = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = 1080, h = 1920, id = H.uid("lpit");
@@ -285,6 +292,7 @@ export const lift_pit = {
 // ------------------------------------------------------------------ lift_cabin: cabin interior from the corner CCTV (wide, converging walls) or view: hatch (looking up at the roof hatch)
 // tape (track 0..4: strips of tape across the door seam), floor (track: number shown on the floor display), flicker (track 0..1), hatch (track 0..1: open)
 export const lift_cabin = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = 1080, h = 1920, id = H.uid("lc"), view = p.view ?? "cctv";
@@ -335,6 +343,7 @@ export const lift_cabin = {
 // water (track: flooded floors from the top, e.g. 1 = 9th floor, 1.6 = 9th + 60% of 8th), roof (track 0..1 highlight + arrows up),
 // pit (track 0..1 highlight of the lift pit), heli (track 0..1), timer (string), danger (track 0..1 red marks)
 export const house_section = {
+  backdrop: true,
   origin: "top-left",
   create(p, H) {
     const w = 1080, h = 1920, x0 = 250, x1 = 830, top = 470, fh = 100, fl = 9, base = top + fl * fh, bsm = 120;
