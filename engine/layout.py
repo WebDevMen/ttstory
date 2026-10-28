@@ -320,7 +320,7 @@ def _captions_auto(pid, d, data):
         res[sid] = best
     merged = {**old, **res}
     json.dump(merged, open(f, "w", encoding="utf-8"), indent=1)
-    changed = any(old.get(k) != v for k, v in res.items())
+    changed = [k for k, v in res.items() if old.get(k) != v]     # shots whose caption band moved
     if res:
         print("  субтитры (auto): " + ", ".join(f"{k} → {v}" for k, v in res.items()))
     return changed
@@ -422,7 +422,7 @@ def _static(pid):
 
 
 def run(pid, step=12):
-    """Analyse build/<pid>/layout/frames.json (written by render_hud.cjs layout). Returns (errors, warnings, captions_changed)."""
+    """Analyse build/<pid>/layout/frames.json (written by render_hud.cjs layout). Returns (errors, warnings, ids of shots whose caption band moved)."""
     d = build_dir(pid, "layout")
     data = json.load(open(os.path.join(d, "frames.json"), encoding="utf-8"))
     caps_changed = _captions_auto(pid, d, data)

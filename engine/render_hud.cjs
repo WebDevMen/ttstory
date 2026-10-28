@@ -4,7 +4,7 @@
 //   node engine/render_hud.cjs draw   <project> [workers] [frame...] [--force]
 //        code-drawn shots -> build/<project>/drawn/<shot>/<frame>.jpg + meta.json (camera + anchors per frame);
 //        unchanged shots are skipped (hash of the shot spec + actor code), explicit frames are always rendered.
-//   node engine/render_hud.cjs layout <project> [step] [mstep] [--shots=a,b] [--workers=3]   layout audit: item boxes + captions of sampled frames
+//   node engine/render_hud.cjs layout <project> [step] [mstep] [--shots=a,b] [--workers=3] [--merge]   layout audit: item boxes + captions of sampled frames
 //        of every draw shot -> build/<project>/layout/frames.json + f_XXXXX.jpg (analysed by engine/layout.py)
 // Needs an http server serving the repository root on $PORT (vg.py starts one automatically).
 const { chromium } = require("playwright");
@@ -136,10 +136,15 @@ async function drawMode(browser, pid, tl, workers, frames, force) {
 // ------------------------------------------------------------------ layout audit
 // Shots are split between `workers` browser tabs (each with its own draw + HUD page) and measured in parallel;
 // `only` limits the audit to the named shots (re-check what changed). captions.json (picked bands) survives a rerun.
-async function layoutMode(browser, pid, tl, step, mstep, only = null, workers = 3) {
+// merge: keep the earlier measurements of the other shots (re-audit after the caption bands moved).
+async function layoutMode(browser, pid, tl, step, mstep, only = null, workers = 3, merge = false) {
   const out = path.join(ROOT, "build", pid, "layout");
   fs.mkdirSync(out, { recursive: true });
-  for (const f of fs.readdirSync(out)) if (f !== "captions.json") fs.rmSync(path.join(out, f), { recursive: true, force: true });
+  const readJ = (f) => { try { return JSON.parse(fs.readFileSync(path.join(out, f), "utf8")); } catch (e) { return null; } };
+  const keep = merge && only ? { frames: (readJ("frames.json")?.frames || []).filter((x) => !only.includes(x.shot)),
+    mot: (readJ("motion.json")?.frames || []).filter((x) => !only.includes(x.shot)) } : null;
+  const kept = new Set((keep?.frames || []).map((x) => x.image));
+  for (const f of fs.readdirSync(out)) if (f !== "captions.json" && !kept.has(f)) fs.rmSync(path.join(out, f), { recursive: true, force: true });
   const shots = tl.shots.filter((s) => s.draw && s.draw.engine !== "motion" && (!only || only.includes(s.id)));
   if (only) for (const id of only) if (!tl.shots.some((s) => s.id === id)) console.error(`  unknown shot '${id}'`);
   const n = Math.max(1, Math.min(workers, shots.length));
@@ -182,6 +187,7 @@ async function layoutMode(browser, pid, tl, step, mstep, only = null, workers = 
     }
     await dpage.close(); await hpage.close();
   }));
+  if (keep) { res.push(...keep.frames); mot.push(...keep.mot); }
   res.sort((a, b) => a.frame - b.frame); mot.sort((a, b) => a.frame - b.frame);
   fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ width: tl.width, height: tl.height, frames: res }));
   console.log(`  measured ${res.length} frames of ${shots.length} shot(s) in ${n} tab(s)`);
@@ -203,7 +209,7 @@ async function layoutMode(browser, pid, tl, step, mstep, only = null, workers = 
   } else if (mode === "layout") {
     const opt = (k) => (rest.find((x) => x.startsWith(`--${k}=`)) || "").split("=")[1];
     const only = opt("shots") ? opt("shots").split(",").filter(Boolean) : null;
-    await layoutMode(browser, pid, tl, Number(rest[0] || 12), Number(rest[1] ?? 2), only, Number(opt("workers") || 3));
+    await layoutMode(browser, pid, tl, Number(rest[0] || 12), Number(rest[1] ?? 2), only, Number(opt("workers") || 3), rest.includes("--merge"));
   } else if (mode === "stills") {
     const dir = path.join(ROOT, "build", pid, "stills");
     fs.mkdirSync(dir, { recursive: true });

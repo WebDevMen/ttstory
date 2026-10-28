@@ -265,10 +265,10 @@ def cmd_layout(a):
     extra = ([f"--shots={a.shots}"] if a.shots else []) + [f"--workers={a.workers}"]
     run_node(["layout", a.id, str(a.step), str(a.mstep)] + extra)
     errs, warns, caps = layout.run(a.id, a.step)
-    if caps:                                   # captions_top: auto picked new bands: recompile and check again
-        step("layout audit (captions moved)")
+    if caps:                                   # captions_top: auto picked new bands: recompile, re-check only those shots
+        step(f"layout audit (captions moved: {', '.join(caps)})")
         cmd_compile(a)
-        run_node(["layout", a.id, str(a.step), str(a.mstep)] + extra)
+        run_node(["layout", a.id, str(a.step), str(a.mstep), f"--shots={','.join(caps)}", f"--workers={a.workers}", "--merge"])
         errs, warns, _ = layout.run(a.id, a.step)
     if errs or warns > 3:
         sys.exit(1)
