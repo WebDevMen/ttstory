@@ -259,6 +259,7 @@ anim:
 | `chart` | графики (D3) | `type: bar hbar line pie donut`, `data: [{label, value, color}]`, `w h max suffix decimals size ink values grow: {at, dur, stagger}` |
 | `map` | карта/глобус (D3-geo, Natural Earth) | `focus` (страны), `highlight`, `projection: mercator natural orthographic`, `rotate` (дорожка для глобуса), `land ocean stroke hi graticule detail pins: [{lon, lat, label, at, color}]`, `routes: [{src: [lon, lat], dst: [lon, lat], at, dur, color, width, packets, period}]` — дуга большого круга рисуется во времени, по ней бегут «пакеты» |
 | `holo` | 3D-модель (three.js) | `model: globe still tanker` (или своя из `engine/hud/models`), `params` (дорожки), `opts`, `color w h` |
+| `world3d` | целая 3D-сцена на весь экран (способ `3d`, [DRAW3D.md](DRAW3D.md)) | `sky camera objects shadow modules`; якоря `<id объекта>.top` и др. |
 | `particles` | частицы внутри сцены | `kind: petals snow confetti leaves bubbles dust embers steam sparkles stars burst hearts`, `region count size speed sway wind colors alpha seed from rise drift` |
 
 ### 7.7 Казино и карты
@@ -312,7 +313,7 @@ anim:
 | **lottie-web 5.13** | `lottie` | `H.lottie` |
 | **rough.js 4.6** | `sketch` | `H.rough` |
 | **D3 7.9** + topojson + world-atlas (Natural Earth 50m/110m) | `chart`, `map` | `H.d3`, `H.topojson` |
-| **three.js r170** | `holo`, HUD `holo3d` | `await H.three()` |
+| **three.js r170** | `holo`, HUD `holo3d`, `world3d` (целая 3D-сцена — [DRAW3D.md](DRAW3D.md)) | `await H.three()` |
 | SVG, HTML/CSS, Web-шрифты | всё остальное | `H.svg()`, `H.div()`, `H.el()` |
 
 Шрифты: Montserrat, Exo 2, JetBrains Mono, Playfair Display, Unbounded, **Caveat** (рукописный, кириллица), **Klee One** (японский рукописный — мел, тетради), **M PLUS Rounded 1c** (японский/кириллица, округлый). В `text` и подписях: `font: display/mono/tech/serif/wide/hand/jp/round`/cond/plex/inter`. Для «документальных» и аварийных роликов есть **Oswald** (`cond` — узкие заголовки), **IBM Plex Mono** (`plex` — метки, таймкоды) и **Inter** (`inter` — субтитры); тема HUD `archive` ставит их в субтитры и интерфейс (пример — `projects/tide`).

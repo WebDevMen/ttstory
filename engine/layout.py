@@ -50,7 +50,9 @@ BACKDROP = {"shape", "svg", "sky", "stars", "cloud", "skyline", "ground", "stree
             "train", "school", "window_grid", "lockers", "classroom", "desk", "blackboard", "hand", "text", "badge",
             "timetag", "callout", "bubble", "card", "checklist", "meter", "mail",
             # medieval.js: scenery, light and atmosphere
-            "cottage", "chapel", "forest", "cobbles", "hut_interior", "crater", "smoke", "fire", "light_pool", "parchment", "cast_shadow", "meteor"}
+            "cottage", "chapel", "forest", "cobbles", "hut_interior", "crater", "smoke", "fire", "light_pool", "parchment", "cast_shadow", "meteor",
+            # three3d.js: the 3D world is the whole backdrop
+            "world3d"}
 
 
 def _area(b):

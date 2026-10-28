@@ -1,0 +1,127 @@
+# «Почему маяки в полоску?» (~10 с) — первый тест способа `3d`: настоящая 3D-сцена на three.js (актёр world3d,
+# docs/DRAW3D.md). Остров, маяк, море с волнами, лодка на волнах, облака, горы в дымке, солнце с мягкими тенями.
+# 2D-надписи и выноски — обычные draw-актёры поверх 3D; выноски цепляются за 3D-объекты якорями ("w.lh.top").
+# Время: "@слово" (числа в at — абсолютные секунды ролика; t у ключей камеры — от начала шота).
+
+title: "Почему маяки в полоску?"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+12%", lead_in: 0.25, tail: 1.4}
+
+theme:
+  preset: minimal
+  accent: "#ffd36b"
+  captions: {style: clean, top: 1250, size: 64, max_chars: 18}
+
+post: {vignette: 0.16, chromatic: 0, grain: 0.012}
+
+# общий мир: остров с маяком посреди моря (YAML-якорь, вставляется в каждый шот)
+x-world: &world
+  - {prop: sea, wave: 0.45}
+  - {prop: mountains, radius: 520, arc: [-75, 75], height: [50, 130], color: "#6b7f95"}
+  - {prop: island, id: isle, radius: 15, height: 5, seed: 3}
+  - {prop: lighthouse, id: lh, pos: [0, -0.3, 0], ground: true, height: 13, stripes: 4, colors: ["#d62b2b", "#f4f1ea"], lamp: 0.4}
+  - {prop: house, pos: [6.2, -0.2, 2.5], ground: true, rot: -25, w: 5, d: 4, h: 2.8}
+  - {scatter: tree, kind: pine, n: 10, ring: [0, 0, 6, 11], min_h: 2.2, h: 4.5, seed: 7, avoid: [[6.2, 2.5, 5.5]]}
+  - {scatter: rock, n: 16, ring: [0, 0, 12, 16], max_h: 1.2, size: 1.3, seed: 5}
+  - {prop: boat, id: boat, pos: [-20, 0, 16], rot: 30}
+  - {prop: pier, pos: [-8, 0, 9], rot: -55, length: 9}
+  - {prop: cloud, pos: [-60, 55, -160], size: 16, drift: 1.2}
+  - {prop: cloud, pos: [70, 70, -220], size: 22, seed: 9, drift: 0.8}
+  - {prop: cloud, pos: [10, 48, -120], size: 11, seed: 4, drift: 1}
+  - {prop: birds, pos: [-12, 20, 0], dir: [1, 0.05, 0.2], speed: 3, count: 6, size: 0.8}
+
+audio:
+  music:
+    key: D
+    mode: major
+    bpm: 92
+    gain: -15
+    sections:
+      - {at: 0, style: calm, chords: [D, A, Bm, G]}
+
+scenes:
+  - id: hook
+    text: Почему маяки красят в полоску?
+    shots:
+      - id: m_hook
+        ambience: [{sound: wind, gain: -20}]
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.05, sat: 1.05}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: {hour: 15.5}
+              shadow: {size: 30, map: 2048}
+              camera:
+                keys:
+                  - {t: 0, pos: [44, 4, 58], look: [0, 14, 0], fov: 36}
+                  - {t: end, pos: [30, 8, 56], look: [0, 15, 0], fov: 34}
+              objects: *world
+            - {actor: text, text: "ПОЧЕМУ", x: 540, y: 300, size: 96, color: "#ffffff", font: display, stroke: {w: 6, color: "#1b2a3a"}, at: "@Почему", reveal: {by: word, mode: slam}, shadow: {y: 6, blur: 24, a: 0.45}}
+            - {actor: text, text: "В ПОЛОСКУ?", x: 540, y: 415, size: 112, color: "#ffd36b", font: display, stroke: {w: 7, color: "#1b2a3a"}, at: "@полоску-0.1", reveal: {by: word, mode: slam}, shadow: {y: 6, blur: 24, a: 0.45}}
+
+  - id: white
+    text: Белая башня теряется на фоне неба.
+    shots:
+      - id: m_white
+        transition: {type: whip_x, dur: 0.3}
+        ambience: [{sound: wind, gain: -18}]
+        look: {bloom: [0.85, 0.15], grade: {contrast: 0.03, sat: 0.95}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky:
+                hour: 12.5
+                horizon: "#e8eef2"
+                fog: [{at: "@white.start", v: 0.003}, {at: "@теряется", v: 0.009, dur: 1.2}]
+              shadow: {size: 30}
+              objects:
+                - {prop: sea, wave: 0.35, color: "#5f98ad", deep: "#2f6a85"}
+                - {prop: island, id: isle, radius: 15, height: 5, seed: 3}
+                - {prop: lighthouse, id: lh, pos: [0, -0.3, 0], ground: true, height: 13, stripes: 4, plain: [{at: "@white.start", v: 0}, {at: "@Белая", v: 1, dur: 0.6}]}
+                - {prop: house, pos: [6.2, -0.2, 2.5], ground: true, rot: -25, w: 5, d: 4, h: 2.8}
+                - {scatter: tree, kind: pine, n: 10, ring: [0, 0, 6, 11], min_h: 2.2, h: 4.5, seed: 7, avoid: [[6.2, 2.5, 5.5]]}
+                - {scatter: rock, n: 16, ring: [0, 0, 12, 16], max_h: 1.2, size: 1.3, seed: 5}
+                - {prop: cloud, pos: [-14, 26, -60], size: 14, glow: 0.5}
+                - {prop: cloud, pos: [22, 34, -90], size: 18, seed: 9, glow: 0.5}
+                - {prop: cloud, pos: [2, 22, -40], size: 9, seed: 4, glow: 0.5}
+              camera:
+                keys:
+                  - {t: 0, pos: [10, 4, 60], look: [0, 9, 0], fov: 30}
+                  - {t: end, pos: [14, 3, 110], look: [0, 9, 0], fov: 26}
+            - {actor: badge, x: 540, y: 330, at: "@теряется", enter: pop, title: "НЕ ВИДНО", style: solid, color: "#3a4756", size: 44, sfx: true}
+
+  - id: stripes
+    text: А полосы видно издалека — и у каждого маяка свой узор.
+    shots:
+      - id: m_stripes
+        transition: {type: zoom, dur: 0.3}
+        ambience: [{sound: wind, gain: -20}]
+        look: {bloom: [0.85, 0.12], grade: {contrast: 0.06, sat: 1.08}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: {hour: 17.2}
+              shadow: {size: 70, center: [0, 0, -25], map: 2048}
+              objects:
+                - {prop: sea, wave: 0.4}
+                - {prop: mountains, radius: 520, arc: [-75, 75], height: [50, 130], color: "#6b7f95"}
+                - {prop: island, radius: 15, height: 5, seed: 3}
+                - {prop: lighthouse, id: lh, pos: [0, -0.3, 0], ground: true, height: 13, stripes: 4}
+                - {scatter: tree, kind: pine, n: 12, ring: [0, 0, 6, 11], min_h: 2.2, h: 4.5, seed: 7}
+                - {prop: island, pos: [-30, 0, -60], radius: 11, height: 4, seed: 8}
+                - {prop: lighthouse, id: lh2, pos: [-30, -0.3, -60], ground: true, height: 11, stripes: 2, colors: ["#1d1f24", "#f4f1ea"], at: "@каждого-0.2", enter: rise, enter_dur: 0.7}
+                - {prop: island, pos: [14, 0, -95], radius: 12, height: 6, seed: 12}
+                - {prop: lighthouse, id: lh3, pos: [14, -0.3, -95], ground: true, height: 12, stripes: 3, colors: ["#e3b21f", "#1d1f24"], at: "@свой-0.2", enter: rise, enter_dur: 0.7}
+                - {prop: boat, pos: [-8, 0, 26], rot: -20}
+                - {prop: cloud, pos: [-60, 55, -200], size: 18, drift: 1.2}
+                - {prop: cloud, pos: [60, 64, -240], size: 22, seed: 9}
+              camera:
+                keys:
+                  - {t: 0, pos: [10, 7, 42], look: [0, 10, 0], fov: 40}
+                  - {at: "@каждого", pos: [16, 16, 58], look: [-1, 6, -40], fov: 42}
+                  - {t: end, pos: [18, 19, 66], look: [-1, 5, -45], fov: 42}
+            - {actor: callout, target: "w.lh2.top", x: 250, y: 330, title: "2 ПОЛОСЫ", at: "@каждого+0.3", enter: pop, color: "#ffffff", size: 40, sfx: true}
+            - {actor: callout, target: "w.lh3.top", x: 800, y: 380, title: "3 ПОЛОСЫ", at: "@свой+0.3", enter: pop, color: "#ffd36b", size: 40, sfx: true}

@@ -200,7 +200,8 @@ async function buildStage(shot) {
       spec = { ...spec, y: d.floor };
     }
     if (spec0.slot && !(spec0.slot in SLOTS) && Number.isNaN(Number(spec0.slot))) throw new Error(`shot ${shot.id}: unknown slot '${spec0.slot}' (${Object.keys(SLOTS).join(", ")})`);
-    const space = spec.space === "screen" ? "screen" : "world";
+    // full-screen actors (world3d) live in screen space unless the YAML sets `space`
+    const space = spec.space === "screen" || (spec.space == null && ACTORS[spec.actor]?.screen) ? "screen" : "world";
     const par = space === "screen" ? null : Number(spec.par ?? 1);
     if (!layer || layer.space !== space || layer.par !== par) {
       layer = { space, par, el: document.createElement("div"), matrix: new DOMMatrix() };
