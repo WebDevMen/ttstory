@@ -3,6 +3,12 @@
 // fog in the horizon color (aerial perspective), ACES tone mapping and a 3D camera driven by keys in time.
 // Everything is a function of time t: the same frame always comes out the same.
 import * as THREE from "../vendor/three.module.min.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
+import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { asset } from "./assets.js";
 
 export { THREE };
 
@@ -64,7 +70,8 @@ function skyMaterial() {
         vec3 c = y > 0.0 ? mix(horizon, zenith, pow(clamp(y, 0.0, 1.0), 0.55)) : mix(horizon, ground, clamp(-y * 6.0, 0.0, 1.0));
         float s = max(dot(d, normalize(sunDir)), 0.0);
         c += sunCol * (pow(s, 8.0) * 0.35 + pow(s, 64.0) * 0.6) * glow;              // halo around the sun
-        c += sunCol * smoothstep(0.99955 - 0.0003 * sunSize, 0.99975 - 0.0003 * sunSize, s) * 4.0 * glow;   // the disc
+        float rd = 0.0095 * sunSize;                                                   // angular radius (rad), ~0.55° at size 1
+        c += sunCol * smoothstep(cos(rd * 1.35), cos(rd * 0.8), s) * 3.0 * glow;     // the disc, soft edge
         if (stars > 0.0 && y > 0.0) { vec3 q = floor(d * 380.0); float h = hash(q); c += vec3(step(0.9975, h) * (h - 0.9975) * 400.0 * stars * y); }
         gl_FragColor = vec4(c, 1.0);
         #include <tonemapping_fragment>
@@ -163,7 +170,7 @@ export function createWorld(canvas, opts = {}) {
   const envScene = new THREE.Scene();
   const envSky = new THREE.Mesh(new THREE.SphereGeometry(10, 32, 16), skyMaterial());
   envScene.add(envSky);
-  let envRT = null, envKey = null;
+  let envRT = null, envKey = null, hdriKey = null;
 
   const W = {
     THREE, renderer, scene, camera, sky, sun, hemi, canvas,
@@ -188,10 +195,34 @@ export function createWorld(canvas, opts = {}) {
       hemi.color.copy(L.zenith).lerp(new THREE.Color(1, 1, 1), 0.35);
       hemi.groundColor.copy(L.ground);
       hemi.intensity = (o.ambient ?? 1) * L.amb;
-      scene.fog.color.copy(L.horizon);
+      scene.fog.color.copy(o.fog_color ? col(o.fog_color) : L.horizon);
       scene.fog.density = o.fog ?? L.fog;
       renderer.toneMappingExposure = o.exposure ?? opts.exposure ?? 1;
       W.light = { ...L, dir, elev, az };
+      if (o.sun_color) sun.color.copy(col(o.sun_color));
+      // a real photographed sky (HDRI, "ph:<id>"): backdrop + image-based light; the sun light is aimed by elev/az
+      if (o.hdri) {
+        const a = asset(o.hdri);
+        if (hdriKey !== o.hdri) {
+          if (envRT) envRT.dispose();
+          envRT = pmrem.fromEquirectangular(a.hdr); envKey = null; hdriKey = o.hdri;
+          scene.environment = envRT.texture;
+          scene.background = o.backdrop === false ? null : (a.bg || a.hdr);
+        }
+        if (o.backdrop === false) scene.background = null;
+        const rot = new THREE.Euler(0, (o.hdri_rot ?? 0) * D2R, 0);
+        scene.backgroundRotation = rot; scene.environmentRotation = rot;
+        scene.backgroundIntensity = o.bg ?? 1;
+        scene.backgroundBlurriness = o.bg_blur ?? 0;
+        scene.environmentIntensity = o.env ?? 1;
+        // backdrop: false — the HDRI only lights the scene; the gradient sky (zenith/horizon) is the visible backdrop
+        sky.visible = o.backdrop === false;
+        if (o.hemi == null) hemi.intensity = 0.15 * (o.ambient ?? 1);
+        return W.light;
+      }
+      sky.visible = true;
+      if (hdriKey) { scene.background = null; hdriKey = null; }
+      scene.environmentIntensity = o.env ?? 0.6;
       // environment light from the same sky (no sun disc: the sun is the directional light)
       const key = [L.zenith.getHexString(), L.horizon.getHexString(), L.ground.getHexString()].join();
       if (opts.env !== false && key !== envKey) {
@@ -222,8 +253,38 @@ export function createWorld(canvas, opts = {}) {
       if (p.z > 1) return null;
       return [(p.x * 0.5 + 0.5) * canvas.width, (-p.y * 0.5 + 0.5) * canvas.height];
     },
-    render() { renderer.render(scene, camera); },
+    // post-processing (opts.post): ao — ground-truth ambient occlusion (contact darkening in corners and under objects),
+    // dof — depth of field (focus in metres from the camera, aperture, maxblur). Set per frame with W.setPost.
+    composer: null, passes: {},
+    setPost(p = {}) {
+      const P = W.passes;
+      if (P.ao) { P.ao.enabled = p.ao !== false; if (p.ao && typeof p.ao === "object") P.ao.blendIntensity = p.ao.intensity ?? 1; }
+      if (P.dof) {
+        P.dof.enabled = !!p.dof;
+        if (p.dof) { const u = P.dof.uniforms; u.focus.value = p.dof.focus ?? 10; u.aperture.value = (p.dof.aperture ?? 2) * 1e-4; u.maxblur.value = p.dof.maxblur ?? 0.008; }
+      }
+    },
+    render() { if (W.composer) W.composer.render(); else renderer.render(scene, camera); },
   };
+  if (opts.post) {
+    const w = canvas.width, h = canvas.height;
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: opts.post.msaa ?? 4 });
+    const C = new EffectComposer(renderer, rt);
+    C.setPixelRatio(1); C.setSize(w, h);
+    C.addPass(new RenderPass(scene, camera));
+    if (opts.post.ao !== false) {
+      const ao = new GTAOPass(scene, camera, w, h);
+      ao.output = GTAOPass.OUTPUT.Default;
+      const a = typeof opts.post.ao === "object" ? opts.post.ao : {};
+      ao.updateGtaoMaterial({ radius: a.radius ?? 0.6, distanceExponent: 1, thickness: a.thickness ?? 1, scale: 1, samples: a.samples ?? 12 });
+      ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
+      ao.blendIntensity = a.intensity ?? 1;
+      C.addPass(ao); W.passes.ao = ao;
+    }
+    if (opts.post.dof) { const d = new BokehPass(scene, camera, { focus: 10, aperture: 2e-4, maxblur: 0.008 }); C.addPass(d); W.passes.dof = d; }
+    C.addPass(new OutputPass());
+    W.composer = C;
+  }
   W.setSky({});
   return W;
 }

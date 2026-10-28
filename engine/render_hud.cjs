@@ -110,6 +110,8 @@ async function drawMode(browser, pid, tl, workers, frames, force) {
   let count = 0;
   await Promise.all(Array.from({ length: Math.min(workers, jobs.length) }, async (_, w) => {
     const page = await browser.newPage({ viewport: { width: tl.width, height: tl.height }, deviceScaleFactor: 1 });
+    // heavy 3D frames (world3d: PBR, GTAO, big shadow maps on CPU WebGL) in parallel workers can take minutes to settle
+    page.setDefaultTimeout(300000);
     page.on("console", (m) => { if (m.type() === "error" && !/404|Failed to load resource/.test(m.text())) console.error("[draw]", m.text()); });
     page.on("pageerror", (e) => { console.error("[draw pageerror]", e.message); process.exitCode = 2; });
     await page.goto(`http://127.0.0.1:${PORT}/engine/hud/draw.html?project=${encodeURIComponent(pid)}`);

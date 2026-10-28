@@ -7,6 +7,8 @@
   python3 vg.py compile <id>              build the timeline: scene/shot timings, cues, captions, HUD, audio events
   python3 vg.py prep <id> [--jobs 4]      upscale plates + depth maps (skips already prepared plates)
   python3 vg.py grid <id>                 coordinate grids over the plates (to place anchors, glows, masks, HUD)
+  python3 vg.py assets3d <id>                         download the 3D models/textures/HDRIs listed in assets3d: (docs/DRAW3D.md)
+  python3 vg.py ai3d <name> --prompt "…" | --image f    AI picture -> textured 3D model assets3d/ai/<name>.glb (HF_TOKEN)
   python3 vg.py preview <id> [--at 5,12.5 | --shots]   render a few finished frames (scene + HUD) -> build/<id>/preview/
   python3 vg.py draw <id> [--frames a:b] [--force]      render code-drawn shots (draw:) -> build/<id>/drawn/ (scene runs it too)
   python3 vg.py motion <id> [--frames a:b] [--force]    render motion-graphics shots (motion:, Remotion) (scene runs it too)
@@ -206,6 +208,18 @@ def cmd_actors(a):
             print(f"  {os.path.relpath(f, ROOT)}: {', '.join(names)}")
 
 
+def cmd_assets3d(a):
+    from engine import assets3d
+    step("3D assets (Poly Haven / CC0)")
+    assets3d.run(a.id)
+
+
+def cmd_ai3d(a):
+    from engine import ai3d
+    step("AI 3D model (Hugging Face: FLUX.1-schnell + Hunyuan3D-2)")
+    ai3d.run(a.name, prompt=a.prompt, image=a.image, textured=not a.shape_only)
+
+
 def cmd_scene(a):
     from engine import scene
     from engine.common import load_timeline
@@ -320,6 +334,8 @@ def main():
     p = sub.add_parser("draw"); p.add_argument("id"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=3); p.add_argument("--force", action="store_true"); p.set_defaults(fn=cmd_draw)
     p = sub.add_parser("motion"); p.add_argument("id"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=4); p.add_argument("--force", action="store_true"); p.set_defaults(fn=cmd_motion)
     p = sub.add_parser("actors"); p.add_argument("id", nargs="?"); p.set_defaults(fn=cmd_actors)
+    p = sub.add_parser("assets3d"); p.add_argument("id"); p.set_defaults(fn=cmd_assets3d)
+    p = sub.add_parser("ai3d"); p.add_argument("name"); p.add_argument("--prompt"); p.add_argument("--image"); p.add_argument("--shape-only", action="store_true"); p.set_defaults(fn=cmd_ai3d)
     p = sub.add_parser("scene"); p.add_argument("id"); p.add_argument("--frames"); p.add_argument("--workers", type=int, default=4); p.set_defaults(fn=cmd_scene)
     p = sub.add_parser("audio"); p.add_argument("id"); p.add_argument("--stems", action="store_true"); p.set_defaults(fn=cmd_audio)
     p = sub.add_parser("hud"); p.add_argument("id"); p.add_argument("--workers", type=int, default=3); p.set_defaults(fn=cmd_hud)

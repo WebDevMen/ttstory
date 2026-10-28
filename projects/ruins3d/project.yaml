@@ -1,0 +1,256 @@
+# «Город без людей» (~25 с) — тест способа `3d` с готовыми ассетами: сканированные CC0-модели и PBR-текстуры Poly Haven,
+# HDRI-небо, постобработка three.js (GTAO — затенение в углах, глубина резкости), пыль, трава из трещин, обрушение.
+# Ассеты: python3 vg.py assets3d ruins3d (скачиваются в assets3d/, в git не попадают). Документация: docs/DRAW3D.md.
+# Улица идёт вдоль оси z (камера смотрит в −z), дома по обе стороны фасадом к дороге. Единицы — метры.
+
+title: "Город без людей"
+
+voice: {voice: ru-RU-DmitryNeural, rate: "+8%", pitch: "-2Hz", lead_in: 0.3, gap: 0.35, tail: 1.8}
+
+theme:
+  preset: minimal
+  accent: "#ffb45a"
+  captions: {style: clean, top: 1290, size: 62, max_chars: 18}
+
+post: {vignette: 0.24, chromatic: 0.0015, grain: 0.03}
+
+assets3d:
+  res: 1k
+  models: [covered_car, old_tyre, rusted_wheel_rim_01, Barrel_01, barrel_03, barrel_stove, concrete_road_barrier, concrete_road_barrier_02,
+           metal_jerrycan, old_gas_mask, street_lamp_02, modular_chainlink_fence, dead_tree_trunk_02, utility_box_01, trashbag,
+           wooden_military_crate, metal_trash_can, can_rusted, propane_tank, water_manhole_cover, dry_branches_medium_01, shrub_03, namaqualand_boulder_02]
+  textures: [road_damaged, concrete_debris, broken_brick_wall, precast_concrete_wall, rusty_metal_02, dirty_concrete, dry_ground_01, rebar_reinforced_concrete]
+  hdri: [industrial_sunset_02_puresky]
+
+# ---------------------------------------------------------------- общий мир: мёртвая улица на закате
+# HDRI светит (отражения, рассеянный свет), а видимое небо — своё: пыльный градиент, низкое солнце в дымке в конце улицы
+x-sky: &sky {hdri: "ph:industrial_sunset_02_puresky", backdrop: false, zenith: "#6f6a68", horizon: "#e0a874", hour: 18.6, sun_size: 1.6, elev: 7, az: 180, sun: 1.4, sun_color: "#ffb070", fog: 0.02, fog_color: "#b89272", env: 0.7}
+
+x-street: &street
+  - {prop: road, from: 40, to: -260, width: 10, walk: 3.2, tex: "ph:road_damaged", tex_size: 7, walk_tex: "ph:dirty_concrete", ground_tex: "ph:dry_ground_01", ground_size: 4}
+  # левая сторона (фасад к дороге: rot 90)
+  - {prop: ruin, pos: [-16, 0, 4], rot: 90, w: 15, d: 14, floors: 5, tex: "ph:precast_concrete_wall", tint: "#a89e90", slab_tex: "ph:rebar_reinforced_concrete", broken: 0.35, seed: 3}
+  - {prop: ruin, pos: [-17, 0, -15], rot: 90, w: 18, d: 16, floors: 8, tex: "ph:dirty_concrete", slab_tex: "ph:rebar_reinforced_concrete", broken: 0.6, seed: 7, missing: [right]}
+  - {prop: ruin, pos: [-15.5, 0, -35], rot: 90, w: 16, d: 13, floors: 4, tex: "ph:broken_brick_wall", tint: "#d8c6b4", broken: 0.8, seed: 12}
+  - {prop: ruin, pos: [-17, 0, -56], rot: 90, w: 20, d: 16, floors: 9, tex: "ph:precast_concrete_wall", tint: "#9c9284", broken: 0.45, seed: 17}
+  - {prop: ruin, pos: [-16, 0, -80], rot: 90, w: 22, d: 14, floors: 6, tex: "ph:dirty_concrete", tint: "#b3a38f", broken: 0.7, seed: 21}
+  - {prop: ruin, pos: [-17, 0, -108], rot: 90, w: 24, d: 16, floors: 11, tex: "ph:precast_concrete_wall", tint: "#9c9284", broken: 0.5, seed: 25}
+  - {prop: ruin, pos: [-16, 0, -140], rot: 90, w: 30, d: 14, floors: 7, tex: "ph:dirty_concrete", tint: "#b3a38f", broken: 0.6, seed: 29}
+  # правая сторона (rot −90)
+  - {prop: ruin, pos: [16, 0, 0], rot: -90, w: 16, d: 14, floors: 6, tex: "ph:broken_brick_wall", tint: "#cdb9a6", broken: 0.55, seed: 4}
+  - {prop: ruin, pos: [17, 0, -24], rot: -90, w: 22, d: 16, floors: 10, tex: "ph:precast_concrete_wall", tint: "#a89e90", slab_tex: "ph:rebar_reinforced_concrete", broken: 0.4, seed: 8}
+  - {prop: ruin, pos: [15.5, 0, -46], rot: -90, w: 14, d: 13, floors: 3, tex: "ph:broken_brick_wall", tint: "#d8c6b4", broken: 0.9, seed: 13, missing: [front]}
+  - {prop: ruin, pos: [17, 0, -66], rot: -90, w: 20, d: 16, floors: 7, tex: "ph:dirty_concrete", tint: "#b3a38f", broken: 0.5, seed: 18}
+  - {prop: ruin, pos: [16, 0, -92], rot: -90, w: 24, d: 14, floors: 12, tex: "ph:precast_concrete_wall", tint: "#9c9284", broken: 0.45, seed: 22}
+  - {prop: ruin, pos: [17, 0, -125], rot: -90, w: 28, d: 16, floors: 8, tex: "ph:dirty_concrete", tint: "#b3a38f", broken: 0.65, seed: 26}
+  # завалы у стен
+  - {prop: rubble, pos: [-8.6, 0.15, -21], r: 2.6, h: 1.3, tex: "ph:concrete_debris", seed: 2}
+  - {prop: rubble, pos: [8.8, 0.15, -44], r: 3.4, h: 1.8, tex: "ph:concrete_debris", seed: 5}
+  - {prop: rubble, pos: [-8.4, 0.15, -62], r: 2.2, h: 1.0, tex: "ph:concrete_debris", seed: 9}
+  # столбы и провода
+  - {prop: pole, pos: [-6.4, 0.18, 8], tex: "ph:dirty_concrete", lean: 2}
+  - {prop: pole, pos: [-6.4, 0.18, -22], tex: "ph:dirty_concrete", lean: -4}
+  - {prop: pole, pos: [-6.4, 0.18, -52], tex: "ph:dirty_concrete"}
+  - {prop: pole, pos: [-6.4, 0.18, -82], tex: "ph:dirty_concrete", lean: 6}
+  - {prop: wires, points: [[-6.4, 8.8, 8], [-6.4, 8.8, -22], [-6.4, 8.8, -52], [-6.4, 8.8, -82]], sag: 1.4, n: 3, spread: 0.3}
+  # мусор, бочки, блоки
+  - {prop: model, src: "ph:concrete_road_barrier", pos: [-1.5, 0, -38], rot: 8, height: 0.85}
+  - {prop: model, src: "ph:concrete_road_barrier_02", pos: [2.2, 0, -39], rot: -14, height: 0.85}
+  - {prop: model, src: "ph:concrete_road_barrier", pos: [4.4, 0, -37.5], rot: 64, height: 0.85}
+  - {prop: model, src: "ph:trashbag", pos: [6.2, 0.18, -6], rot: 30, height: 0.6}
+  - {prop: model, src: "ph:trashbag", pos: [6.8, 0.18, -6.6], rot: 110, height: 0.5}
+  - {prop: model, src: "ph:metal_trash_can", pos: [7.1, 0.18, -8], rot: 20, height: 1.0}
+  - {prop: model, src: "ph:utility_box_01", pos: [-7.6, 0.18, -10], rot: 90, height: 1.4}
+  - {prop: model, src: "ph:old_tyre", pos: [3.5, 0, -16], rot: [90, 0, 20], height: 0.62}
+  - {prop: model, src: "ph:old_tyre", pos: [-4.2, 0, -27], rot: 0, height: 0.62}
+  # мелкий мусор по всей улице (разброс по рельефу дороги)
+  - {scatter: model, src: "ph:can_rusted", n: 14, area: [-6, -60, 6, 10], size: 1, seed: 3, pos: [0, 0, 0], decay: 0.4}
+  - {scatter: model, src: "ph:dry_branches_medium_01", n: 10, area: [-8, -70, 8, 10], height: 0.35, seed: 5}
+  - {scatter: model, src: "ph:old_tyre", n: 4, area: [-5, -70, 5, -30], height: 0.62, seed: 8}
+  - {scatter: model, src: "ph:shrub_03", n: 10, area: [-8.2, -80, -5.4, 10], height: 0.8, seed: 11}
+  - {scatter: model, src: "ph:shrub_03", n: 10, area: [5.4, -80, 8.2, 10], height: 0.8, seed: 12}
+  - {scatter: rubble, n: 6, area: [-8.4, -120, -6, -10], r: 1.2, h: 0.6, tex: "ph:concrete_debris", seed: 14}
+  - {scatter: rubble, n: 6, area: [6, -120, 8.4, -10], r: 1.2, h: 0.6, tex: "ph:concrete_debris", seed: 15}
+  - {prop: weeds, area: [-5, -60, 5, 10], n: 140, blades: 7, h: 0.35, lines: 10, seed: 21, grow: 0.5}
+  - {prop: model, src: "ph:shrub_03", pos: [7.4, 0.18, -14], height: 0.9}
+  - {prop: model, src: "ph:shrub_03", pos: [-7.8, 0.18, -40], height: 1.1}
+  - {prop: model, src: "ph:dry_branches_medium_01", pos: [-3, 0, -8], rot: 40, height: 0.4}
+  - {prop: model, src: "ph:modular_chainlink_fence", pos: [7.8, 0.18, -30], rot: 90, height: 2.2}
+  - {prop: model, src: "ph:water_manhole_cover", pos: [1.2, 0.01, -4], height: 0.05}
+  - {prop: dust, box: [-12, 0, -70, 12, 14, 12], n: 1800, size: 0.07, opacity: 0.45}
+
+x-lamps: &lamps
+  - {prop: model, id: lampA, src: "ph:street_lamp_02", pos: [6.3, 0.18, -2], rot: 90, height: 6.5}
+  - {prop: model, id: lampB, src: "ph:street_lamp_02", pos: [6.3, 0.18, -28], rot: 90, height: 6.5}
+  - {prop: model, id: lampC, src: "ph:street_lamp_02", pos: [6.3, 0.18, -54], rot: 90, height: 6.5}
+
+audio:
+  music:
+    key: C
+    mode: minor
+    bpm: 72
+    gain: -14
+    sections:
+      - {at: 0, style: drone}
+      - {at: "@year20.start", style: dark}
+  duck: 0.6
+
+scenes:
+  # ------------------------------------------------------------------ 1. HOOK
+  - id: hook
+    text: Что будет с городом, если люди исчезнут? Таймер уже запущен.
+    shots:
+      - id: r_hook
+        ambience: [{sound: wind, gain: -14}]
+        look: {bloom: [0.8, 0.18], grade: {contrast: 0.08, sat: 0.9}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: *sky
+              shadow: {size: 45, center: [0, 0, -20], map: 4096}
+              post: {ao: {radius: 0.8, intensity: 1}}
+              scenery: [*street, *lamps]
+              camera:
+                keys:
+                  - {t: 0, pos: [-1.5, 2.2, 22], look: [0.5, 5, -60], fov: 50}
+                  - {t: end, pos: [-0.8, 2.6, 13], look: [0.5, 5.5, -60], fov: 48}
+                sway: {amp: 0.04, freq: 0.3}
+            - {actor: text, text: "ГОРОД", x: 540, y: 330, size: 120, color: "#ffffff", font: display, at: "@городом-0.1", reveal: {by: word, mode: slam}, shadow: {y: 6, blur: 30, a: 0.6}}
+            - {actor: text, text: "БЕЗ ЛЮДЕЙ", x: 540, y: 460, size: 104, color: "#ffb45a", font: display, at: "@исчезнут-0.1", reveal: {by: word, mode: slam}, shadow: {y: 6, blur: 30, a: 0.6}}
+
+  # ------------------------------------------------------------------ 2. DAY 2: the light goes out
+  - id: day2
+    text: Через пару дней гаснет свет — электростанции встают без присмотра.
+    shots:
+      - id: r_day2
+        transition: {type: whip_x, dur: 0.3}
+        ambience: [{sound: wind, gain: -16}]
+        look: {bloom: [0.7, 0.3], grade: {contrast: 0.08, sat: 0.9}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: {<<: *sky, exposure: 0.55, bg: 0.45, sun: 0.4, fog: 0.02}
+              shadow: {size: 40, center: [0, 0, -15], map: 2048}
+              post: {ao: {radius: 0.8, intensity: 1}}
+              scenery: [*street, *lamps]
+              objects:
+                - {prop: lamp_glow, pos: [4.4, 6.3, -2], color: "#ffcf8a", r: 2.4, power: [{at: "@day2.start", v: 1}, {at: "@гаснет", v: 1}, {at: "@гаснет+0.45", v: 0, dur: 0.05}], flicker: [{at: "@day2.start", v: 0}, {at: "@гаснет", v: 1}]}
+                - {prop: lamp_glow, pos: [4.4, 6.3, -28], color: "#ffcf8a", r: 2.4, power: [{at: "@day2.start", v: 1}, {at: "@гаснет+0.2", v: 0, dur: 0.05}]}
+                - {prop: lamp_glow, pos: [4.4, 6.3, -54], color: "#ffcf8a", r: 2.4, power: [{at: "@day2.start", v: 1}, {at: "@гаснет+0.3", v: 0, dur: 0.05}]}
+                - {prop: ruin, pos: [-16, 0, -175], rot: 90, w: 30, d: 14, floors: 9, tex: "ph:dirty_concrete", tint: "#b3a38f", broken: 0.3, seed: 31, lit: [{at: "@day2.start", v: 1}, {at: "@гаснет+0.6", v: 0, dur: 0.1}]}
+              camera:
+                keys:
+                  - {t: 0, pos: [2.5, 3.2, 8], look: [4.4, 6.0, -4], fov: 46}
+                  - {t: end, pos: [1.0, 2.6, 6], look: [2.5, 5.2, -30], fov: 48}
+            - {actor: text, text: "ДЕНЬ 2", x: 540, y: 300, size: 92, color: "#ffffff", font: cond, at: "@Через-0.1", reveal: {by: char, mode: type}, shadow: {y: 4, blur: 20, a: 0.6}}
+
+  # ------------------------------------------------------------------ 3. YEAR 1: grass through the cracks
+  - id: year1
+    text: Через год асфальт трескается, а из трещин лезет трава.
+    shots:
+      - id: r_year1
+        transition: {type: zoom, dur: 0.3}
+        ambience: [{sound: wind, gain: -15}, {sound: birds, gain: -24}]
+        look: {bloom: [0.8, 0.15], grade: {contrast: 0.07, sat: 0.95}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: *sky
+              shadow: {size: 18, center: [0, 0, -6], map: 4096}
+              post: {ao: {radius: 0.5, intensity: 1}, dof: {focus: 4.2, aperture: 3.2, maxblur: 0.009}}
+              scenery: [*street, *lamps]
+              objects:
+                - {prop: weeds, area: [-2.5, -9, 2.5, -2], n: 260, blades: 10, h: 0.55, lines: 5, seed: 4, grow: [{at: "@year1.start", v: 0.05}, {at: "@трещин-0.3", v: 1, dur: 2.2, ease: out}]}
+                - {prop: weeds, area: [-4.5, -20, 4.5, -9], n: 120, blades: 9, h: 0.5, lines: 4, seed: 9, grow: [{at: "@year1.start", v: 0.05}, {at: "@лезет-0.2", v: 1, dur: 2.0, ease: out}]}
+              camera:
+                keys:
+                  - {t: 0, pos: [0.4, 0.45, 0], look: [0, 0.2, -12], fov: 44}
+                  - {t: end, pos: [-0.2, 0.6, -1.6], look: [0, 0.25, -12], fov: 42}
+            - {actor: text, text: "ГОД 1", x: 540, y: 300, size: 92, color: "#ffffff", font: cond, at: "@Через-0.1", reveal: {by: char, mode: type}, shadow: {y: 4, blur: 20, a: 0.6}}
+
+  # ------------------------------------------------------------------ 4. YEAR 10: rust eats the cars
+  - id: year10
+    text: Через десять лет ржавчина съедает машины и заборы.
+    shots:
+      - id: r_year10
+        transition: {type: whip_x, dur: 0.3}
+        ambience: [{sound: wind, gain: -14}]
+        look: {bloom: [0.8, 0.15], grade: {contrast: 0.1, sat: 0.85}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: *sky
+              shadow: {size: 20, center: [-2, 0, -12], map: 4096}
+              post: {ao: {radius: 0.7, intensity: 1.1}, dof: {focus: car, aperture: 1.6, maxblur: 0.006}}
+              scenery: [*street, *lamps]
+              objects:
+                - {prop: model, id: car, src: "ph:covered_car", pos: [-2.4, 0, -12], rot: 12, height: 1.5, decay: [{at: "@year10.start", v: 0}, {at: "@ржавчина", v: 1, dur: 2.2}]}
+                - {prop: model, src: "ph:rusted_wheel_rim_01", pos: [0.6, 0, -9.6], rot: [90, 0, 30], height: 0.5, decay: [{at: "@year10.start", v: 0.3}, {at: "@ржавчина", v: 1, dur: 2}]}
+                - {prop: model, src: "ph:Barrel_01", pos: [-5.0, 0, -10], rot: 20, height: 0.9, decay: [{at: "@year10.start", v: 0.2}, {at: "@ржавчина", v: 1, dur: 2}]}
+                - {prop: model, src: "ph:barrel_03", pos: [-4.3, 0, -8.9], rot: [90, 0, 70], height: 0.6}
+                - {prop: model, src: "ph:metal_jerrycan", pos: [0.2, 0, -12.8], rot: -30, height: 0.45, decay: [{at: "@year10.start", v: 0.2}, {at: "@ржавчина", v: 1, dur: 2}]}
+                - {prop: model, src: "ph:can_rusted", pos: [-0.8, 0, -8.4], rot: [90, 0, 10], height: 0.12}
+                - {prop: weeds, area: [-6, -16, 2, -6], n: 90, blades: 9, h: 0.4, lines: 4, seed: 12, grow: 1}
+              camera:
+                keys:
+                  - {t: 0, pos: [3.0, 1.4, -5.0], look: [-2.4, 0.8, -12], fov: 42}
+                  - {t: end, pos: [1.2, 1.7, -4.6], look: [-2.4, 0.7, -12], fov: 40}
+            - {actor: text, text: "ГОД 10", x: 540, y: 300, size: 92, color: "#ffffff", font: cond, at: "@Через-0.1", reveal: {by: char, mode: type}, shadow: {y: 4, blur: 20, a: 0.6}}
+
+  # ------------------------------------------------------------------ 5. YEAR 20: roofs and walls come down
+  - id: year20
+    text: А через двадцать начинают рушиться крыши и стены.
+    shots:
+      - id: r_year20
+        transition: {type: zoom, dur: 0.3}
+        ambience: [{sound: wind, gain: -12}]
+        sfx: [{sound: boom, at: "@рушиться+0.1", gain: -6}, {sound: rumble, at: "@рушиться", gain: -10, d: 2.4}]
+        look: {bloom: [0.8, 0.15], grade: {contrast: 0.1, sat: 0.85}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: *sky
+              shadow: {size: 40, center: [8, 0, -40], map: 4096}
+              post: {ao: {radius: 0.9, intensity: 1}}
+              scenery: [*street, *lamps]
+              objects:
+                - {prop: collapse, id: fall, pos: [8.9, 17.4, 0], rot: 90, w: 12, n: 26, size: [0.6, 2.0], dir: [-1, 0, 0], ground: 0.18, fall_at: "@рушиться", tex: "ph:broken_brick_wall", tex_size: 3, tint: "#cdb9a6", seed: 40}
+                - {prop: dust, box: [-2, 0, -8, 10, 14, 8], n: 900, size: 0.12, opacity: [{at: "@year20.start", v: 0}, {at: "@рушиться+0.3", v: 0.9, dur: 0.5}], color: "#d8c4a8", wind: [0.2, 0.8, 0.4], seed: 7}
+              camera:
+                keys:
+                  - {t: 0, pos: [-6.0, 1.7, 16], look: [8, 12, -3], fov: 60}
+                  - {t: end, pos: [-5.6, 1.6, 13.5], look: [8, 9, -3], fov: 62}
+                shakes: [{at: "@рушиться+0.2", amp: 0.12, dur: 0.9}]
+            - {actor: text, text: "ГОД 20", x: 540, y: 300, size: 92, color: "#ffffff", font: cond, at: "@через-0.1", reveal: {by: char, mode: type}, shadow: {y: 4, blur: 20, a: 0.6}}
+
+  # ------------------------------------------------------------------ 6. CTA
+  - id: end
+    text: Сколько простоял бы твой дом? Пиши в комментариях.
+    shots:
+      - id: r_end
+        transition: {type: dissolve, dur: 0.5}
+        ambience: [{sound: wind, gain: -14}]
+        look: {bloom: [0.75, 0.2], grade: {contrast: 0.08, sat: 0.9}}
+        draw:
+          layers:
+            - actor: world3d
+              id: w
+              sky: *sky
+              shadow: {size: 8, center: [-6.8, 0, -5], map: 4096}
+              post: {ao: {radius: 0.35, intensity: 1.1}, dof: {focus: 2.9, aperture: 4, maxblur: 0.012}}
+              scenery: [*street, *lamps]
+              objects:
+                - {prop: model, id: crate, src: "ph:wooden_military_crate", pos: [-6.8, 0.18, -5], rot: 25, height: 0.5}
+                - {prop: model, id: mask, src: "ph:old_gas_mask", pos: [-6.6, 0.33, -5.0], rot: [-90, 0, 150], size: 1, shadow_blob: false}
+                - {prop: model, src: "ph:propane_tank", pos: [-7.5, 0.18, -5.8], rot: 10, height: 0.55}
+              camera:
+                keys:
+                  - {t: 0, pos: [-5.0, 1.45, -2.2], look: [-7.0, 0.4, -4.4], fov: 38}
+                  - {t: end, pos: [-5.4, 1.25, -2.7], look: [-7.0, 0.38, -4.4], fov: 34}
+    hud:
+      - {component: cta, at: "@Пиши", emoji: "💬", text: "ПИШИ В КОММЕНТАРИЯХ"}

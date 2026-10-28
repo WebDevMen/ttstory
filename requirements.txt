@@ -6,3 +6,4 @@ pyyaml>=6
 soundfile>=0.12
 onnxruntime>=1.17
 edge-tts>=7.0
+gradio_client      # vg.py ai3d: free AI 3D models on Hugging Face Spaces

@@ -4,6 +4,8 @@
 // (projects/<id>/three/*.js listed in `modules:`). Anchors: "<item id>.<object id>[.<point>]" -> screen px of the object.
 import { createWorld, cameraAt, orbitKeys, rng } from "../../three/kit.js";
 import * as LIB from "../../three/props.js";
+import * as CITY from "../../three/props_city.js";
+import { preload } from "../../three/assets.js";
 
 const D2R = Math.PI / 180;
 // object keys that are placement / timing, not prop params
@@ -21,11 +23,13 @@ export const world3d = {
     canvas.width = w; canvas.height = h;
     canvas.style.cssText = `position:absolute;left:0;top:0;width:${w}px;height:${h}px`;
     el.appendChild(canvas);
-    const W = createWorld(canvas, { shadow: p.shadow, exposure: p.exposure, env: p.env, fov: p.camera?.fov });
+    // ready-made assets ("ph:<id>", files under /assets3d) are loaded before the world is built
+    await preload({ objects: p.objects, scenery: p.scenery, sky: p.sky });
+    const W = createWorld(canvas, { shadow: p.shadow, exposure: p.exposure, env: p.env, fov: p.camera?.fov, post: p.post });
     const THREE = W.THREE;
 
     // prop registry: library + project modules (every exported function is a prop)
-    const PROPS = { ...LIB };
+    const PROPS = { ...LIB, ...CITY };
     for (const m of p.modules || []) Object.assign(PROPS, await import(H.asset(m.includes("/") ? m : `three/${m}`)));
 
     // times: `at` is absolute (s or "@word", resolved by compile); `t` in camera keys is from the shot start ("end", "end-0.5")
@@ -53,7 +57,9 @@ export const world3d = {
     };
     // scatter is expanded in list order: the ground props above it have already registered their heights
     const specs = [];
-    for (const [i, o0] of (p.objects || []).entries()) for (const o of expand(o0, i)) {
+    // scenery: shared objects (a YAML anchor reused by several shots) come first; nested lists are flattened
+    const all = [...(p.scenery || []), ...(p.objects || [])].flat(4);
+    for (const [i, o0] of all.entries()) for (const o of expand(o0, i)) {
       specs.push(o);
       const make = PROPS[o.prop];
       if (!make) throw new Error(`world3d: unknown prop '${o.prop}' (${Object.keys(PROPS).sort().join(", ")})`);
@@ -120,6 +126,16 @@ export const world3d = {
           if (u >= 0 && u <= d) { const a = (s.amp ?? 0.25) * Math.exp((-5 * u) / d); pos[0] += a * Math.sin(2 * Math.PI * 17 * u + i); pos[1] += a * Math.cos(2 * Math.PI * 15 * u + 2 * i); }
         }
         W.setCamera({ pos, look, fov: c.fov ?? cam.fov ?? 40, roll: c.roll ?? 0 });
+        if (p.post) {
+          const post = {};
+          for (const [k, v] of Object.entries(p.post)) post[k] = H.track(v, t, undefined);
+          // dof.focus: a number (metres) or an object id — keep that object sharp wherever the camera flies
+          if (post.dof && typeof post.dof.focus === "string") {
+            const f = objs.find((q) => q.o.id === post.dof.focus);
+            post.dof = { ...post.dof, focus: f ? W.camera.position.distanceTo(f.obj.getWorldPosition(tmp)) : 10 };
+          }
+          W.setPost(post);
+        }
         W.scene.updateMatrixWorld(true);
         W.render();
         // anchors: every object with an id (its `top` or any named point)
