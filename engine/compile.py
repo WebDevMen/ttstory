@@ -12,7 +12,7 @@ import subprocess
 import numpy as np
 import soundfile as sf
 
-from .common import Refs, build_dir, css_rgb, deep_merge, load_project, norm_word, project_dir, save_json
+from .common import ROOT, Refs, build_dir, css_rgb, deep_merge, load_project, norm_word, project_actor_files, project_dir, save_json
 
 SR = 48000
 
@@ -290,7 +290,7 @@ def run(pid):
         "duration": duration, "frames": int(round(duration * fmt["fps"])),
         "scenes": scenes, "shots": shots, "cues": refs.cues, "words": words_out,
         "theme": theme, "post": p["post"], "hud": hud,
-        "draw_actors": sorted(f"/projects/{pid}/actors/{os.path.basename(f)}" for f in glob.glob(os.path.join(project_dir(pid), "actors", "*.js"))),
+        "draw_actors": ["/" + os.path.relpath(f, ROOT).replace(os.sep, "/") for f in project_actor_files(pid)],
         "dim": refs.deep(p.get("dim") or [], None, (0.0, duration)),
         "audio": {"music": music, "sfx": sfx, "ambience": ambience, "auto": au.get("auto", {}), "duck": au.get("duck", 0.6),
                   "vo_gain": au.get("vo_gain", 0.0), "loudness": au.get("loudness", -14), "master": au.get("master", {})},

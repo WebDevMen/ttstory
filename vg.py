@@ -197,13 +197,13 @@ def cmd_motion(a):
 def cmd_actors(a):
     import glob
     import re
-    dirs = [os.path.join(ROOT, "engine", "hud", "draw", "actors")] + ([os.path.join(ROOT, "projects", a.id, "actors")] if a.id else [])
-    for d in dirs:
-        for f in sorted(glob.glob(os.path.join(d, "*.js"))):
-            if os.path.basename(f) == "index.js":
-                continue
-            names = re.findall(r"^export const (\w+)", open(f, encoding="utf-8").read(), re.M)
-            print(f"  {os.path.relpath(f, ROOT)}: {', '.join(names)}")
+    from engine.common import project_actor_files
+    files = sorted(glob.glob(os.path.join(ROOT, "engine", "hud", "draw", "actors", "*.js"))) + (project_actor_files(a.id) if a.id else [])
+    for f in files:
+        if os.path.basename(f) == "index.js":
+            continue
+        names = re.findall(r"^export const (\w+)", open(f, encoding="utf-8").read(), re.M)
+        print(f"  {os.path.relpath(f, ROOT)}: {', '.join(names)}")
 
 
 def cmd_scene(a):

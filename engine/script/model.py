@@ -6,7 +6,7 @@ import re
 
 import yaml
 
-from ..common import ROOT, load_yaml, project_dir
+from ..common import ROOT, load_yaml, project_actor_files, project_dir
 
 DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 _KB = {}
@@ -57,7 +57,7 @@ def actor_names(pid=None):
     """Built-in draw actors (+ the project's own actors)."""
     files = glob.glob(os.path.join(ROOT, "engine", "hud", "draw", "actors", "*.js"))
     if pid:
-        files += glob.glob(os.path.join(project_dir(pid), "actors", "*.js"))
+        files += project_actor_files(pid)
     names = set()
     for f in files:
         names.update(re.findall(r"^export const (\w+)", open(f, encoding="utf-8").read(), re.M))

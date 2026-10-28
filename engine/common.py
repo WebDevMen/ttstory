@@ -58,6 +58,21 @@ def project_dir(pid):
     return os.path.join(ROOT, "projects", pid)
 
 
+def project_actor_files(pid):
+    """Draw actor files of a project: the actors of the projects named in projects/<id>/actors/series.txt (one id per
+    line — parts of one series share one world), then the project's own projects/<id>/actors/*.js (loaded last, so a
+    project can override a shared actor)."""
+    import glob
+    d = os.path.join(project_dir(pid), "actors")
+    shared = []
+    if os.path.exists(os.path.join(d, "series.txt")):
+        for line in open(os.path.join(d, "series.txt"), encoding="utf-8"):
+            sid = line.split("#")[0].strip()
+            if sid and sid != pid:
+                shared += sorted(glob.glob(os.path.join(project_dir(sid), "actors", "*.js")))
+    return shared + sorted(glob.glob(os.path.join(d, "*.js")))
+
+
 class YamlLoader(yaml.SafeLoader):
     """SafeLoader with YAML 1.2 booleans: only true/false are booleans. YAML 1.1 also reads on/off/yes/no as booleans,
     which silently turned keys like the streetlight's `on:` into `true:`."""
