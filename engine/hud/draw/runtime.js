@@ -321,7 +321,7 @@ function layoutOf(it, out, parentPath, parentMoving) {
   // support: grounded objects need a surface under their base on the same parallax layer (layout audit «support»)
   if (!it.parent && (it.spec.space ?? "world") !== "screen") {
     rec.par = it.layer ? it.layer.par : 1;
-    if (GROUNDED.has(it.spec.actor) || it.def.grounded) rec.stands = { air: !!it.spec.air };
+    if (GROUNDED.has(it.spec.actor) || it.def.grounded) rec.stands = { air: !!it.spec.air, rot: Math.abs(Number(it.v("rot", 0)) || 0) > 20 };
     // "floor": a real ground/floor (turns the check on for the shot); true: something one can stand on (shape, image…)
     if (SURFACES.has(it.spec.actor) || it.def.surface) rec.surface = it.def.surface || ["ground", "street", "room"].includes(it.spec.actor) ? "floor" : true;
   }

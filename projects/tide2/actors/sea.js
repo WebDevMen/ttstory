@@ -256,7 +256,9 @@ export const lift_scheme = {
 // ------------------------------------------------------------------ sky_sea: the sea upside down over the city
 // w, h, level (y of the hanging surface, local px; track), amp (wave height), blocks: [{x, y, w, floors, cols, lit}]
 // sunk blocks (normal orientation, inside the water), foam (0..1 cloud-foam band under the surface), rain (0..1 drops
-// rising into the surface), deep / mid / surf colours, glow (lit windows under water 0..1, track)
+// rising into the surface), deep / mid / surf colours, glow (lit windows under water 0..1, track);
+// part 3: sun (track 0..1: sunlight through the sea — the water turns light green, shafts of light fall from the surface),
+// beacon: {x, y} — a flashlight in a drowned window that blinks (beacon_on track 0..1)
 export const sky_sea = {
   backdrop: true,
   origin: "top-left",
@@ -267,10 +269,11 @@ export const sky_sea = {
     const svg = H.svg(`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${deep}"/><stop offset=".6" stop-color="${mid}"/><stop offset="1" stop-color="${surf}"/></linearGradient>
         <clipPath id="${id}c"><path class="clipd"/></clipPath>
         <radialGradient id="${id}l" cx=".5" cy="1" r=".8"><stop offset="0" stop-color="#bfe6df" stop-opacity=".35"/><stop offset="1" stop-color="#bfe6df" stop-opacity="0"/></radialGradient></defs>
-      <g clip-path="url(#${id}c)"><rect width="${w}" height="${h}" fill="url(#${id})"/><g class="blk"></g><rect width="${w}" height="${h}" fill="url(#${id}l)"/><g class="caus"></g></g>
-      <path class="edge" fill="none" stroke="#dff2ee" stroke-width="5" opacity=".75"/><g class="foam" style="filter:blur(16px)"></g><g class="rn"></g>`, w, h);
+      <g clip-path="url(#${id}c)"><rect width="${w}" height="${h}" fill="url(#${id})"/><rect class="sunw" width="${w}" height="${h}" fill="#8fe0b8" opacity="0"/><g class="blk"></g><rect width="${w}" height="${h}" fill="url(#${id}l)"/><g class="caus"></g></g>
+      <path class="edge" fill="none" stroke="#dff2ee" stroke-width="5" opacity=".75"/><g class="shafts" style="filter:blur(10px)"></g><g class="foam" style="filter:blur(16px)"></g><g class="rn"></g><g class="bcn"></g>`, w, h);
     el.append(svg);
     const clipd = svg.querySelector(".clipd"), edge = svg.querySelector(".edge"), blk = svg.querySelector(".blk"), caus = svg.querySelector(".caus"), foam = svg.querySelector(".foam"), rn = svg.querySelector(".rn");
+    const sunw = svg.querySelector(".sunw"), shafts = svg.querySelector(".shafts"), bcn = svg.querySelector(".bcn");
     // sunk blocks: static silhouettes with window cells (lit flicker in update)
     const wins = [];
     let bs = "";
@@ -320,6 +323,16 @@ export const sky_sea = {
         caus.innerHTML = cs + rel;
         wl.innerHTML = wins.map((q) => `<rect x="${q.x}" y="${q.y}" width="${q.w}" height="${q.h}" fill="#e8d9a0" opacity="${(0.25 + 0.55 * (0.6 + 0.4 * Math.sin(t * 3 + q.ph))) * gw * (0.5 + 0.5 * q.fade)}"/>`).join("");
         foam.innerHTML = fo > 0 ? foamB.map((b) => `<ellipse cx="${(b.x + t * 12 * b.v) % (w + 200) - 100}" cy="${surfY(b.x, t, lv) + 10 + b.dy}" rx="${b.rx}" ry="${b.ry}" fill="#d8e2e6" opacity="${b.a * fo}"/>`).join("") : "";
+        const sn = it.v("sun", p.sun ?? 0);
+        sunw.setAttribute("opacity", 0.38 * sn);
+        if (sn > 0) {
+          let sh = "";
+          for (let i = 0; i < 9; i++) { const x = (i + 0.5) * w / 9 + 40 * Math.sin(t * 0.5 + i), y = surfY(x, t, lv) - 10, len = 260 + 120 * Math.sin(i * 2.3), ww = 50 + 30 * Math.sin(i * 1.7 + t * 0.7);
+            sh += `<path d="M${x - ww / 2},${y} L${x + ww / 2},${y} L${x + ww * 1.2 + 60},${y + len} L${x - ww * 1.2 + 60},${y + len} Z" fill="#e9ffd8" opacity="${0.22 * sn}"/>`; }
+          shafts.innerHTML = sh;
+        } else shafts.innerHTML = "";
+        if (p.beacon) { const on = it.v("beacon_on", 1) * ((t % 1.6) < 0.25 || ((t % 1.6) > 0.45 && (t % 1.6) < 0.7) ? 1 : 0);
+          bcn.innerHTML = `<circle cx="${p.beacon.x}" cy="${p.beacon.y}" r="26" fill="#fff6c8" opacity="${0.5 * on}" style="filter:blur(8px)"/><circle cx="${p.beacon.x}" cy="${p.beacon.y}" r="8" fill="#fffbe6" opacity="${on}"/>`; }
         rn.innerHTML = rr > 0 ? drops.map((q) => {
           const sy = surfY(q.x, t, lv), k = (t * q.sp + q.ph) % 1, y = sy + 420 * (1 - k);
           return `<rect x="${q.x}" y="${y}" width="2.5" height="26" fill="#cfe3f0" opacity="${0.55 * rr * k}"/>`;

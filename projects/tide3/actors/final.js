@@ -24,7 +24,7 @@ export const asphalt_top = {
   surface: true,
   create(p, H) {
     const w = p.w ?? 1080, h = p.h ?? 1920, R = H.rng(p.seed ?? 5), id = H.uid("at");
-    const cx = p.car_x ?? 560, cy = p.car_y ?? 900, cw = p.car_w ?? 380, chh = p.car_h ?? 820;   // the car stood here (top view)
+    const cx = p.car_x ?? 600, cy = p.car_y ?? 900, cw = p.car_w ?? 380, chh = p.car_h ?? 820;   // the car stood here (top view)
     let s = `<defs><radialGradient id="${id}" cx=".5" cy=".45" r=".8"><stop offset="0" stop-color="#2f363c"/><stop offset="1" stop-color="#1b2024"/></radialGradient>
       <filter id="${id}n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .22 0"/></filter></defs>
       <rect width="${w}" height="${h}" fill="url(#${id})"/><rect width="${w}" height="${h}" filter="url(#${id}n)"/>`;
@@ -56,9 +56,8 @@ export const asphalt_top = {
     // people from above: shoulders ellipse + head; Gleb dark jacket with a reflective stripe, Sonya yellow with two braids
     if (p.people) {
       const gx = p.gx ?? cx - cw / 2 - 120, gy = p.gy ?? cy + 80;
-      ppl.innerHTML = `<g transform="translate(${gx},${gy})"><ellipse cx="0" cy="0" rx="78" ry="44" fill="#14181c"/><path d="M-70,8 H70" stroke="#c9d4dc" stroke-width="7" opacity=".8"/><circle cx="0" cy="-4" r="30" fill="#2a2420"/><ellipse cx="-56" cy="40" rx="18" ry="26" fill="#14181c"/></g>
-        <g transform="translate(${gx + 40},${gy + 170})"><ellipse cx="0" cy="0" rx="50" ry="30" fill="${YEL}"/><circle cx="0" cy="-2" r="22" fill="#3a2a1c"/><circle cx="-24" cy="-6" r="8" fill="#3a2a1c"/><circle cx="24" cy="-6" r="8" fill="#3a2a1c"/>
-          <path d="M-40,-8 L-90,-90" stroke="${YEL}" stroke-width="16" stroke-linecap="round"/></g>`;
+      ppl.innerHTML = `<g transform="translate(${gx},${gy})"><ellipse cx="6" cy="10" rx="104" ry="62" fill="#000" opacity=".35"/><ellipse cx="0" cy="0" rx="100" ry="58" fill="#1b2026"/><path d="M-92,14 Q0,34 92,14" stroke="#c9d4dc" stroke-width="9" fill="none" opacity=".85"/><circle cx="0" cy="-6" r="40" fill="#2a2420"/><ellipse cx="0" cy="-14" rx="30" ry="22" fill="#3a3028"/></g>
+        <g transform="translate(${gx + 70},${gy + 150})"><path d="M-30,-20 L-110,-60" stroke="${YEL}" stroke-width="22" stroke-linecap="round"/><ellipse cx="4" cy="6" rx="68" ry="44" fill="#000" opacity=".3"/><ellipse cx="0" cy="0" rx="64" ry="40" fill="${YEL}"/><circle cx="0" cy="-4" r="28" fill="#4a3220"/><path d="M-26,-6 q-26,10 -30,34 M26,-6 q26,10 30,34" stroke="#4a3220" stroke-width="12" fill="none" stroke-linecap="round"/></g>`;
     }
     return {
       el: svg, w, h,
@@ -100,7 +99,7 @@ export const ground_scheme = {
   backdrop: true,
   origin: "top-left",
   create(p, H) {
-    const w = 1080, h = 1920, gy = 1180;
+    const w = 1080, h = 1920, gy = 1330;
     let s = `<rect width="${w}" height="${h}" fill="#15191d"/>`;
     for (let x = 0; x < w; x += 40) s += `<line x1="${x}" x2="${x}" y1="0" y2="${h}" stroke="#1f252b" stroke-width="2"/>`;
     for (let y = 0; y < h; y += 40) s += `<line y1="${y}" y2="${y}" x1="0" x2="${w}" stroke="#1f252b" stroke-width="2"/>`;
@@ -118,10 +117,10 @@ export const ground_scheme = {
     s += `<g class="blk"><rect x="80" y="${gy}" width="600" height="220" fill="#7fa8c4" opacity=".28"/>
       ${Array.from({ length: 26 }, (_, i) => `<path d="M${80 + i * 23},${gy + 220} l20,-30" stroke="#7fa8c4" stroke-width="3" opacity=".6"/>`).join("")}
       <rect x="80" y="${gy}" width="600" height="220" fill="none" stroke="#9fc4dc" stroke-width="4"/>
-      <rect x="200" y="${gy - 470}" width="300" height="470" fill="none" stroke="${WHITE}" stroke-width="4"/>
-      ${Array.from({ length: 8 }, (_, i) => `<line x1="200" x2="500" y1="${gy - 470 + (i + 1) * 52}" y2="${gy - 470 + (i + 1) * 52}" stroke="${WHITE}" stroke-width="2" opacity=".6"/>`).join("")}
+      <rect x="200" y="${gy - 380}" width="300" height="380" fill="none" stroke="${WHITE}" stroke-width="4"/>
+      ${Array.from({ length: 8 }, (_, i) => `<line x1="200" x2="500" y1="${gy - 380 + (i + 1) * 42}" y2="${gy - 380 + (i + 1) * 42}" stroke="${WHITE}" stroke-width="2" opacity=".6"/>`).join("")}
       <text x="380" y="${gy + 125}" text-anchor="middle" font-family="IBM Plex Mono" font-weight="600" font-size="30" fill="#cfe3f0">МОКРО</text>
-      <g class="arr" opacity="0">${[260, 440].map((x) => `<path d="M${x},${gy - 520} v-150 m-26,36 l26,-36 l26,36" stroke="#cfe3f0" stroke-width="7" fill="none"/>`).join("")}</g></g>
+      <g class="arr" opacity="0">${[260, 440].map((x) => `<path d="M${x},${gy - 420} v-110 m-26,36 l26,-36 l26,36" stroke="#cfe3f0" stroke-width="7" fill="none"/>`).join("")}</g></g>
       <path class="crack" d="M690,${gy} l-12,60 l14,50 l-10,60 l8,50" stroke="${WHITE}" stroke-width="4" fill="none" opacity="0"/>`;
     const svg = H.svg(s, w, h);
     const blk = svg.querySelector(".blk"), arr = svg.querySelector(".arr"), crack = svg.querySelector(".crack");
@@ -129,7 +128,7 @@ export const ground_scheme = {
       el: svg, w, h,
       update(t, it) {
         const k = it.v("lift", 0);
-        blk.setAttribute("transform", `translate(0,${-k * 260})`);
+        blk.setAttribute("transform", `translate(0,${-k * 150})`);
         arr.setAttribute("opacity", Math.min(1, k * 3));
         crack.setAttribute("opacity", Math.min(1, k * 4));
       },
@@ -281,7 +280,7 @@ export const roof = {
   origin: "top-left",
   surface: true,
   create(p, H) {
-    const w = p.w ?? 1400, top = p.y ?? 1300, depth = p.depth ?? 700, R = H.rng(p.seed ?? 12), id = H.uid("rf");
+    const w = p.w ?? 1400, top = p.y_top ?? 1300, depth = p.depth ?? 700, R = H.rng(p.seed ?? 12), id = H.uid("rf");
     const col = p.color ?? "#4f565c";
     let s = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${H.shade(col, 0.15)}"/><stop offset="1" stop-color="${H.shade(col, -0.35)}"/></linearGradient>
       <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e767d"/><stop offset="1" stop-color="#3a4046"/></linearGradient></defs>`;
@@ -336,7 +335,7 @@ export const barometer = {
       if (big) ticks += `<text x="${c + Math.sin(a) * r * 0.68}" y="${c - Math.cos(a) * r * 0.68 + 10}" text-anchor="middle" font-family="IBM Plex Mono" font-weight="600" font-size="${r * 0.08}" fill="#1e1a14">${mm}</text>`;
     }
     const words = [[725, "БУРЯ"], [740, "ДОЖДЬ"], [755, "ПЕРЕМ."], [770, "ЯСНО"], [784, "СУШЬ"]];
-    for (const [mm, wd] of words) { const a = ang(mm); ticks += `<text x="${c + Math.sin(a) * r * 0.47}" y="${c - Math.cos(a) * r * 0.47 + 12}" text-anchor="middle" font-family="${COND}" font-weight="700" font-size="${r * 0.1}" fill="${mm === 740 ? "#7a1418" : "#2a241c"}">${wd}</text>`; }
+    for (const [mm, wd] of words) { const a = ang(mm); ticks += `<text x="${c + Math.sin(a) * r * 0.4}" y="${c - Math.cos(a) * r * 0.4 + 12}" text-anchor="middle" font-family="${COND}" font-weight="700" font-size="${r * 0.1}" fill="${mm === 740 ? "#7a1418" : "#2a241c"}">${wd}</text>`; }
     const svg = H.svg(`<defs><radialGradient id="${id}b" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#e9c77a"/><stop offset=".5" stop-color="#a4782e"/><stop offset="1" stop-color="#5a3d12"/></radialGradient>
         <radialGradient id="${id}d" cx=".5" cy=".45" r=".7"><stop offset="0" stop-color="#f4ecd6"/><stop offset="1" stop-color="#d6c9a6"/></radialGradient>
         <linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
@@ -381,7 +380,7 @@ export const deep_cabin = {
       ${Array.from({ length: 12 }, (_, i) => `<rect x="${60 + (i % 6) * 170}" y="${80 + Math.floor(i / 6) * 160}" width="70" height="90" fill="${R() < 0.35 ? "#e8d9a0" : "#03100f"}" opacity="${0.35 + R() * 0.3}"/>`).join("")}
       <rect x="${cx - 60}" y="380" width="${cw + 120}" height="${h}" fill="#081d1c"/>
       <rect x="${cx - 70}" y="380" width="14" height="${h}" fill="#1a3433"/><rect x="${cx + cw + 56}" y="380" width="14" height="${h}" fill="#1a3433"/>
-      <rect x="0" y="${cy + ch + 40}" width="${w}" height="${h - cy - ch - 40}" fill="#081816"/>
+      <rect x="0" y="${cy + ch}" width="${w}" height="${h - cy - ch}" fill="#081816"/><rect x="${cx - 60}" y="${cy + ch - 6}" width="${cw + 120}" height="10" fill="#1a3433"/>
       <circle class="halo" cx="${cx + cw / 2}" cy="${cy + ch / 2}" r="460" fill="url(#${id}l)"/>
       <g class="cab"><rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" fill="url(#${id}c)"/>
         <rect x="${cx}" y="${cy + ch - 60}" width="${cw}" height="60" fill="#6a5a4a"/>

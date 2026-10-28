@@ -1,0 +1,932 @@
+# «Обратный прилив. Протокол 09» (~3:19) — часть 3 из 3, ФИНАЛ. Своя графика кодом (method draw), без ИИ-картинок.
+# Та же концепция EMERGENCY ARCHIVE, что в частях 1–2 (projects/tide, projects/tide2): «найденные записи» (камеры
+# наблюдения, телефон, нашлемная камера, дрон, документы) + кинематографичные кадры; интерфейс PROTOCOL 09 в углу
+# (актёр archive), правила — крупно (rule_card), красный — только опасность. Новое: море вверх дном висит над крышами
+# всю часть; светлый сухой асфальт — цвет спасения (мост, прямоугольник под машиной); в финале первое солнце серии —
+# зелёное сквозь воду, вечерний тёплый двор. Интерфейс начинает сломанным (stage 2) и чинится к финалу (stage 1).
+# Сценарий: projects/tide3/script.yaml. Актёры: частей 1–2 (через actors/series.txt) + actors/final.js.
+# Время: "@слово" (числа в at — абсолютные секунды ролика).
+
+title: "Обратный прилив. Протокол 09"
+
+voice: {voice: ru-RU-SvetlanaNeural, rate: "+15%", pitch: "+0Hz", tail: 1.6}
+voices:
+  system: {voice: de-DE-SeraphinaMultilingualNeural, rate: "+6%", pitch: "-2Hz"}
+  gleb: {voice: ru-RU-DmitryNeural, rate: "+10%", pitch: "-4Hz"}
+  gleb_pit: {voice: ru-RU-DmitryNeural, rate: "+6%", pitch: "-6Hz"}
+  gleb_deep: {voice: ru-RU-DmitryNeural, rate: "-4%", pitch: "-12Hz"}
+  sonya: {voice: ru-RU-SvetlanaNeural, rate: "+16%", pitch: "+45Hz"}
+  petrovich: {voice: ru-RU-DmitryNeural, rate: "-2%", pitch: "-18Hz"}
+
+theme:
+  preset: archive
+  accent: "#d9e2ea"
+  captions: {style: clean, top: auto, size: 64, max_chars: 20}
+
+post: {vignette: 0.18, chromatic: 0, grain: 0.02}
+
+draw:
+  palette: {ink: "#0a0c0f", steel: "#3c4650", grey: "#8a96a2", white: "#f2f4f6", red: "#e3262f", yellow: "#ffd23a", water: "#9fc4dc", sea: "#1f4a4c", dry: "#cfc6a4"}
+
+audio:
+  music:
+    key: E
+    mode: minor
+    bpm: 88
+    gain: -15
+    sections:
+      - {at: 0, style: drone}
+      - {at: "@call.start", style: tension}
+      - {at: "@dilemma.start", style: pulse}
+      - {at: "@rise.start", style: epic}
+      - {at: "@twist.start", style: sub}
+      - {at: "@final.start", style: epic}
+      - {at: "@cta.start", style: drone}
+  duck: 0.6
+
+# ------------------------------------------------------------------ shared pieces
+x-sky-low: &sky_low {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#16211f", "#36424a", "#5c6772"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1700, par: 0}
+x-rule: &rule {actor: rule_card, x: 540, y: 800, space: screen, enter: {type: wipe_right, dur: 0.25}, exit: {type: fade, dur: 0.2}, sfx: false}
+x-look-gleb: &gleb {age: adult, outfit: gakuran, hair: short, silhouette: "#14181c"}
+x-look-sonya: &sonya {age: kid, outfit: kyushoku, hat: none, mask: false, hair: twintails, silhouette: "#6b5718"}
+x-look-petr: &petr {age: adult, outfit: blazer, hair: buzz, glasses: true, silhouette: "#1e2124"}
+x-look-n1: &n1 {age: adult, outfit: casual, silhouette: "#1a1e22", hair: bob}
+x-look-n2: &n2 {age: adult, outfit: casual, silhouette: "#1a1e22", hair: short}
+x-arch: &arch {actor: archive, x: 0, y: 0, space: screen, proto: "PROTOCOL 09", stage: 2, date: "14.11.2026"}
+# the sea upside down hanging over the lower city (drowned blocks with lit windows; a flashlight blinks in one window)
+x-sea-blocks: &sea_blocks [{x: 240, y: 300, w: 220, floors: 8, cols: 4, lit: 0.3, fade: 0.2}, {x: 640, y: 420, w: 280, floors: 9, cols: 5, lit: 0.45, fade: 0.5, soil: 90}, {x: 1080, y: 330, w: 240, floors: 9, cols: 5, lit: 0.35, fade: 0.3}, {x: 1380, y: 470, w: 260, floors: 9, cols: 5, lit: 0.4, fade: 0.6, soil: 110}]
+x-home-blds: &home_blds [{x: 210, floors: 9, cols: 6, cell: [58, 46], seed: 4, lit: 0.25, far: false}, {x: 570, floors: 9, cols: 5, cell: [58, 46], seed: 6, color: "#6e767d", lit: 0.2}, {x: 850, floors: 5, cols: 3, cell: [58, 46], seed: 12, color: "#737b82", lit: 0.15}]
+
+scenes:
+
+  # ------------------------------------------------------------------ 1. HOOK — над двором море; звонят с вашего номера из-под воды
+  - id: hook
+    text: "Звонят с вашего номера из-под воды? Ответьте. Это вы через двадцать минут."
+    gap_after: 1.4
+    caption_marks: {"из-под воды": "#f2f4f6"}
+    shots:
+      - id: h_call
+        transition: {type: fade, dur: 0.2}
+        ambience: [{sound: rain, gain: -16}]
+        look: {bloom: [0.8, 0.25]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.06, x: 540, y: 1000}, {t: end, z: 1.14, x: 540, y: 930}], sway: {x: 5, y: 4, roll: 0.3, freq: 0.4}, shakes: [{at: "@номера", amp: 6, dur: 0.5, freq: 5}]}
+          layers:
+            - *sky_low
+            - {actor: sky_sea, x: -260, y: -160, w: 1600, h: 960, level: 640, amp: 70, seed: 5, glow: 0.9, blocks: *sea_blocks, beacon: {x: 1028, y: 230}, par: 0.1}
+            - {actor: cloud_bank, x: -500, y: 640, w: 2100, h: 380, color: "#8b96a1", shade: "#56616c", n: 26, blur: 34, opacity: 0.6, par: 0.12}
+            - {actor: skyline, x: 540, y: 1320, w: 2400, h: 260, color: "#4f5a63", color2: "#47515a", lit: 0.08, seed: 21, par: 0.2}
+            - {actor: ground, x: -600, y: 1310, w: 2300, h: 800, color: ["#3a434b", "#2c333a"], par: 0.2}
+            - {actor: panel_block, x: 230, y: 1560, scale: 0.85, floors: 9, cols: 5, seed: 4, lit: 0.2, stains: 0.6, par: 0.5}
+            - {actor: panel_block, x: 880, y: 1540, scale: 0.75, floors: 9, cols: 5, seed: 8, lit: 0.15, color: "#737b82", par: 0.5}
+            - {actor: wet_ground, x: -400, y: 1530, w: 1900, h: 600, par: 0.5}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 220, v: -0.7, alpha: 0.42, seed: 2}
+            - {actor: phone_call, id: ph, x: 540, y: 1010, scale: 0.42, space: screen, state: incoming, bars: 3, clock: "06:52", name: "Глеб", number: "+7 912 406-17-33", own: "Мой номер",
+               at: "@Звонят+0.1", enter: {type: slide_up, dur: 0.35}, wiggle: {rot: 1.5, freq: 9}}
+            # water ripple over the screen
+            - {actor: shape, kind: rect, x: 540, y: 1010, w: 250, h: 510, radius: 26, space: screen, fill: {linear: ["rgba(31,74,76,0.0)", "rgba(95,143,140,0.45)"], angle: 180}, at: "@воды-0.2", enter: {type: fade, dur: 0.3}, pulse: {amp: 0.03, freq: 2.2}}
+            - {actor: mark, x: 540, y: 1010, w: 300, h: 560, space: screen, at: "@воды-0.1", enter: {type: fade, dur: 0.2}, label: "ГЛУБИНА 40 М", sub: "ИСТОЧНИК ВЫЗОВА · ЗОНА 06", side: top, danger: true}
+            - {<<: *rule, y: 430, at: "@Ответьте-0.05", until: end, kicker: "ПРОТОКОЛ 09 · НИЖНИЙ ГОРОД", text: "ОТВЕТЬТЕ", size: 104}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24720, status: "ВРЕМЯ НЕ СОВПАДАЕТ", glitch: [{at: "@вашего", dur: 0.2}]}
+      - id: h_title
+        start: "@Это-0.22"
+        transition: {type: glitch, dur: 0.25}
+        look: {bloom: [0.75, 0.25]}
+        draw:
+          world: [1080, 3000]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 2100}, {t: end, z: 1.04, x: 540, y: 1150, ease: inout}], sway: {x: 6, y: 4, roll: 0.4, freq: 0.3}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 3000, hour: 12, colors: ["#0e1a1c", "#2b3a40", "#66727d"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2900}
+            - {actor: sky_sea, x: -260, y: -200, w: 1600, h: 1200, level: 900, amp: 80, glow: 1, seed: 3, blocks: [{x: 300, y: 600, w: 260, floors: 9, cols: 5, lit: 0.45, fade: 0.4}, {x: 860, y: 760, w: 300, floors: 9, cols: 6, lit: 0.5, fade: 0.8, soil: 120}], beacon: {x: 822, y: 520}}
+            - {actor: cloud_bank, x: -500, y: 860, w: 2100, h: 500, color: "#56616a", shade: "#28323a", n: 34, blur: 34}
+            - {actor: city_chunk, x: 300, y: 1250, w: 480, soil: 190, seed: 31, opacity: 0.5, blur: 2, drip: 0.6, tunnel: false}
+            - {actor: city_chunk, x: 160, y: 1700, w: 700, soil: 280, seed: 4, opacity: 0.75, blur: 1, drip: 0.8, buildings: *home_blds}
+            - {actor: cloud_bank, x: -500, y: 2050, w: 2100, h: 600, color: "#6c7782", shade: "#323b44", n: 30, blur: 32, seed: 7}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 240, v: -0.75, seed: 8}
+            - {actor: title_card, x: 540, y: 760, space: screen, at: "@минут-0.3", enter: {type: fade, dur: 0.15}, kicker: "ПРОТОКОЛ 09", text: "ОБРАТНЫЙ ПРИЛИВ", sub: "ЧАСТЬ 3 · ФИНАЛ · ЗАПИСЬ 063 / 093"}
+            - {<<: *arch, kind: cinema, src: "РЕКОНСТРУКЦИЯ · МАТЕРИАЛЫ ДЕЛА", tc: 24724, glitch: [{at: "@Это-0.2", dur: 0.2}]}
+    sfx:
+      - {sound: buzz, at: "@Звонят+0.1", gain: -10}
+      - {sound: buzz, at: "@номера", gain: -12}
+      - {sound: noise_sweep, at: "@воды", gain: -12}
+      - {sound: impact, at: "@Ответьте", gain: -12}
+      - {sound: glitch, at: "@Это-0.2", gain: -14}
+      - {sound: boom, at: "@минут", gain: -10}
+
+  # ------------------------------------------------------------------ 2. SETUP — нижний двор, 06:52; отвечает
+  - id: setup
+    text: "Шесть пятьдесят две. Двор на Речной, внизу. Глеб, двадцать девять лет, лифтёр. Соня, семь лет, его дочь. Они только что спустились с неба. Звонит Глеб. Его собственный номер. Протокол запрещает. Глеб отвечает."
+    shots:
+      - id: s_yard
+        transition: {type: dip, dur: 0.35}
+        ambience: [{sound: rain, gain: -15}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.07, x: 560, y: 1010}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1100, par: 0}
+            - {actor: sky_sea, x: -260, y: -300, w: 1600, h: 800, level: 520, amp: 50, opacity: 0.85, seed: 8, glow: 0.8, blocks: [{x: 420, y: 330, w: 240, floors: 8, cols: 5, lit: 0.4, fade: 0.3}], par: 0.05}
+            - {actor: cloud_bank, x: -400, y: 300, w: 1900, h: 560, par: 0.05, color: "#56606a", shade: "#262d34", n: 32}
+            - {actor: skyline, x: 540, y: 1012, w: 2200, h: 380, color: "#47515a", color2: "#3d464e", lit: 0.1, par: 0.2, seed: 5}
+            - {actor: ground, x: -600, y: 1000, w: 2300, h: 1000, color: ["#3a434b", "#2c333a"], par: 0.2}
+            - {actor: shape, kind: rect, x: 540, y: 985, w: 2400, h: 300, par: 0.22, fill: {linear: ["rgba(110,122,134,0)", "rgba(110,122,134,0.6)", "rgba(110,122,134,0)"], angle: 180}}
+            - {actor: panel_block, x: 900, y: 1150, scale: 0.55, floors: 9, cols: 6, seed: 12, lit: 0.2, par: 0.5}
+            - {actor: ground, x: -600, y: 1150, w: 2300, h: 900, color: ["#30373e", "#23292f"], par: 0.5}
+            - {actor: panel_block, x: 380, y: 1330, scale: 1.0, floors: 9, cols: 9, cell: [100, 84], seed: 4, lit: 0.3, entrances: [4], stains: 0.7}
+            - {actor: wet_ground, x: -400, y: 1310, w: 1900, h: 800, lights: [[440, "#e8eef2", 60]]}
+            - {actor: tree, kind: round, x: 930, y: 1360, h: 520, color: "#2c3a33", trunk: "#2a2420", seed: 3, sway: 1}
+            - {actor: puddle, x: 560, y: 1560, w: 460, h: 80, up: 1}
+            - {actor: sheet_rig, id: rig, x: 600, y: 1580, scale: 0.75, n: [{at: 0, v: 8}, {at: "@Речной-0.2", v: 0, dur: 1.2}], crew: [{at: 0, v: 0}, {at: "@внизу", v: 2, dur: 0.4}], hatch: [{at: 0, v: 0}, {at: "@внизу-0.2", v: 1, dur: 0.4}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 300, v: -0.75, seed: 17}
+            - {actor: mark, x: 540, y: 560, w: 560, h: 10, space: screen, at: "@Шесть", enter: {type: fade, dur: 0.2}, label: "06:52 · НИЖНИЙ ГОРОД", sub: "РЕЧНАЯ, 12 · ДВОР", side: top}
+            - {<<: *arch, kind: cctv, src: "CAM 03 · РЕЧНАЯ, 12 · ДВОР", tc: 24725, status: "ВРЕМЯ НЕ СОВПАДАЕТ"}
+      - id: s_heroes
+        start: "@Глеб-0.22"
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 520, y: 990}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.6}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1300, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 900, par: 0}
+            - {actor: panel_block, x: 540, y: 1430, scale: 1.7, floors: 9, cols: 7, cell: [100, 84], seed: 6, lit: 0.25, entrances: [3], stains: 0.8, par: 0.5}
+            - {actor: wet_ground, x: -400, y: 1410, w: 1900, h: 700, par: 0.5, lights: [[540, "#e8eef2", 80]]}
+            - {actor: sheet_rig, x: 860, y: 1700, scale: 1.25, n: 0, crew: 0, hatch: 1, cabin_only: true}
+            - {actor: puddle, x: 360, y: 1700, w: 520, h: 90, up: 1}
+            - {actor: person, id: gleb, x: 420, y: 1700, scale: 1.25, look: *gleb, face: [{at: 0, v: neutral}, {at: "@лифтёр", v: determined}],
+               pose: [{at: 0, v: {a1: [150, 20], a2: [7, 4], l1: [10, 20], l2: [2, 0]}}, {at: "@Соня-0.3", v: {a1: [60, 60], a2: [40, 50], l1: [2, 0], l2: [2, 0]}, dur: 0.4}], look_dx: [{at: 0, v: 0}, {at: "@Соня", v: 0.6, dur: 0.4}]}
+            - {actor: person, id: sonya, x: 580, y: 1700, scale: 0.95, look: *sonya, face: [{at: 0, v: sad}, {at: "@дочь", v: neutral}], pose: stand, look_dx: -0.5, at: "@Соня-0.3", enter: {type: fade, dur: 0.3}}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.75, alpha: 0.45, seed: 18}
+            - {actor: mark, x: 420, y: 1440, w: 260, h: 500, at: "@Глеб", until: "@Соня-0.1", exit: fade, enter: {type: fade, dur: 0.2}, label: "ГЛЕБ, 29", sub: "ЛИФТЁР · ПОДЪЕЗД 2"}
+            - {actor: mark, x: 580, y: 1505, w: 200, h: 380, at: "@Соня", enter: {type: fade, dur: 0.2}, label: "СОНЯ, 7", sub: "ДОЧЬ"}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24728, status: "ВРЕМЯ НЕ СОВПАДАЕТ"}
+      - id: s_sky
+        start: "@Они-0.22"
+        transition: {type: cut}
+        draw:
+          world: [1080, 2600]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1600}, {t: end, z: 1.0, x: 540, y: 1000, ease: inout}], sway: {x: 5, y: 5, roll: 0.4, freq: 0.5}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2600, hour: 12, colors: ["#16211f", "#3a444e", "#6c7782"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2500}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 1200, level: 900, amp: 80, seed: 11, glow: [{at: 0, v: 0.4}, {at: "@неба", v: 1, dur: 0.8}], blocks: *sea_blocks}
+            # the ropes of the landed cabin still reach up into the clouds
+            - {actor: shape, kind: path, d: "M500,2600 C520,2100 470,1700 520,1000", fill: "none", stroke: "#20262b", sw: 7}
+            - {actor: shape, kind: path, d: "M600,2600 C590,2000 640,1700 610,950", fill: "none", stroke: "#20262b", sw: 6}
+            - {actor: cloud_bank, x: -500, y: 850, w: 2100, h: 700, color: "#a7b1ba", shade: "#6c7782", n: 40, blur: 30, speed: 10, opacity: [{at: 0, v: 1}, {at: "@неба", v: 0.75, dur: 1}]}
+            - {actor: sheet, x: 560, y: 1500, scale: 0.7, cord: 0, len: 340, w: 200, seed: 4, anim: [{at: "@Они-0.2", dur: 2.4, y: 700, ease: in}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.8, alpha: 0.45, seed: 19}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВЗГЛЯД ВВЕРХ", tc: 24733, status: "ВРЕМЯ НЕ СОВПАДАЕТ"}
+      - id: s_answer
+        start: "@Звонит-0.22"
+        transition: {type: cut}
+        captions_top: 1650
+        draw:
+          bg: "#0e1114"
+          camera: {keys: [{t: 0, z: 1.0}, {t: "@отвечает", z: 1.05}, {t: end, z: 1.1}], shakes: [{at: "@Звонит", amp: 6, dur: 0.6, freq: 5}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#2a3138", "#0e1114"]}}
+            - {actor: rain, x: 0, y: 0, count: 120, alpha: 0.35, v: -0.7, seed: 20}
+            - {actor: phone_call, x: 540, y: 1000, scale: 0.72, bars: 3, clock: "06:52", name: "Глеб", number: "+7 912 406-17-33", own: "Мой номер", secs: "@отвечает",
+               state: [{at: 0, v: incoming}, {at: "@отвечает", v: active}], tap: [{at: 0, v: 0}, {at: "@отвечает-0.3", v: 1}, {at: "@отвечает+0.3", v: 0}], level: 0.4}
+            - {<<: *rule, y: 400, w: 900, at: "@запрещает-0.05", until: "@отвечает", kicker: "ПРОТОКОЛ 08", text: "НЕ ОТВЕЧАЙТЕ. ЭТО НЕ ВЫ", danger: true, size: 70}
+            - {<<: *arch, kind: phone, src: "КАМЕРА ДОМОФОНА · ПОДЪЕЗД 2", tc: 24740, status: "НЕСООТВЕТСТВИЕ", glitch: [{at: "@отвечает", dur: 0.25}]}
+    sfx:
+      - {sound: whoosh, at: "@Шесть", gain: -16}
+      - {sound: whoosh, at: "@Речной", gain: -14}
+      - {sound: creak, at: "@внизу", gain: -14}
+      - {sound: click, at: "@Глеб", gain: -16}
+      - {sound: noise_sweep, at: "@неба", gain: -14}
+      - {sound: buzz, at: "@Звонит", gain: -10}
+      - {sound: alarm, at: "@запрещает", gain: -16}
+      - {sound: click, at: "@отвечает", gain: -10}
+
+  # ------------------------------------------------------------------ 3. CALL — Глеб из-под воды
+  - id: call
+    text: "В трубке — его голос. И вода. Не сбрасывай. Я тоже спустился на простынях. Тоже спрятался с ними в яме. Яма поднимается вместе с домом. Теперь мы под водой. Вытащи их из ямы. До семи. А куда? Найди то, что не поднимается. Гудки."
+    lines:
+      - {who: gleb_deep, say: "Не сбрасывай. Я тоже спустился на простынях."}
+      - {who: gleb_deep, say: "Тоже спрятался с ними в яме."}
+      - {who: gleb_deep, say: "Яма поднимается вместе с домом. Теперь мы под водой."}
+      - {who: gleb_deep, say: "Вытащи их из ямы. До семи."}
+      - {who: gleb, say: "А куда?"}
+      - {who: gleb_deep, say: "Найди то, что не поднимается."}
+    caption_marks: {"под водой": "#f2f4f6", "не поднимается": "#f2f4f6"}
+    shots:
+      - id: c_ear
+        transition: {type: cut}
+        captions_top: 1650
+        draw:
+          bg: "#0e1114"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], sway: {x: 6, y: 6, roll: 0.6, freq: 0.7}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#1d3335", "#0a1112"]}}
+            - {actor: rain, x: 0, y: 0, count: 120, alpha: 0.35, v: -0.7, seed: 21}
+            - {actor: phone_call, x: 540, y: 980, scale: 0.72, rot: -4, bars: 2, clock: "06:52", name: "Глеб", number: "+7 912 406-17-33", own: "Мой номер", state: active, secs: "@call.start", level: [{at: 0, v: 0.5}, {at: "@вода", v: 0.95, dur: 0.3}]}
+            - {actor: shape, kind: rect, x: 540, y: 980, w: 420, h: 860, radius: 40, rot: -4, fill: {linear: ["rgba(31,74,76,0.0)", "rgba(95,143,140,0.5)"], angle: 180}, opacity: [{at: 0, v: 0}, {at: "@вода-0.1", v: 1, dur: 0.4}], pulse: {amp: 0.03, freq: 2.4}}
+            - {actor: mark, x: 540, y: 470, w: 600, h: 10, space: screen, at: "@вода-0.1", enter: {type: fade, dur: 0.2}, label: "ГЛУБИНА 40 М", sub: "ВЫЗОВ ИЗ ЗОНЫ 06", side: bottom, danger: true}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ЭКРАН", tc: 24748, status: "ВЫЗОВ ИДЁТ", glitch: [{at: "@вода", dur: 0.2}]}
+      - id: c_deep
+        start: "@Не-0.22"
+        transition: {type: dip, dur: 0.3}
+        ambience: [{sound: water_calm, gain: -16}]
+        look: {bloom: [0.72, 0.35]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 820}, {t: "@яме", z: 1.25, x: 540, y: 1100, ease: inout}, {t: "@домом", z: 1.25, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}], sway: {x: 4, y: 4, roll: 0.3, freq: 0.3}}
+          layers:
+            - {actor: deep_cabin, x: 0, y: 0, light: [{at: 0, v: 0.6}, {at: "@яме-0.2", v: 1, dur: 0.5}], phone: 1, bubbles: [{at: 0, v: 0.6}, {at: "@домом", v: 1, dur: 0.3}]}
+            - {actor: mark, x: 540, y: 760, w: 260, h: 260, space: screen, at: "@простынях-0.4", until: "@яме-0.3", exit: fade, enter: {type: fade, dur: 0.2}, label: "ГЛЕБ · ИЗ-ПОД ВОДЫ", sub: "ЗОНА 06 · ГЛУБИНА 40 М", side: top}
+            - {actor: mark, x: 540, y: 1000, w: 460, h: 560, space: screen, at: "@яме-0.1", until: "@водой-0.3", exit: fade, enter: {type: fade, dur: 0.2}, label: "КАБИНА П-2 · ЗОНА 06", sub: "СУХО · ВОЗДУХ КАК В КОЛОКОЛЕ", side: bottom}
+            - {<<: *rule, y: 470, at: "@водой-0.1", kicker: "ЗОНА 06 · 07:12 · ПОД ВОДОЙ", text: "ЯМА ПОДНИМАЕТСЯ С ДОМОМ", danger: true, size: 76}
+            - {<<: *arch, kind: cinema, src: "РЕКОНСТРУКЦИЯ · ЗОНА 06 · ДНО", tc: 24752, status: "ВЫЗОВ ИДЁТ"}
+      - id: c_scheme
+        start: "@Вытащи-0.22"
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.05, x: 560, y: 1020, ease: inout}]}
+          layers:
+            - {actor: house_section, x: 0, y: 0, water: 0, pit: [{at: 0, v: 0}, {at: "@ямы-0.1", v: 1, dur: 0.3}], timer: [{at: 0, v: ""}, {at: "@семи-0.1", v: "08:00"}]}
+            - {actor: mark, x: 730, y: 1450, w: 150, h: 130, at: "@ямы", enter: {type: fade, dur: 0.2}, label: "2 ЧЕЛ.", sub: "НИЖНИЙ ГЛЕБ И ДОЧЬ", side: top, danger: true}
+            - {<<: *arch, kind: doc, src: "ДОК. 07-14 · РАЗРЕЗ · НИЖНИЙ ГОРОД", tc: 24760, status: "ДО ОТРЫВА 08:00"}
+      - id: c_face
+        start: "@А-0.22"
+        transition: {type: cut}
+        captions_top: 330
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 560, y: 920}], sway: {x: 8, y: 7, roll: 0.7, freq: 0.6}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1300, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 900, par: 0}
+            - {actor: panel_block, x: 540, y: 1300, scale: 1.4, floors: 9, cols: 8, cell: [100, 84], seed: 9, lit: 0.3, stains: 0.7, par: 0.4, blur: 3}
+            - {actor: wet_ground, x: -400, y: 1280, w: 1900, h: 800, par: 0.4, blur: 2}
+            - {actor: person, id: gleb, x: 500, y: 2250, scale: 2.6, air: true, look: *gleb, hold: phone, face: [{at: 0, v: talk}, {at: "@не", v: determined}],
+               pose: {a1: [7, 4], a2: [150, 150], l1: [2, 0], l2: [2, 0], tilt: -4}, look_dx: [{at: 0, v: 0}, {at: "@поднимается-0.2", v: -0.8, dur: 0.8}, {at: "@Гудки-0.2", v: 0.6, dur: 0.8}]}
+            - {actor: person, id: sonya, x: 160, y: 2100, scale: 1.7, air: true, look: *sonya, face: sad, pose: {a1: [7, 4], a2: [60, 30], l1: [2, 0], l2: [2, 0]}, look_dx: 0.7}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.8, alpha: 0.5, seed: 22}
+            - {actor: mark, x: 540, y: 1540, w: 560, h: 10, space: screen, at: "@Гудки-0.1", enter: {type: fade, dur: 0.2}, label: "ВЫЗОВ ЗАВЕРШЁН", sub: "00:21 · ГЛУБИНА 40 М", side: top, danger: true}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН СОНИ · ВИДЕО", tc: 24770, status: "ДО ОТРЫВА 07:40"}
+    sfx:
+      - {sound: noise_sweep, at: "@вода", gain: -10}
+      - {sound: drip, at: "@простынях", gain: -14}
+      - {sound: blip, at: "@яме", gain: -12}
+      - {sound: groan, at: "@домом", gain: -12}
+      - {sound: boom, at: "@водой", gain: -10}
+      - {sound: impact, at: "@семи", gain: -10}
+      - {sound: breath, at: "@куда", gain: -12}
+      - {sound: blip, at: "@Гудки", gain: -10}
+
+  # ------------------------------------------------------------------ 4. PROBLEM — восемь минут; яма; крыши; Протокол 09
+  - id: problem
+    text: "Восемь минут до семи. В яме лифта — нижний Глеб с дочкой. Связи там нет. На крышах — весь двор. Из динамиков — сирена. Протокол девять. Море дойдёт до Речной в семь двадцать. Оставайтесь на крышах. Ждите вертолёты."
+    lines:
+      - {who: system, say: "Протокол девять. Море дойдёт до Речной в семь двадцать."}
+      - {who: system, say: "Оставайтесь на крышах. Ждите вертолёты."}
+    caption_marks: {"семь двадцать": "#f2f4f6", "вертолёты": "#f2f4f6"}
+    shots:
+      - id: p_timer
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 560, y: 1000}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.7}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1300, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 900, par: 0}
+            - {actor: skyline, x: 540, y: 1300, w: 2200, h: 360, color: "#4f5a63", color2: "#47515a", lit: 0.08, seed: 21, par: 0.2}
+            - {actor: ground, x: -600, y: 1290, w: 2300, h: 900, color: ["#3a434b", "#2c333a"], par: 0.2}
+            - {actor: panel_block, x: 540, y: 1520, scale: 1.9, floors: 9, cols: 6, cell: [100, 84], seed: 12, lit: 0.2, entrances: [3], stains: 0.8}
+            - {actor: wet_ground, x: -400, y: 1500, w: 1900, h: 600}
+            - {actor: person, x: 300, y: 1720, scale: 1.0, look: *gleb, walk: 3, run: true, anim: [{at: "@problem.start", dur: 1.8, x: 560}]}
+            - {actor: person, x: 180, y: 1720, scale: 0.72, look: *sonya, walk: 3.4, run: true, anim: [{at: "@problem.start", dur: 1.8, x: 470}]}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.75, alpha: 0.45, seed: 23}
+            - {<<: *rule, y: 470, at: "@Восемь-0.05", kicker: "ДО ОТРЫВА КВАРТАЛА", text: "08:00", size: 130}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН СОНИ · ВИДЕО", tc: 24780, status: "ДО ОТРЫВА 08:00"}
+      - id: p_pit
+        start: "@В-0.22"
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.05, x: 560, y: 1020, ease: inout}]}
+          layers:
+            - {actor: house_section, x: 0, y: 0, water: 0, pit: [{at: 0, v: 0}, {at: "@яме-0.1", v: 1, dur: 0.3}], timer: "07:56"}
+            - {actor: mark, x: 730, y: 1450, w: 150, h: 130, at: "@нет-0.2", enter: {type: fade, dur: 0.2}, label: "СВЯЗЬ: 0", sub: "ЯМА · 2 ЧЕЛ.", side: top, danger: true}
+            - {<<: *arch, kind: doc, src: "ДОК. 07-14 · РАЗРЕЗ · НИЖНИЙ ГОРОД", tc: 24782, status: "ДО ОТРЫВА 07:56"}
+      - id: p_roofs
+        start: "@На-0.22"
+        transition: {type: cut}
+        draw:
+          world: [1080, 2400]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1400}, {t: end, z: 1.0, x: 540, y: 1100, ease: inout}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2400, hour: 12, colors: ["#16211f", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2000}
+            - {actor: sky_sea, x: -260, y: -60, w: 1600, h: 1000, level: 760, amp: 70, seed: 12, glow: 0.9, blocks: *sea_blocks, beacon: {x: 1028, y: 230}, par: 0.3}
+            - {actor: cloud_bank, x: -500, y: 760, w: 2100, h: 380, color: "#56606a", shade: "#262d34", n: 30, blur: 34, opacity: 0.7, par: 0.4}
+            - {actor: panel_block, x: 300, y: 2400, scale: 1.5, floors: 9, cols: 4, seed: 4, lit: 0.3, stains: 0.7}
+            - {actor: panel_block, x: 860, y: 2420, scale: 1.3, floors: 9, cols: 3, seed: 8, lit: 0.2, color: "#737b82"}
+            - {actor: wet_ground, x: -400, y: 2380, w: 1900, h: 400}
+            - {actor: shape, kind: rect, x: 300, y: 1286, w: 590, h: 16, fill: "#5d656c"}
+            - {actor: shape, kind: rect, x: 860, y: 1456, w: 510, h: 16, fill: "#5d656c"}
+            - {actor: person, x: 140, y: 1280, scale: 0.42, look: *n1, pose: arms_up}
+            - {actor: person, x: 240, y: 1280, scale: 0.4, look: *n2, pose: stand, hold: bucket}
+            - {actor: person, x: 340, y: 1280, scale: 0.44, look: *petr, pose: stand}
+            - {actor: person, x: 470, y: 1280, scale: 0.4, look: *n1, pose: stand, hold: torch}
+            - {actor: person, x: 800, y: 1450, scale: 0.4, look: *n2, pose: arms_up}
+            - {actor: person, x: 930, y: 1450, scale: 0.38, look: *n1, pose: stand}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.75, seed: 24}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24790, status: "ДО ОТРЫВА 07:50"}
+      - id: p_alert
+        start: "@Из-0.22"
+        transition: {type: slam}
+        ambience: [{sound: hum, gain: -14}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.14, x: 500, y: 920}]}
+          layers:
+            - {actor: crt_tv, x: 0, y: 0, screens: [{at: "@Из-0.2", lines: ["ВНИМАНИЕ ВСЕМ", "СИРЕНА"]}, {at: "@Протокол-0.2", lines: ["ПРОТОКОЛ 09"], size: 70}, {at: "@Море-0.2", lines: ["МОРЕ:", "РЕЧНАЯ", "07:20"], size: 64}, {at: "@Оставайтесь-0.2", lines: ["ОСТАВАЙТЕСЬ", "НА КРЫШАХ"], size: 60}, {at: "@Ждите-0.2", lines: ["ЖДИТЕ", "ВЕРТОЛЁТЫ"], size: 64}]}
+            - {<<: *arch, kind: alert, src: "ЭФИР · ВСЕ КАНАЛЫ · АВТОМАТ", tc: 24796, status: "ПРОТОКОЛ 09", rec: false, glitch: [{at: "@Протокол-0.15", dur: 0.2}, {at: "@вертолёты", dur: 0.3}]}
+    sfx:
+      - {sound: click, at: "@Восемь", gain: -10}
+      - {sound: drip, at: "@яме", gain: -12}
+      - {sound: blip, at: "@нет", gain: -12}
+      - {sound: noise_sweep, at: "@крышах", gain: -14}
+      - {sound: alarm, at: "@Из", gain: -10}
+      - {sound: impact, at: "@двадцать", gain: -10}
+      - {sound: glitch, at: "@вертолёты", gain: -10}
+
+  # ------------------------------------------------------------------ 5. RULE — сухой прямоугольник; камешки; мост
+  - id: rule
+    text: "Соня тянет его за рукав. Где ночью стояла машина, асфальт сухой. Глеб бросает камешек из лужи. Он улетает вверх. Камешек с сухого — падает. Сухая земля тяжёлая. Она не поднимется. Пап, под мостом всегда сухо! Мост через Речную. Двести метров."
+    lines:
+      - {who: sonya, say: "Пап, под мостом всегда сухо!"}
+    caption_marks: {"сухой": "#f2f4f6", "под мостом": "#f2f4f6"}
+    shots:
+      - id: r_patch
+        transition: {type: cut}
+        captions_top: 1440
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@сухой", z: 1.12, x: 560, y: 930, ease: inout}, {t: end, z: 1.14, x: 560, y: 930}]}
+          layers:
+            - {actor: asphalt_top, x: 0, y: 0, outline: [{at: 0, v: 0}, {at: "@машина-0.2", v: 1, dur: 0.4}], dry: [{at: 0, v: 0}, {at: "@сухой-0.1", v: 1, dur: 0.3}]}
+            - {actor: mark, x: 560, y: 900, w: 420, h: 860, at: "@сухой-0.05", enter: {type: fade, dur: 0.2}, label: "ЗДЕСЬ СТОЯЛА МАШИНА", sub: "НОЧЬЮ · СУХО", side: top}
+            - {<<: *arch, kind: cctv, src: "CAM 05 · МАЧТА · ВИД СВЕРХУ", tc: 24806, status: "ДО ОТРЫВА 06:50"}
+      - id: r_stones
+        start: "@Глеб-0.22"
+        transition: {type: cut}
+        captions_top: 1440
+        draw:
+          camera: {keys: [{t: 0, z: 2.2, x: 360, y: 760}, {t: end, z: 2.3, x: 360, y: 740}], sway: {x: 3, y: 3, roll: 0.3, freq: 0.6}}
+          layers:
+            - {actor: asphalt_top, x: 0, y: 0, car_x: 560, car_y: 900, seed: 9, puddles: 6}
+            - {actor: puddle, x: 200, y: 700, w: 160, h: 60, up: 1, opacity: 0}
+            - {actor: pebble, x: 250, y: 680, r: 22, wet: true, seed: 2, at: "@камешек-0.2", enter: {type: fade, dur: 0.2}, anim: [{at: "@вверх-0.4", dur: 1.1, y: 300, x: 270, rot: 120, ease: in}]}
+            - {actor: pebble, x: 470, y: 560, r: 22, seed: 5, at: "@Камешек-0.3", enter: {type: fade, dur: 0.2}, anim: [{at: "@падает-0.35", dur: 0.35, y: 690, ease: in}, {at: "@падает", dur: 0.18, y: 664, ease: out}, {at: "@падает+0.18", dur: 0.18, y: 690, ease: in}]}
+            - {actor: text, x: 250, y: 470, text: "↑ МОКРЫЙ", font: mono, size: 18, color: "#cfe3f0", at: "@вверх-0.2", enter: {type: fade, dur: 0.2}}
+            - {actor: text, x: 470, y: 760, text: "↓ СУХОЙ", font: mono, size: 18, color: "#cfc6a4", at: "@падает", enter: {type: fade, dur: 0.2}}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · ЛИФТЁР П-2", tc: 24811, status: "ДО ОТРЫВА 06:45"}
+      - id: r_card
+        start: "@Сухая-0.22"
+        transition: {type: dip, dur: 0.25}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.06, x: 540, y: 1040}]}
+          layers:
+            - {actor: ground_scheme, x: 0, y: 0, title: "", lift: [{at: 0, v: 0}, {at: "@тяжёлая-0.1", v: 1, dur: 1.4, ease: inOutSine}]}
+            - {<<: *rule, y: 520, at: "@поднимется-0.05", kicker: "ПРАВИЛО 05 · ПРОВЕРЕНО: КАМЕШЕК", text: "СУХАЯ ЗЕМЛЯ НЕ ПОДНИМАЕТСЯ", size: 80}
+            - {<<: *arch, kind: doc, src: "ДОК. 09-01 · ЧЕРТЁЖ ЛИФТЁРА", tc: 24816, status: "ДО ОТРЫВА 06:40"}
+      - id: r_bridge
+        start: "@Пап-0.22"
+        transition: {type: cut}
+        captions_top: 1700
+        draw:
+          world: [1400, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 600, y: 960}, {t: "@Речную", z: 1.18, x: 820, y: 900, ease: inout}, {t: end, z: 1.22, x: 840, y: 900}], sway: {x: 5, y: 5, roll: 0.4, freq: 0.5}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 2000, h: 1500, hour: 12, colors: ["#16211f", "#38424b", "#66717c"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1100, par: 0}
+            - {actor: sky_sea, x: -300, y: -260, w: 2000, h: 820, level: 480, amp: 60, seed: 14, glow: 0.8, blocks: [{x: 500, y: 300, w: 240, floors: 8, cols: 5, lit: 0.4, fade: 0.4}, {x: 1300, y: 340, w: 260, floors: 9, cols: 5, lit: 0.35, fade: 0.5}], beacon: {x: 1290, y: 160}, par: 0.05}
+            - {actor: cloud_bank, x: -500, y: 420, w: 2400, h: 360, color: "#6c7782", shade: "#3a444e", n: 30, blur: 34, opacity: 0.7, par: 0.08}
+            - {actor: skyline, x: 700, y: 1060, w: 2600, h: 300, color: "#56616a", color2: "#4c5760", lit: 0.08, seed: 9, par: 0.2}
+            - {actor: ground, x: -600, y: 1050, w: 2800, h: 900, color: ["#3e474f", "#2c333a"], par: 0.2}
+            - {actor: shape, kind: rect, x: 700, y: 1040, w: 2800, h: 260, par: 0.22, fill: {linear: ["rgba(110,122,134,0)", "rgba(110,122,134,0.6)", "rgba(110,122,134,0)"], angle: 180}}
+            - {actor: bridge, x: 380, y: 0, w: 1100, ground: 1250, deck: 990, span: [80, 1020], strip_h: 90, thick: 54, piers: [140, 560, 960], dry: [{at: 0, v: 0}, {at: "@Речную-0.1", v: 1, dur: 0.4}], par: 0.5}
+            - {actor: wet_ground, x: -400, y: 1250, w: 780, h: 900, par: 0.5}
+            - {actor: wet_ground, x: 1400, y: 1250, w: 600, h: 900, par: 0.5}
+            - {actor: wet_ground, x: -400, y: 1340, w: 2400, h: 800, par: 0.5}
+            - {actor: panel_block, x: 150, y: 1260, scale: 0.75, floors: 9, cols: 5, seed: 4, lit: 0.25, stains: 0.6, par: 0.5}
+            - {actor: lamp_post, x: 360, y: 1300, scale: 0.6, par: 0.5}
+            - {actor: wet_ground, x: -400, y: 1600, w: 2400, h: 500}
+            - {actor: person, id: sonya, x: 470, y: 1850, scale: 1.5, look: *sonya, face: happy, flip: true, pose: [{at: 0, v: stand}, {at: "@мостом-0.3", v: point, dur: 0.3}]}
+            - {actor: person, id: gleb, x: 250, y: 1880, scale: 1.9, look: *gleb, face: determined, pose: stand, look_dx: 0.6}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 240, v: -0.75, alpha: 0.45, seed: 25}
+            - {actor: mark, x: 930, y: 1200, w: 640, h: 150, at: "@метров-0.1", enter: {type: fade, dur: 0.2}, label: "МОСТ · 200 М", sub: "ПОД НИМ СУХО", side: top}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 24822, status: "ДО ОТРЫВА 06:30"}
+    sfx:
+      - {sound: creak, at: "@рукав", gain: -14}
+      - {sound: click, at: "@сухой", gain: -12}
+      - {sound: whoosh, at: "@вверх", gain: -12}
+      - {sound: click, at: "@падает", gain: -8}
+      - {sound: impact, at: "@поднимется", gain: -10}
+      - {sound: whoosh, at: "@мостом", gain: -14}
+      - {sound: blip, at: "@метров", gain: -14}
+
+  # ------------------------------------------------------------------ 6. DILEMMA — связь с кабиной: спор с самим собой; Соня — нижнему Глебу
+  - id: dilemma
+    text: "Подвал. Глеб жмёт связь с кабиной. Из ямы — его же голос. Вылезай. Яма поднимется вместе с домом. Мне сказали: в яму. Моим голосом. Это был я. Я ошибся. А если ошибаешься сейчас? Тогда ошибёмся вместе. Замок щёлкает. Под мост. Держи её. Пап, а ты? Я за соседями. Не успеешь."
+    lines:
+      - {who: gleb, say: "Вылезай. Яма поднимется вместе с домом."}
+      - {who: gleb_pit, say: "Мне сказали: в яму. Моим голосом."}
+      - {who: gleb, say: "Это был я. Я ошибся."}
+      - {who: gleb_pit, say: "А если ошибаешься сейчас?"}
+      - {who: gleb, say: "Тогда ошибёмся вместе."}
+      - {who: gleb, say: "Под мост. Держи её."}
+      - {who: sonya, say: "Пап, а ты?"}
+      - {who: gleb, say: "Я за соседями."}
+      - {who: gleb_pit, say: "Не успеешь."}
+    caption_marks: {"ошибёмся вместе": "#f2f4f6"}
+    shots:
+      - id: d_panel
+        transition: {type: cut}
+        captions_top: 1480
+        ambience: [{sound: hum, gain: -16}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 540, y: 980}], bob: {freq: 1.4, x: 3, y: 5, roll: 0.3}}
+          layers:
+            - {actor: lift_panel, x: 0, y: 0, open: 1, press: [{at: 0, v: 0}, {at: "@связь-0.3", v: 1, dur: 0.2}, {at: "@связь+0.3", v: 0, dur: 0.3}], on: [{at: 0, v: 0}, {at: "@связь", v: 1}], talk: [{at: 0, v: 0}, {at: "@голос-0.3", v: 1}], hand: [{at: 0, v: 1}, {at: "@голос", v: 0, dur: 0.4}]}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · ПОДВАЛ", tc: 24830, status: "ДО ОТРЫВА 06:00"}
+      - id: d_talk
+        start: "@Вылезай-0.22"
+        transition: {type: cut}
+        captions_top: 330
+        draw:
+          world: [1600, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@Мне-0.4", z: 1.0, x: 540, y: 960}, {t: "@Мне+0.4", z: 1.0, x: 1060, y: 960, ease: inout}, {t: end, z: 1.04, x: 1060, y: 980}]}
+          layers:
+            - {actor: pit_split, x: 0, y: 0, floor_y: 1560, wall_x: 760, side: [{at: 0, v: 1}, {at: "@Мне", v: -1}]}
+            - {actor: person, id: gleb, x: 380, y: 1560, scale: 1.25, view: side, look: *gleb, face: [{at: 0, v: talk}, {at: "@Мне", v: neutral}], pose: [{at: 0, v: {a1: [60, 70], a2: [20, 10], l1: [2, 0], l2: [2, 0], lean: 6}}]}
+            - {actor: person, id: gleb_pit, x: 1080, y: 1560, scale: 1.05, look: *gleb, face: [{at: 0, v: sad}, {at: "@Мне", v: talk}], pose: sit}
+            - {actor: person, id: sonya_pit, x: 1240, y: 1560, scale: 0.8, look: *sonya, face: sad, pose: sit, look_dx: -0.6}
+            - {actor: mark, x: 1080, y: 1330, w: 300, h: 460, at: "@Мне-0.05", enter: {type: fade, dur: 0.2}, label: "ГЛЕБ · НИЖНИЙ", sub: "ЯМА ЛИФТА · 06:56", side: top}
+            - {<<: *arch, kind: cinema, src: "РЕКОНСТРУКЦИЯ · СТЕНА ШАХТЫ", tc: 24836, status: "ДО ОТРЫВА 05:50"}
+      - id: d_pit
+        start: "@Это-0.22"
+        transition: {type: cut}
+        captions_top: 640
+        ambience: [{sound: hum, gain: -18}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 980}, {t: end, z: 1.08, x: 540, y: 1020}]}
+          layers:
+            - {actor: lift_cabin, x: 0, y: 0, tape: 4, floor: 0, disp_on: 0, flicker: 1}
+            - {actor: shape, kind: rect, x: 540, y: 1050, w: [{at: 0, v: 0}, {at: "@щёлкает-0.1", v: 90, dur: 0.5, ease: out}], h: 900, fill: "#fff6e0", glow: {color: "#fff6e0", r: 30, a: 0.8}, opacity: [{at: 0, v: 0}, {at: "@щёлкает-0.1", v: 1, dur: 0.2}]}
+            - {actor: person, id: gleb_pit, x: 400, y: 1660, scale: 1.6, look: *gleb, face: [{at: 0, v: sad}, {at: "@ошибся", v: surprised}, {at: "@сейчас", v: talk}, {at: "@вместе#2", v: determined}],
+               pose: [{at: 0, v: sit}, {at: "@вместе#2-0.2", v: stand, dur: 0.6}], anim: [{at: "@вместе#2-0.2", dur: 0.6, y: 1700, ease: out}], look_dx: [{at: 0, v: 0}, {at: "@сейчас", v: 0.6, dur: 0.3}, {at: "@вместе#2", v: 0, dur: 0.3}]}
+            - {actor: person, id: sonya_pit, x: 660, y: 1690, scale: 1.25, look: *sonya, face: [{at: 0, v: sad}, {at: "@щёлкает", v: surprised}], pose: sit, look_dx: -0.5}
+            - {<<: *arch, kind: cctv, src: "CAM ЛИФТ П-2 · КАБИНА · ЯМА", tc: 24843, status: "ДО ОТРЫВА 05:40"}
+      - id: d_give
+        start: "@Под-0.22"
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 560, y: 980}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.7}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1300, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 900, par: 0}
+            - {actor: panel_block, x: 540, y: 1430, scale: 1.7, floors: 9, cols: 7, cell: [100, 84], seed: 6, lit: 0.25, entrances: [3], stains: 0.8, par: 0.5}
+            - {actor: wet_ground, x: -400, y: 1410, w: 1900, h: 700, par: 0.5}
+            - {actor: person, id: gleb, x: 200, y: 1720, scale: 1.2, look: *gleb, face: determined, pose: [{at: 0, v: point}, {at: "@Держи-0.2", v: {a1: [40, 20], a2: [7, 4], l1: [2, 0], l2: [2, 0]}, dur: 0.3}]}
+            - {actor: person, id: sonya, x: 380, y: 1720, scale: 0.9, look: *sonya, face: sad, pose: stand, anim: [{at: "@Держи-0.2", dur: 0.8, x: 620, ease: inOutSine}], look_dx: -0.6}
+            - {actor: person, id: gleb_pit, x: 820, y: 1720, scale: 1.2, look: *gleb, face: neutral, pose: [{at: 0, v: stand}, {at: "@Держи", v: {a1: [7, 4], a2: [60, 30], l1: [2, 0], l2: [2, 0]}, dur: 0.3}], look_dx: -0.5}
+            - {actor: person, id: sonya_pit, x: 950, y: 1720, scale: 0.9, look: *sonya, face: neutral, pose: stand, look_dx: -0.6}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.75, alpha: 0.45, seed: 26}
+            - {<<: *rule, y: 470, at: "@Под-0.05", kicker: "ДО ОТРЫВА КВАРТАЛА", text: "05:00", size: 120}
+            - {<<: *arch, kind: phone, src: "КАМЕРА ДОМОФОНА · ПОДЪЕЗД 2", tc: 24850, status: "ДО ОТРЫВА 05:00"}
+      - id: d_sonya
+        start: "@Пап-0.22"
+        transition: {type: cut}
+        captions_top: 330
+        look: {bloom: [0.8, 0.2]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 520, y: 980}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.7}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1300, hour: 12, colors: ["#1d242b", "#38424b", "#5a6570"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 900, par: 0}
+            - {actor: panel_block, x: 540, y: 1300, scale: 1.5, floors: 9, cols: 8, cell: [100, 84], seed: 9, lit: 0.3, stains: 0.7, par: 0.4, blur: 3}
+            - {actor: wet_ground, x: -400, y: 1280, w: 1900, h: 800, par: 0.4, blur: 2}
+            - {actor: person, id: gleb, x: 260, y: 2300, scale: 2.4, air: true, look: *gleb, face: [{at: 0, v: sad}, {at: "@соседями", v: determined}], pose: stand, look_dx: [{at: 0, v: 0.5}, {at: "@соседями-0.2", v: -0.2, dur: 0.4}],
+               anim: [{at: "@успеешь-0.1", dur: 0.6, x: -500, ease: in}]}
+            - {actor: person, id: sonya, x: 760, y: 2200, scale: 2.0, air: true, look: *sonya, face: [{at: 0, v: sad}, {at: "@ты", v: surprised}], pose: [{at: 0, v: stand}, {at: "@ты-0.2", v: {a1: [7, 4], a2: [120, 20], l1: [2, 0], l2: [2, 0]}, dur: 0.3}], look_dx: -0.7}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.8, alpha: 0.5, seed: 27}
+            - {<<: *arch, kind: phone, src: "КАМЕРА ДОМОФОНА · ПОДЪЕЗД 2", tc: 24853, status: "ДО ОТРЫВА 04:50"}
+    sfx:
+      - {sound: footstep, at: "@Подвал", gain: -14}
+      - {sound: click, at: "@связь", gain: -10}
+      - {sound: buzz, at: "@голос", gain: -14}
+      - {sound: heartbeat, at: "@ошибся", gain: -10}
+      - {sound: click, at: "@щёлкает", gain: -8}
+      - {sound: breath, at: "@Держи", gain: -12}
+      - {sound: heartbeat, at: "@ты", gain: -10}
+      - {sound: whoosh, at: "@успеешь", gain: -10}
+
+  # ------------------------------------------------------------------ 7. ROOF — крыша под морем; Петрович и барометр
+  - id: roof
+    text: "Крыша. Весь двор под дождём, который идёт вверх. Все вниз! Под мост! Аркадий Петрович, семьдесят лет. Тридцать лет на метеостанции. Система тридцать лет не врала. Вертолётов не будет. Я слышал этот гул. А когда кончится дождь? Петрович смотрит на барометр. Фронт уходит. В семь двадцать."
+    lines:
+      - {who: gleb, say: "Все вниз! Под мост!"}
+      - {who: petrovich, say: "Система тридцать лет не врала."}
+      - {who: gleb, say: "Вертолётов не будет. Я слышал этот гул."}
+      - {who: gleb, say: "А когда кончится дождь?"}
+      - {who: petrovich, say: "Фронт уходит. В семь двадцать."}
+    caption_marks: {"семь двадцать": "#f2f4f6"}
+    shots:
+      - id: o_roof
+        transition: {type: cut}
+        ambience: [{sound: wind, gain: -15}]
+        draw:
+          world: [1500, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 900, y: 960}, {t: "@двор", z: 1.0, x: 760, y: 960, ease: inout}, {t: end, z: 1.04, x: 560, y: 980, ease: inout}], bob: {freq: 1.8, x: 4, y: 6, roll: 0.5}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 2100, h: 1600, hour: 12, colors: ["#16211f", "#38424b", "#66717c"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1300, par: 0}
+            - {actor: sky_sea, x: -300, y: -100, w: 2100, h: 900, level: 620, amp: 70, seed: 15, glow: 0.9, blocks: *sea_blocks, par: 0.1}
+            - {actor: cloud_bank, x: -500, y: 620, w: 2500, h: 360, color: "#8b96a1", shade: "#56616c", n: 30, blur: 34, opacity: 0.6, par: 0.12}
+            - {actor: skyline, x: 750, y: 1330, w: 2800, h: 260, color: "#5a656e", color2: "#505b64", lit: 0.06, seed: 21, par: 0.25}
+            - {actor: shape, kind: rect, x: 750, y: 1320, w: 2900, h: 220, par: 0.26, fill: {linear: ["rgba(110,122,134,0)", "rgba(110,122,134,0.7)"], angle: 180}}
+            - {actor: roof, x: -150, y: 0, w: 1800, y_top: 1400, hatch: [{at: 0, v: 0}, {at: "@Крыша-0.3", v: 1, dur: 0.3}], hut_x: 1080}
+            - {actor: person, x: 220, y: 1400, scale: 0.85, look: *n1, pose: stand, hold: bucket}
+            - {actor: person, x: 360, y: 1400, scale: 0.8, look: *n2, pose: [{at: 0, v: arms_up}, {at: "@вниз-0.1", v: stand, dur: 0.3}]}
+            - {actor: person, x: 520, y: 1400, scale: 0.84, look: *n1, pose: stand, hold: torch, look_dx: [{at: 0, v: 0}, {at: "@вниз", v: 0.8, dur: 0.3}]}
+            - {actor: person, x: 680, y: 1400, scale: 0.78, look: *n2, pose: stand, look_dx: [{at: 0, v: 0}, {at: "@вниз", v: 0.8, dur: 0.3}]}
+            - {actor: person, id: gleb, x: 1230, y: 1400, scale: 0.95, look: *gleb, face: talk, pose: [{at: 0, v: stand}, {at: "@вниз-0.2", v: wave, dur: 0.3}, {at: "@мост-0.2", v: point, dur: 0.3}], at: "@Крыша-0.1", enter: {type: rise, dur: 0.4}}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.8, alpha: 0.45, seed: 28}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · КРЫША", tc: 24865, status: "ДО ОТРЫВА 03:40"}
+      - id: o_petr
+        start: "@Аркадий-0.22"
+        transition: {type: cut}
+        captions_top: 330
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 1000}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.6}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1600, hour: 12, colors: ["#16211f", "#38424b", "#66717c"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1300, par: 0}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 800, level: 560, amp: 60, seed: 16, glow: 0.9, blocks: *sea_blocks, par: 0.1}
+            - {actor: cloud_bank, x: -500, y: 540, w: 2100, h: 360, color: "#8b96a1", shade: "#56616c", n: 26, blur: 34, opacity: 0.6, par: 0.12}
+            - {actor: roof, x: -300, y: 0, w: 1700, y_top: 1800, antennas: 3, hut_x: 1300, seed: 3}
+            - {actor: person, id: petr, x: 560, y: 1805, scale: 2.0, look: *petr, face: [{at: 0, v: neutral}, {at: "@врала", v: talk}],
+               pose: [{at: 0, v: {a1: [7, 4], a2: [50, 70], l1: [2, 0], l2: [2, 0]}}, {at: "@врала-0.3", v: {a1: [7, 4], a2: [100, 60], l1: [2, 0], l2: [2, 0]}, dur: 0.3}]}
+            - {actor: barometer, x: 760, y: 1420, r: 90, p: 737, at: "@метеостанции-0.2", enter: {type: pop, dur: 0.3}}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 240, v: -0.8, alpha: 0.45, seed: 29}
+            - {actor: mark, x: 560, y: 1200, w: 420, h: 600, at: "@Аркадий-0.05", enter: {type: fade, dur: 0.2}, label: "А. П. ВОРОНОВ, 70", sub: "МЕТЕОСТАНЦИЯ · 30 ЛЕТ", side: top}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · КРЫША", tc: 24872, status: "ДО ОТРЫВА 03:20"}
+      - id: o_argue
+        start: "@Вертолётов-0.22"
+        transition: {type: cut}
+        draw:
+          world: [1080, 2600]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1640}, {t: "@будет", z: 1.0, x: 540, y: 960, ease: inout}, {t: "@дождь-0.5", z: 1.0, x: 540, y: 960}, {t: end, z: 1.0, x: 540, y: 1600, ease: inout}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.6}, shakes: [{at: "@гул", amp: 9, dur: 0.6, freq: 4}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2600, hour: 12, colors: ["#16211f", "#38424b", "#66717c"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2300}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 700, level: 420, amp: 60, seed: 17, glow: 0.9, blocks: *sea_blocks}
+            - {actor: city_chunk, x: 120, y: 520, w: 840, soil: 300, seed: 33, drip: 1, tunnel: false, buildings: [{x: 220, floors: 9, cols: 5, cell: [52, 42], seed: 2}, {x: 600, floors: 9, cols: 4, cell: [52, 42], seed: 7}], anim: [{at: "@гул-0.1", dur: 0.6, y: 540, ease: out}]}
+            - {actor: cloud_bank, x: -500, y: 1050, w: 2100, h: 500, color: "#8b96a1", shade: "#56616c", n: 30, blur: 34, opacity: 0.75}
+            - {actor: city_chunk, x: -120, y: 1700, w: 380, soil: 150, seed: 52, opacity: 0.5, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 120, floors: 9, cols: 4, cell: [30, 24], seed: 5}, {x: 270, floors: 6, cols: 3, cell: [30, 24], seed: 9}], par: 0.2}
+            - {actor: city_chunk, x: 820, y: 1780, w: 340, soil: 140, seed: 53, opacity: 0.5, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 110, floors: 9, cols: 4, cell: [28, 22], seed: 7}, {x: 250, floors: 7, cols: 3, cell: [28, 22], seed: 3}], par: 0.2}
+            - {actor: roof, x: -300, y: 0, w: 1700, y_top: 2160, antennas: 3, hut_x: 1250, seed: 5}
+            - {actor: person, id: gleb, x: 360, y: 2160, scale: 1.1, look: *gleb, face: talk, pose: [{at: 0, v: point}, {at: "@будет-0.3", v: {a1: [7, 4], a2: [165, 10], l1: [2, 0], l2: [2, 0]}, dur: 0.3}, {at: "@дождь-0.3", v: stand, dur: 0.3}]}
+            - {actor: person, id: petr, x: 680, y: 2160, scale: 1.1, look: *petr, face: [{at: 0, v: neutral}, {at: "@гул", v: surprised}], pose: stand, flip: true, look_dx: -0.5}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 240, v: -0.8, alpha: 0.45, seed: 30}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · КРЫША", tc: 24879, status: "ДО ОТРЫВА 03:00"}
+      - id: o_baro
+        start: "@Петрович#2-0.22"
+        transition: {type: cut}
+        captions_top: 1650
+        draw:
+          bg: "#1b2024"
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 1000}], sway: {x: 4, y: 4, roll: 0.3, freq: 0.5}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#3a444e", "#14181c"]}}
+            - {actor: rain, x: 0, y: 0, count: 120, alpha: 0.35, v: -0.7, seed: 31}
+            - {actor: barometer, x: 540, y: 1080, r: 380, ref: 738, p: [{at: 0, v: 738}, {at: "@барометр", v: 744, dur: 1.2, ease: out}, {at: "@уходит", v: 752, dur: 1.4, ease: inOutSine}]}
+            - {<<: *rule, y: 420, at: "@двадцать-0.4", kicker: "БАРОМЕТР ВОРОНОВА · +14 ММ", text: "ФРОНТ УХОДИТ · 07:20", size: 84}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · МАКРО", tc: 24885, status: "ДО ОТРЫВА 02:40"}
+    sfx:
+      - {sound: slam, at: "@Крыша", gain: -12}
+      - {sound: whoosh, at: "@вниз", gain: -14}
+      - {sound: click, at: "@Аркадий", gain: -16}
+      - {sound: groan, at: "@гул", gain: -8}
+      - {sound: click, at: "@барометр", gain: -12}
+      - {sound: impact, at: "@двадцать", gain: -10}
+
+  # ------------------------------------------------------------------ 8. RISE — 07:00: квартал отрывается, полоса под мостом остаётся
+  - id: rise
+    text: "Соседи бегут по лестнице. Петрович — медленно. Глеб остаётся с ним. Семь ноль-ноль. Гул. Двор трескается по краю сухого. Квартал отрывается. Под мостом остаётся полоса асфальта. На ней — нижний Глеб, две Сони и соседи. Пап! А крыша с Глебом уходит в облака."
+    lines:
+      - {who: sonya, say: "Пап!"}
+    caption_marks: {"полоса асфальта": "#f2f4f6"}
+    shots:
+      - id: x_stairs
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 1000}], bob: {freq: 1.6, x: 4, y: 6, roll: 0.5}}
+          layers:
+            - {actor: stairwell, x: 0, y: 0, view: stairs}
+            - {actor: person, x: 840, y: 1020, scale: 0.9, look: *n1, walk: 3, run: true, anim: [{at: "@rise.start", dur: 1.6, x: 300, y: 1501}]}
+            - {actor: person, x: 1000, y: 877, scale: 0.85, look: *n2, walk: 3, run: true, anim: [{at: "@rise.start+0.4", dur: 1.8, x: 280, y: 1519}]}
+            - {actor: person, id: petr, x: 760, y: 1091, scale: 1.0, look: *petr, face: sad, pose: {a1: [40, 30], a2: [7, 4], l1: [10, 20], l2: [2, 0], lean: 8}, at: "@медленно-0.4", enter: {type: fade, dur: 0.3}, anim: [{at: "@медленно-0.4", dur: 4, x: 640, y: 1198}]}
+            - {actor: person, id: gleb, x: 880, y: 984, scale: 1.05, look: *gleb, face: determined, pose: {a1: [7, 4], a2: [80, 40], l1: [2, 0], l2: [2, 0]}, at: "@Глеб-0.3", enter: {type: fade, dur: 0.3}, anim: [{at: "@Глеб-0.3", dur: 3, x: 770, y: 1082}]}
+            - {<<: *rule, y: 420, at: "@Соседи-0.05", kicker: "ДО ОТРЫВА КВАРТАЛА", text: "00:40", size: 110}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · ЛЕСТНИЦА", tc: 25150, status: "ДО ОТРЫВА 00:40"}
+      - id: x_tear
+        start: "@Семь-0.22"
+        transition: {type: cut}
+        ambience: [{sound: wind, gain: -12}]
+        look: {bloom: [0.8, 0.25]}
+        draw:
+          world: [1300, 2600]
+          camera: {keys: [{t: 0, z: 1.0, x: 650, y: 1500}, {t: "@отрывается", z: 1.0, x: 650, y: 1400}, {t: end, z: 0.92, x: 650, y: 1150, ease: inout}], shakes: [{at: "@Гул", amp: 12, dur: 1.2, freq: 4}, {at: "@отрывается", amp: 10, dur: 1.0, freq: 4}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1900, h: 2400, hour: 12, colors: ["#16211f", "#38424b", "#6c7782"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1900, par: 0}
+            - {actor: sky_sea, x: -300, y: -100, w: 1900, h: 1100, level: 820, amp: 80, seed: 18, glow: 0.9, blocks: *sea_blocks, par: 0.1}
+            - {actor: cloud_bank, x: -500, y: 820, w: 2300, h: 420, color: "#8b96a1", shade: "#56616c", n: 32, blur: 34, opacity: 0.65, par: 0.12}
+            - {actor: skyline, x: 650, y: 1810, w: 2800, h: 280, color: "#56616a", color2: "#4c5760", lit: 0.06, seed: 9, par: 0.3}
+            - {actor: ground, x: -600, y: 1800, w: 2600, h: 900, color: ["#3e474f", "#2c333a"], par: 0.3}
+            - {actor: shape, kind: rect, x: 650, y: 1790, w: 2800, h: 220, par: 0.32, fill: {linear: ["rgba(110,122,134,0)", "rgba(110,122,134,0.6)"], angle: 180}}
+            # the crater the block leaves behind (dark wet pit), under the block
+            - {actor: shape, kind: path, d: "M-200,2020 L790,2020 L760,2300 Q300,2420 -200,2300 Z", fill: "#15120f", opacity: [{at: 0, v: 0}, {at: "@отрывается", v: 1, dur: 0.6}]}
+            # our block (zone 08): its asphalt is level with the ground, then it rises
+            - {actor: city_chunk, id: blk, x: -200, y: 1998, w: 990, soil: 360, seed: 41, drip: [{at: 0, v: 0}, {at: "@отрывается", v: 1, dur: 0.5}], tunnel: false, crack: [{at: 0, v: 0}, {at: "@трескается", v: 1, dur: 0.4}],
+               buildings: [{x: 200, floors: 9, cols: 5, cell: [64, 50], seed: 4, lit: 0.25, far: false}, {x: 560, floors: 9, cols: 4, cell: [64, 50], seed: 6, color: "#6e767d", lit: 0.2}, {x: 850, floors: 5, cols: 3, cell: [64, 50], seed: 12, color: "#737b82"}],
+               anim: [{at: "@отрывается-0.1", dur: 5.5, y: 1300, ease: in}]}
+            - {actor: bridge, x: 790, y: 0, w: 760, ground: 2020, deck: 1760, span: [0, 560], strip_h: 120, thick: 54, piers: [60, 300, 520], dry: [{at: 0, v: 0}, {at: "@трескается", v: 1, dur: 0.4}]}
+            - {actor: wet_ground, x: 1350, y: 2020, w: 600, h: 500}
+            - {actor: person, x: 900, y: 2040, scale: 0.28, look: *gleb, pose: stand}
+            - {actor: person, x: 950, y: 2040, scale: 0.2, look: *sonya, pose: arms_up}
+            - {actor: person, x: 990, y: 2040, scale: 0.2, look: *sonya, pose: stand}
+            - {actor: person, x: 1080, y: 2040, scale: 0.27, look: *n1, pose: stand}
+            - {actor: person, x: 1150, y: 2040, scale: 0.26, look: *n2, pose: arms_up}
+            - {actor: particles, kind: dust, region: [-100, 1950, 900, 2060], count: 40, colors: ["#8a8078"], at: "@трескается"}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: -0.8, alpha: 0.45, seed: 32}
+            - {actor: mark, x: 980, y: 1980, w: 360, h: 120, at: "@Сони-0.4", enter: {type: fade, dur: 0.2}, label: "ПОЛОСА ПОД МОСТОМ", sub: "СУХО · 41 ЧЕЛ.", side: top}
+            - {<<: *arch, kind: drone, src: "UAV-4 · МЧС · РЕЧНАЯ", tc: 25200, status: "07:00 · ЗОНА 08 ОТОРВАНА", glitch: [{at: "@отрывается", dur: 0.2}]}
+      - id: x_strip
+        start: "@Под-0.22"
+        transition: {type: cut}
+        captions_top: 330
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 560, y: 980}], shakes: [{at: "@остаётся#2", amp: 8, dur: 0.6, freq: 4}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 12, colors: ["#16211f", "#38424b", "#6c7782"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1200, par: 0}
+            - {actor: sky_sea, x: -260, y: -200, w: 1600, h: 700, level: 400, amp: 50, seed: 19, glow: 0.8, blocks: *sea_blocks}
+            - {actor: cloud_bank, x: -500, y: 380, w: 2100, h: 380, color: "#8b96a1", shade: "#56616c", n: 28, blur: 34, opacity: 0.6}
+            # beyond the edge: the wet yard rising away (underside of the block)
+            - {actor: skyline, x: 540, y: 1180, w: 2200, h: 300, color: "#56616a", color2: "#4c5760", lit: 0.08, seed: 9, par: 0.2}
+            - {actor: ground, x: -600, y: 1170, w: 2300, h: 900, color: ["#3e474f", "#2c333a"], par: 0.2}
+            - {actor: city_chunk, x: -300, y: 1100, w: 1700, soil: 500, seed: 44, drip: 1, tunnel: false, anim: [{at: "@Под-0.2", dur: 6, y: 300, ease: in}]}
+            - {actor: bridge, x: -200, y: 0, w: 1500, ground: 1500, deck: 820, span: [0, 1500], strip_h: 500, thick: 90, piers: [180, 1230], lamps: false, dry: 0.4}
+            - {actor: person, id: gleb_pit, x: 420, y: 1640, scale: 1.25, look: *gleb, face: determined, pose: {a1: [40, 40], a2: [40, 40], l1: [2, 0], l2: [2, 0]}}
+            - {actor: person, id: sonya_pit, x: 300, y: 1650, scale: 0.9, look: *sonya, face: sad, pose: stand}
+            - {actor: person, id: sonya, x: 560, y: 1650, scale: 0.9, look: *sonya, face: surprised, pose: arms_up, look_dx: 0.4}
+            - {actor: person, x: 760, y: 1600, scale: 1.0, look: *n1, pose: [{at: 0, v: stand}, {at: "@соседи#2-0.2", v: arms_up, dur: 0.5}]}
+            - {actor: person, x: 900, y: 1590, scale: 0.95, look: *n2, pose: arms_up}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 200, v: -0.8, alpha: 0.4, seed: 33}
+            - {actor: mark, x: 420, y: 1350, w: 300, h: 540, at: "@Глеб#2-0.1", enter: {type: fade, dur: 0.2}, label: "ГЛЕБ · НИЖНИЙ", sub: "ДВЕ СОНИ · СУХО", side: top}
+            - {<<: *arch, kind: cctv, src: "CAM 11 · ОПОРА МОСТА", tc: 25206, status: "ЗОНА 08 ОТОРВАНА"}
+      - id: x_sonya
+        start: "@Пап-0.22"
+        transition: {type: cut}
+        captions_top: 1650
+        look: {bloom: [0.8, 0.2]}
+        draw:
+          world: [1080, 2400]
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1400}, {t: end, z: 1.0, x: 540, y: 1200, ease: inout}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2400, hour: 12, colors: ["#16211f", "#38424b", "#6c7782"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 2200}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 900, level: 620, amp: 60, seed: 20, glow: 0.9, blocks: *sea_blocks}
+            - {actor: cloud_bank, x: -500, y: 600, w: 2100, h: 600, color: "#a7b1ba", shade: "#6c7782", n: 40, blur: 30, speed: 10, opacity: 0.85}
+            - {actor: city_chunk, x: -120, y: 1500, w: 380, soil: 150, seed: 52, opacity: 0.5, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 120, floors: 9, cols: 4, cell: [30, 24], seed: 5}, {x: 270, floors: 6, cols: 3, cell: [30, 24], seed: 9}], par: 0.3}
+            - {actor: city_chunk, x: 820, y: 1580, w: 340, soil: 140, seed: 53, opacity: 0.5, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 110, floors: 9, cols: 4, cell: [28, 22], seed: 7}, {x: 250, floors: 7, cols: 3, cell: [28, 22], seed: 3}], par: 0.3}
+            - {actor: city_chunk, x: 60, y: 1150, w: 960, soil: 380, seed: 41, drip: 1, tunnel: false, buildings: *home_blds, anim: [{at: "@Пап-0.2", dur: 3.2, y: 640, ease: inOutSine}]}
+            - {actor: cloud_bank, x: -500, y: 900, w: 2100, h: 500, color: "#c3ccd3", shade: "#8a96a2", n: 30, blur: 36, speed: 14, opacity: 0.7}
+            - {actor: shape, kind: rect, x: 540, y: 2250, w: 1400, h: 300, fill: {linear: ["#2c333a", "#1d2228"], angle: 180}}
+            - {actor: person, id: sonya, x: 600, y: 2420, scale: 2.2, air: true, look: *sonya, face: sad, pose: arms_up, flip: true}
+            - {actor: person, id: gleb_pit, x: 260, y: 2500, scale: 2.6, air: true, look: *gleb, face: sad, pose: {a1: [7, 4], a2: [70, 30], l1: [2, 0], l2: [2, 0]}, look_dx: 0.6}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 200, v: -0.8, alpha: 0.45, seed: 34}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН НИЖНЕГО ГЛЕБА · ВИДЕО", tc: 25212, status: "ЗОНА 08 ↑"}
+    sfx:
+      - {sound: footstep, at: "@бегут", gain: -12}
+      - {sound: breath, at: "@медленно", gain: -14}
+      - {sound: thunder, at: "@Гул", gain: -8}
+      - {sound: scrape, at: "@трескается", gain: -10}
+      - {sound: boom, at: "@отрывается", gain: -8}
+      - {sound: scrape, at: "@остаётся#2", gain: -12}
+      - {sound: heartbeat, at: "@Пап", gain: -10}
+      - {sound: whoosh, at: "@облака", gain: -12}
+
+  # ------------------------------------------------------------------ 9. TWIST — 07:20: дождь кончается, море замирает
+  - id: twist
+    text: "Семь девятнадцать. Над крышей — море. Окна под водой всё ближе. Двадцать метров. Десять. Петрович не смотрит вверх. Он смотрит на часы. Семь двадцать. Дождь кончается. Последняя капля уходит в море. И море замирает. В метре над антенной."
+    caption_marks: {"море замирает": "#f2f4f6"}
+    shots:
+      - id: t_ceiling
+        transition: {type: dip, dur: 0.4}
+        ambience: [{sound: water_calm, gain: -16}, {sound: wind, gain: -20}]
+        look: {bloom: [0.72, 0.35]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1100}, {t: end, z: 1.08, x: 540, y: 900, ease: inout}], bob: {freq: 1.0, x: 3, y: 4, roll: 0.3}}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#0e1a1c", "#2b3a40", "#56646e"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1800, par: 0}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 1500, level: [{at: 0, v: 860}, {at: "@Семь", v: 1010, dur: 4.5, ease: inOutSine}], amp: 80, seed: 21, glow: [{at: 0, v: 0.7}, {at: "@ближе-0.3", v: 1, dur: 0.6}], blocks: [{x: 300, y: 560, w: 260, floors: 9, cols: 5, lit: 0.45, fade: 0.5}, {x: 900, y: 420, w: 220, floors: 7, cols: 4, lit: 0.35, fade: 0.3}, {x: 640, y: 820, w: 300, floors: 9, cols: 6, lit: 0.5, fade: 0.9, soil: 120}], beacon: {x: 694, y: 700}}
+            - {actor: city_chunk, x: -120, y: 1250, w: 380, soil: 150, seed: 52, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 120, floors: 9, cols: 4, cell: [30, 24], seed: 5}, {x: 270, floors: 6, cols: 3, cell: [30, 24], seed: 9}], par: 0.2}
+            - {actor: city_chunk, x: 820, y: 1330, w: 340, soil: 140, seed: 53, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 110, floors: 9, cols: 4, cell: [28, 22], seed: 7}, {x: 250, floors: 7, cols: 3, cell: [28, 22], seed: 3}], par: 0.2}
+            - {actor: roof, x: -300, y: 0, w: 1700, y_top: 1560, antennas: 4, hut_x: 1250, seed: 7}
+            - {actor: person, id: gleb, x: 420, y: 1560, scale: 1.0, look: *gleb, face: surprised, pose: stand, look_dx: 0.2}
+            - {actor: person, id: petr, x: 600, y: 1560, scale: 1.0, look: *petr, face: neutral, pose: stand, look_dx: -0.3}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 220, v: -0.85, alpha: 0.45, seed: 35}
+            - {actor: mark, x: 540, y: 470, w: 520, h: 10, space: screen, at: "@Семь", enter: {type: fade, dur: 0.2}, label: "07:19 · ЗОНА 08", sub: "ВЫСОТА 1,9 КМ · ПОД МОРЕМ", side: bottom}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · ВЗГЛЯД ВВЕРХ", tc: 26340, status: "МОРЕ ↓"}
+      - id: t_meter
+        start: "@Двадцать-0.22"
+        transition: {type: cut}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 920}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#0e1a1c", "#2b3a40", "#66727d"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1900, par: 0}
+            - {actor: cloud_bank, x: -500, y: 1400, w: 2100, h: 500, color: "#8b96a1", shade: "#56616c", n: 28, blur: 34, opacity: 0.8}
+            - {actor: city_chunk, x: 140, y: 1180, w: 800, soil: 340, seed: 41, drip: 1, tunnel: false, buildings: *home_blds}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 1100, level: [{at: 0, v: 650}, {at: "@Десять-0.2", v: 760, dur: 1.0, ease: inOutSine}], amp: 60, seed: 22, glow: 1, blocks: *sea_blocks}
+            - {<<: *rule, x: 800, y: 1300, w: 380, at: "@Двадцать-0.05", kicker: "ДО МОРЯ", text: [{at: 0, v: "20 М"}, {at: "@Десять-0.1", v: "10 М"}], size: 96}
+            - {<<: *arch, kind: drone, src: "UAV-4 · МЧС · ЗОНА 08", tc: 26346, status: "МОРЕ ↓"}
+      - id: t_watch
+        start: "@Петрович-0.22"
+        transition: {type: cut}
+        captions_top: 1650
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 1000}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {linear: ["#2b3a40", "#66727d"], angle: 180}}
+            - {actor: sky_sea, x: -260, y: -200, w: 1600, h: 800, level: 520, amp: 60, seed: 23, glow: 1, blocks: *sea_blocks}
+            - {actor: person, id: petr, x: 380, y: 2350, scale: 2.6, air: true, look: *petr, face: neutral, pose: {a1: [7, 4], a2: [70, 100], l1: [2, 0], l2: [2, 0], nod: 14}}
+            - {actor: person, id: gleb, x: 900, y: 2250, scale: 2.0, air: true, look: *gleb, face: surprised, pose: stand, look_dx: -0.2, opacity: 0.85}
+            # the wrist watch
+            - {actor: shape, kind: circle, x: 540, y: 1130, r: 120, fill: "#d9d4c4", stroke: "#2a2f33", sw: 18, at: "@часы-0.4", enter: {type: pop, dur: 0.3}}
+            - {actor: shape, kind: line, points: [[540, 1130], [540, 1040]], stroke: "#1a1a1c", sw: 9, at: "@часы-0.4", enter: {type: fade, dur: 0.2}}
+            - {actor: shape, kind: line, points: [[540, 1130], [620, 1130]], stroke: "#1a1a1c", sw: 7, at: "@часы-0.4", enter: {type: fade, dur: 0.2}}
+            - {<<: *rule, y: 520, w: 560, at: "@часы-0.2", kicker: "ЧАСЫ ВОРОНОВА", text: [{at: 0, v: "07:19:57"}, {at: "@часы+0.6", v: "07:19:58"}, {at: "@часы+1.6", v: "07:19:59"}], size: 84}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · КРЫША", tc: 26352, status: "МОРЕ ↓"}
+      - id: t_stop
+        start: "@Семь#2-0.22"
+        transition: {type: cut}
+        look: {bloom: [0.75, 0.3]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.12, x: 540, y: 1000}, {t: end, z: 1.0, x: 540, y: 960, ease: inout}], shakes: [{at: "@замирает", amp: 5, dur: 0.6, freq: 3}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: ["#0e1a1c", "#2b3a40", "#56646e"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1800, par: 0}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 1500, level: [{at: 0, v: 1000}, {at: "@замирает", v: 1080, dur: 0.6, ease: out}], amp: [{at: 0, v: 70}], seed: 24, glow: 1, rain: [{at: 0, v: 1}, {at: "@кончается", v: 0, dur: 1.5}], blocks: [{x: 300, y: 600, w: 260, floors: 9, cols: 5, lit: 0.5, fade: 0.5}, {x: 900, y: 470, w: 220, floors: 7, cols: 4, lit: 0.4, fade: 0.3}], beacon: {x: 920, y: 260}}
+            - {actor: city_chunk, x: -120, y: 1250, w: 380, soil: 150, seed: 52, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 120, floors: 9, cols: 4, cell: [30, 24], seed: 5}, {x: 270, floors: 6, cols: 3, cell: [30, 24], seed: 9}], par: 0.2}
+            - {actor: city_chunk, x: 820, y: 1330, w: 340, soil: 140, seed: 53, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 110, floors: 9, cols: 4, cell: [28, 22], seed: 7}, {x: 250, floors: 7, cols: 3, cell: [28, 22], seed: 3}], par: 0.2}
+            - {actor: roof, x: -300, y: 0, w: 1700, y_top: 1500, antennas: 4, hut_x: 1250, seed: 7}
+            - {actor: person, id: gleb, x: 380, y: 1500, scale: 0.95, look: *gleb, face: surprised, pose: [{at: 0, v: stand}, {at: "@замирает", v: arms_up, dur: 0.6}], look_dx: 0.3}
+            - {actor: person, id: petr, x: 580, y: 1500, scale: 0.95, look: *petr, face: [{at: 0, v: neutral}, {at: "@замирает", v: smile}], pose: stand}
+            - {actor: rain, x: 0, y: 0, space: screen, count: 220, v: [{at: 0, v: -0.85}, {at: "@кончается", v: -0.3, dur: 1.2}], alpha: [{at: 0, v: 0.45}, {at: "@капля-0.3", v: 0, dur: 0.6}], seed: 36}
+            # the last drop goes up into the sea
+            - {actor: shape, kind: circle, x: 560, y: 1300, r: 10, fill: "#cfe3f0", glow: {color: "#cfe3f0", r: 14, a: 0.8}, at: "@капля-0.4", enter: {type: fade, dur: 0.1}, anim: [{at: "@капля-0.4", dur: 1.0, y: 1150, ease: in}], exit: {type: fade, dur: 0.1}, until: "@капля+0.65"}
+            - {actor: shape, kind: ring, x: 560, y: 1110, r: [{at: 0, v: 6}, {at: "@капля+0.6", v: 6}, {at: "@капля+1.6", v: 90, dur: 1.0}], fill: "none", stroke: "#dff2ee", sw: 4, opacity: [{at: 0, v: 0}, {at: "@капля+0.6", v: 0.9}, {at: "@капля+1.6", v: 0, dur: 1.0}]}
+            - {<<: *rule, y: 430, at: "@кончается-0.1", kicker: "07:20 · ФРОНТ УШЁЛ", text: "ДОЖДЬ КОНЧИЛСЯ", size: 104}
+            - {actor: mark, x: 760, y: 1100, w: 160, h: 90, at: "@антенной-0.2", enter: {type: fade, dur: 0.2}, label: "1 М", sub: "ДО МОРЯ", side: bottom}
+            - {<<: *arch, kind: drone, src: "UAV-4 · МЧС · ЗОНА 08", tc: 26360, stage: [{at: 0, v: 2}, {at: "@замирает", v: 1}], status: [{at: 0, v: "МОРЕ ↓"}, {at: "@замирает", v: "МОРЕ СТОИТ"}]}
+    sfx:
+      - {sound: noise_sweep, at: "@море", gain: -12}
+      - {sound: chime, at: "@ближе", gain: -16}
+      - {sound: groan, at: "@Десять", gain: -10}
+      - {sound: click, at: "@часы", gain: -12}
+      - {sound: click, at: "@часы+1", gain: -12}
+      - {sound: drip, at: "@капля", gain: -8}
+      - {sound: gong, at: "@замирает", gain: -12}
+
+  # ------------------------------------------------------------------ 10. FINAL — солнце сквозь море; звонок «мой номер» — Соня; квартал садится
+  - id: final
+    text: "Облака рвутся. Солнце. Сквозь море оно зелёное. У Глеба жужжит телефон. Звонит Глеб. Его номер. Он отвечает сразу. Пап, тут солнце! Высохнет — снова тяжёлое. Через час квартал садится. Плавно, как лифт."
+    lines:
+      - {who: sonya, say: "Пап, тут солнце!"}
+    caption_marks: {"тут солнце": "#ffd23a"}
+    shots:
+      - id: f_sun
+        transition: {type: dip, dur: 0.4}
+        ambience: [{sound: water_calm, gain: -18}]
+        look: {bloom: [0.7, 0.45]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.06, x: 540, y: 940, ease: inout}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 2000, hour: 12, colors: [{at: 0, v: ["#0e1a1c", "#2b3a40", "#56646e"]}], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1800, par: 0}
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#9fe0b8", "#5e8f7c"], angle: 180}, opacity: [{at: 0, v: 0}, {at: "@Солнце-0.2", v: 0.55, dur: 1.4}]}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 1500, level: 1110, amp: 70, seed: 24, glow: 0.7, rain: 0, sun: [{at: 0, v: 0}, {at: "@Солнце-0.2", v: 1, dur: 1.6}], blocks: [{x: 300, y: 600, w: 260, floors: 9, cols: 5, lit: 0.5, fade: 0.5}, {x: 900, y: 470, w: 220, floors: 7, cols: 4, lit: 0.4, fade: 0.3}], beacon: {x: 920, y: 260}}
+            - {actor: cloud_bank, x: -900, y: 100, w: 1500, h: 1000, color: "#cfd6dc", shade: "#8a96a2", n: 36, blur: 40, speed: 6, opacity: 0.8, anim: [{at: "@рвутся-0.2", dur: 2.2, x: -2300, ease: inOutSine}]}
+            - {actor: cloud_bank, x: 480, y: 100, w: 1500, h: 1000, color: "#cfd6dc", shade: "#8a96a2", n: 36, blur: 40, speed: -6, seed: 9, opacity: 0.8, anim: [{at: "@рвутся-0.2", dur: 2.2, x: 1900, ease: inOutSine}]}
+            - {actor: city_chunk, x: -120, y: 1250, w: 380, soil: 150, seed: 52, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 120, floors: 9, cols: 4, cell: [30, 24], seed: 5}, {x: 270, floors: 6, cols: 3, cell: [30, 24], seed: 9}], par: 0.2}
+            - {actor: city_chunk, x: 820, y: 1330, w: 340, soil: 140, seed: 53, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 110, floors: 9, cols: 4, cell: [28, 22], seed: 7}, {x: 250, floors: 7, cols: 3, cell: [28, 22], seed: 3}], par: 0.2}
+            - {actor: roof, x: -300, y: 0, w: 1700, y_top: 1500, antennas: 4, hut_x: 1250, seed: 7, steam: [{at: 0, v: 0}, {at: "@зелёное-0.4", v: 1, dur: 1}]}
+            - {actor: person, id: gleb, x: 380, y: 1500, scale: 0.95, look: *gleb, face: happy, pose: stand, look_dx: 0.3}
+            - {actor: person, id: petr, x: 580, y: 1500, scale: 0.95, look: *petr, face: smile, pose: stand}
+            - {<<: *arch, kind: drone, src: "UAV-4 · МЧС · ЗОНА 08", tc: 26372, stage: 1, status: "СОЛНЦЕ"}
+      - id: f_call
+        start: "@жужжит-0.22"
+        transition: {type: cut}
+        captions_top: 1650
+        draw:
+          bg: "#2a3a34"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], shakes: [{at: "@жужжит", amp: 5, dur: 0.6, freq: 5}], sway: {x: 5, y: 5, roll: 0.5, freq: 0.6}}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1300, h: 2100, fill: {radial: ["#7fbf9c", "#1d3a32"]}}
+            - {actor: sky_sea, x: -260, y: -300, w: 1600, h: 800, level: 520, amp: 60, seed: 25, glow: 0.6, rain: 0, sun: 1, blocks: *sea_blocks, opacity: 0.7}
+            - {actor: phone_call, x: 540, y: 1000, scale: 0.72, bars: 3, clock: "07:21", name: "Глеб", number: "+7 912 406-17-33", own: "Мой номер", secs: "@сразу",
+               state: [{at: 0, v: incoming}, {at: "@сразу", v: active}], tap: [{at: 0, v: 0}, {at: "@сразу-0.3", v: 1}, {at: "@сразу+0.3", v: 0}], level: [{at: 0, v: 0.3}, {at: "@солнце#2-0.6", v: 1, dur: 0.2}]}
+            - {actor: mark, x: 540, y: 470, w: 600, h: 10, space: screen, at: "@солнце#2-0.5", enter: {type: fade, dur: 0.2}, label: "СОНЯ", sub: "С ТЕЛЕФОНА НИЖНЕГО ГЛЕБА · МОСТ", side: bottom}
+            - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ЭКРАН", tc: 26380, stage: 1, status: "СВЯЗЬ: 3"}
+      - id: f_dry
+        start: "@Высохнет-0.22"
+        transition: {type: cut}
+        look: {bloom: [0.7, 0.4]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.06, x: 560, y: 1080}, {t: end, z: 1.0, x: 520, y: 1040}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#5e8f7c", "#9fe0b8"], angle: 180}}
+            - {actor: sky_sea, x: -260, y: -100, w: 1600, h: 1300, level: 1000, amp: 70, seed: 24, glow: 0.6, rain: 0, sun: 1, blocks: *sea_blocks}
+            - {actor: city_chunk, x: -120, y: 1250, w: 380, soil: 150, seed: 52, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 120, floors: 9, cols: 4, cell: [30, 24], seed: 5}, {x: 270, floors: 6, cols: 3, cell: [30, 24], seed: 9}], par: 0.2}
+            - {actor: city_chunk, x: 820, y: 1330, w: 340, soil: 140, seed: 53, opacity: 0.55, blur: 2, drip: 0.5, tunnel: false, buildings: [{x: 110, floors: 9, cols: 4, cell: [28, 22], seed: 7}, {x: 250, floors: 7, cols: 3, cell: [28, 22], seed: 3}], par: 0.2}
+            - {actor: roof, x: -300, y: 0, w: 1700, y_top: 1500, antennas: 4, hut_x: 1250, seed: 7, steam: 1}
+            - {actor: person, id: gleb, x: 400, y: 1500, scale: 1.0, look: *gleb, face: happy, hold: phone, pose: {a1: [7, 4], a2: [150, 150], l1: [2, 0], l2: [2, 0]}}
+            - {actor: person, id: petr, x: 640, y: 1500, scale: 1.0, look: *petr, face: smile, pose: {a1: [60, 70], a2: [60, 70], l1: [2, 0], l2: [2, 0]}}
+            - {<<: *rule, y: 430, at: "@тяжёлое-0.3", kicker: "ПРАВИЛО 01 · ЧАСТЬ 1", text: "ВЫСОХНЕТ — СНОВА ТЯЖЁЛОЕ", size: 76}
+            - {<<: *arch, kind: helmet, src: "НАШЛЕМНАЯ КАМЕРА · КРЫША", tc: 26388, stage: 1, status: "СОЛНЦЕ"}
+      - id: f_land
+        start: "@Через-0.22"
+        transition: {type: dip, dur: 0.3}
+        look: {bloom: [0.72, 0.35]}
+        draw:
+          world: [1300, 2600]
+          camera: {keys: [{t: 0, z: 0.95, x: 650, y: 1300}, {t: end, z: 1.0, x: 650, y: 1500, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 650, y: 1300, w: 2600, h: 2800, fill: {linear: ["#6fa58e", "#b9d6c4", "#c8d2cf"], angle: 180}}
+            - {actor: sky_sea, x: -300, y: -100, w: 1900, h: 900, level: 620, amp: 70, seed: 18, glow: 0.6, rain: 0, sun: 1, blocks: *sea_blocks, par: 0.1}
+            - {actor: skyline, x: 650, y: 1810, w: 2800, h: 280, color: "#8a979c", color2: "#7f8c92", lit: 0, seed: 9, par: 0.3}
+            - {actor: ground, x: -600, y: 1800, w: 2600, h: 900, color: ["#6f7a7c", "#545e62"], par: 0.3}
+            - {actor: shape, kind: path, d: "M-200,2020 L790,2020 L760,2300 Q300,2420 -200,2300 Z", fill: "#3a332c"}
+            - {actor: city_chunk, x: -200, y: 1100, w: 990, soil: 360, seed: 41, drip: 0, tunnel: false,
+               buildings: [{x: 200, floors: 9, cols: 5, cell: [64, 50], seed: 4, lit: 0.25, far: false}, {x: 560, floors: 9, cols: 4, cell: [64, 50], seed: 6, color: "#6e767d", lit: 0.2}, {x: 850, floors: 5, cols: 3, cell: [64, 50], seed: 12, color: "#737b82"}],
+               anim: [{at: "@Через-0.2", dur: 3.4, y: 1998, ease: inOutSine}]}
+            - {actor: bridge, x: 790, y: 0, w: 760, ground: 2020, deck: 1760, span: [0, 560], strip_h: 120, thick: 54, piers: [60, 300, 520], drip: 0}
+            - {actor: wet_ground, x: 1350, y: 2020, w: 600, h: 500}
+            - {actor: particles, kind: dust, region: [-100, 1950, 900, 2060], count: 40, colors: ["#b0a690"], at: "@садится"}
+            - {actor: mark, x: 300, y: 1700, w: 900, h: 10, at: "@лифт-0.2", enter: {type: fade, dur: 0.2}, label: "08:21 · ПОСАДКА", sub: "ЗОНА 08 · ПЛАВНО, КАК ЛИФТ", side: top}
+            - {<<: *arch, kind: drone, src: "UAV-4 · МЧС · РЕЧНАЯ", tc: 30060, stage: 1, status: "ПОСАДКА"}
+    sfx:
+      - {sound: riser, at: "@рвутся", gain: -12}
+      - {sound: chime, at: "@Солнце", gain: -10}
+      - {sound: buzz, at: "@жужжит", gain: -10}
+      - {sound: click, at: "@сразу", gain: -10}
+      - {sound: sparkle, at: "@солнце#2", gain: -14}
+      - {sound: drip, at: "@тяжёлое", gain: -12}
+      - {sound: impact, at: "@садится", gain: -10}
+
+  # ------------------------------------------------------------------ 11. EPILOGUE — вечер: обычный дождь, «он сладкий»
+  - id: epilogue
+    text: "Вечером идёт обычный дождь. Вниз. Соня складывает зонт. Пап, он сладкий!"
+    lines:
+      - {who: sonya, say: "Пап, он сладкий!"}
+    caption_marks: {"он сладкий": "#ffd23a"}
+    gap_after: 1.0
+    shots:
+      - id: f_evening
+        transition: {type: dip, dur: 0.5}
+        ambience: [{sound: rain, gain: -14}]
+        look: {bloom: [0.75, 0.35]}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 560, y: 1040, ease: inout}]}
+          layers:
+            - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 19.6, colors: ["#141a26", "#3a3a4a", "#7a5a52"], sun: false, moon: false, stars: 0, clouds: 0, horizon: 1100, par: 0}
+            - {actor: sky_sea, x: -260, y: -300, w: 1600, h: 800, level: 470, amp: 50, seed: 26, deep: "#04090c", mid: "#0c2226", surf: "#2c4a4c", glow: 1, rain: 0, blocks: *sea_blocks, beacon: {x: 1028, y: 230}, par: 0.05}
+            - {actor: cloud_bank, x: -400, y: 380, w: 1900, h: 420, par: 0.05, color: "#4a4a58", shade: "#262632", n: 28, opacity: 0.7}
+            - {actor: skyline, x: 540, y: 1012, w: 2200, h: 380, color: "#3a3f4c", color2: "#343845", lit: 0.35, par: 0.2, seed: 5}
+            - {actor: ground, x: -600, y: 1000, w: 2300, h: 1000, color: ["#30343e", "#24272f"], par: 0.2}
+            - {actor: shape, kind: rect, x: 540, y: 985, w: 2400, h: 300, par: 0.22, fill: {linear: ["rgba(122,90,82,0)", "rgba(122,90,82,0.45)", "rgba(122,90,82,0)"], angle: 180}}
+            - {actor: panel_block, x: 900, y: 1150, scale: 0.55, floors: 9, cols: 6, seed: 12, lit: 0.6, par: 0.5}
+            - {actor: ground, x: -600, y: 1150, w: 2300, h: 900, color: ["#2a2e36", "#20232a"], par: 0.5}
+            - {actor: panel_block, x: 380, y: 1330, scale: 1.0, floors: 9, cols: 9, cell: [100, 84], seed: 4, lit: 0.65, entrances: [4], stains: 0.7}
+            - {actor: wet_ground, x: -400, y: 1310, w: 1900, h: 800, lights: [[440, "#ffd9a0", 60], [760, "#ffd9a0", 40]]}
+            - {actor: lamp_post, x: 160, y: 1560, scale: 0.9, on: 1}
+            - {actor: tree, kind: round, x: 930, y: 1360, h: 520, color: "#2a3530", trunk: "#2a2420", seed: 3, sway: 1}
+            - {actor: puddle, x: 600, y: 1600, w: 420, h: 70, up: 0}
+            - {actor: person, id: gleb, x: 440, y: 1600, scale: 0.9, look: *gleb, face: smile, pose: stand, look_dx: 0.5}
+            - {actor: person, id: sonya, x: 600, y: 1600, scale: 0.68, look: *sonya, face: [{at: 0, v: happy}, {at: "@сладкий-0.3", v: smile}], pose: [{at: 0, v: stand}, {at: "@зонт", v: {a1: [7, 4], a2: [30, 20], l1: [2, 0], l2: [2, 0], tilt: -14}, dur: 0.4}], look_dx: -0.2}
+            - {actor: umbrella, x: 648, y: 1520, scale: 0.55, open: [{at: 0, v: 1}, {at: "@зонт-0.3", v: 0, dur: 0.6}], rot: [{at: 0, v: 0}, {at: "@зонт", v: 18, dur: 0.6}], glow: {color: "#ffd23a", r: 12, a: 0.5}}
+            # ordinary rain, falling DOWN
+            - {actor: rain, x: 0, y: 0, space: screen, count: 260, v: [{at: 0, v: 0}, {at: "@Вниз-0.4", v: 0.9, dur: 0.6}], alpha: 0.4, seed: 37}
+            - {actor: mark, x: 540, y: 560, w: 560, h: 10, space: screen, at: "@Вечером", enter: {type: fade, dur: 0.2}, label: "19:40 · РЕЧНАЯ, 12", sub: "ЗАПИСЬ 093 / 093", side: top}
+            - {<<: *arch, kind: cctv, src: "CAM 03 · РЕЧНАЯ, 12 · ДВОР", tc: 70800, stage: 1, status: "ДОЖДЬ ↓ · НОРМА"}
+    sfx:
+      - {sound: drip, at: "@Вниз", gain: -10}
+      - {sound: creak, at: "@зонт", gain: -14}
+      - {sound: chime, at: "@сладкий", gain: -10}
+
+  # ------------------------------------------------------------------ 12. CTA — под мост или на крышу
+  - id: cta
+    text: "Под мост с дочкой или на крышу за соседями? Пиши одним словом. Обратный прилив. Конец."
+    shots:
+      - id: q_choice
+        transition: {type: glitch, dur: 0.3}
+        draw:
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06}]}
+          layers:
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#081a1d", "#1d2329"], angle: 180}}
+            - {actor: sky_sea, x: -260, y: -300, w: 1600, h: 700, level: 420, amp: 50, opacity: 0.5, foam: 0.5, rain: 0, seed: 13, blocks: *sea_blocks, beacon: {x: 1028, y: 230}}
+            - {actor: rule_card, x: 540, y: 540, w: 900, kicker: "А · С ДОЧЕРЬЮ", text: "ПОД МОСТ", size: 110, at: "@дочкой-0.2", enter: {type: wipe_right, dur: 0.25}, sfx: false}
+            - {actor: rule_card, x: 540, y: 830, w: 900, kicker: "Б · ЗА СОСЕДЯМИ", text: "НА КРЫШУ", size: 110, at: "@соседями-0.2", enter: {type: wipe_right, dur: 0.25}, sfx: false}
+            - {actor: title_card, x: 540, y: 1100, space: screen, at: "@Пиши-0.1", until: "@Обратный-0.1", exit: fade, enter: {type: fade, dur: 0.15}, kicker: "ПИШИ ОДНИМ СЛОВОМ", ksize: 44, kcolor: "#8a96a2", text: "", size: 10, w: 900}
+            - {actor: title_card, x: 540, y: 1100, space: screen, at: "@Обратный-0.1", enter: {type: fade, dur: 0.15}, kicker: "ОБРАТНЫЙ ПРИЛИВ · КОНЕЦ", ksize: 44, kcolor: "#ffd23a", text: "", size: 10, w: 900}
+            - {<<: *arch, kind: doc, src: "КОНЕЦ ЗАПИСИ 093 / 093", tc: 70810, stage: 1, status: "ПРОТОКОЛ 09 ЗАВЕРШЁН", date: "14.11.2026", glitch: [{at: "@Конец-0.05", dur: 0.7, full: true, label: "ПРОТОКОЛ 09 ЗАВЕРШЁН"}]}
+    sfx:
+      - {sound: blip, at: "@дочкой", gain: -12}
+      - {sound: blip, at: "@соседями", gain: -12}
+      - {sound: impact, at: "@Пиши", gain: -12}
+      - {sound: glitch, at: "@Конец", gain: -10}

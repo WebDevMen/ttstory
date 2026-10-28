@@ -326,6 +326,9 @@ def _captions_auto(pid, d, data):
     return changed
 
 
+AIR_EDGE = 40          # px: the base of an air: true figure closer than this to the bottom edge counts as «below the frame»
+
+
 def _support(fr, items):
     """Grounded objects need a surface right under their base on the same parallax layer, or they hang in the air over the
     backdrop (or a gap opens between them and the ground when the camera moves); outdoor shots need far planes."""
@@ -338,6 +341,14 @@ def _support(fr, items):
     order = {id(it): i for i, it in enumerate(items)}
     for it in items:
         st = it.get("stands")
+        if st and st["air"] and not it["moving"] and not st.get("rot") and it.get("blur", 0) < 2:
+            # air: true only means «hangs on purpose» (flying, falling, hanging upside down) or «the feet are below the
+            # frame edge»; a still, upright figure whose base is visible in the frame is standing on nothing
+            b = it["box"]
+            if b[3] < H - AIR_EDGE and b[2] > 0 and b[0] < W and b[2] - b[0] >= 12:
+                out.append(("warn", "support", it["path"] + ":air", f"{_label(it)} помечен air: true, но стоит неподвижно и его основание видно в кадре — "
+                            f"он висит перед фоном: поставьте его на поверхность (пол, крышу, землю) или опустите основание за край кадра", [b]))
+            continue
         if not st or st["air"] or it["moving"] or it.get("blur", 0) >= 2:
             continue
         b = it["box"]
