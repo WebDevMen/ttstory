@@ -4,7 +4,7 @@
 //   node engine/render_hud.cjs draw   <project> [workers] [frame...] [--force]
 //        code-drawn shots -> build/<project>/drawn/<shot>/<frame>.jpg + meta.json (camera + anchors per frame);
 //        unchanged shots are skipped (hash of the shot spec + actor code), explicit frames are always rendered.
-//   node engine/render_hud.cjs layout <project> [step] [mstep]     layout audit: item boxes + captions of sampled frames
+//   node engine/render_hud.cjs layout <project> [step] [mstep] [--shots=a,b] [--workers=3]   layout audit: item boxes + captions of sampled frames
 //        of every draw shot -> build/<project>/layout/frames.json + f_XXXXX.jpg (analysed by engine/layout.py)
 // Needs an http server serving the repository root on $PORT (vg.py starts one automatically).
 const { chromium } = require("playwright");
@@ -134,45 +134,58 @@ async function drawMode(browser, pid, tl, workers, frames, force) {
 }
 
 // ------------------------------------------------------------------ layout audit
-async function layoutMode(browser, pid, tl, step, mstep) {
+// Shots are split between `workers` browser tabs (each with its own draw + HUD page) and measured in parallel;
+// `only` limits the audit to the named shots (re-check what changed). captions.json (picked bands) survives a rerun.
+async function layoutMode(browser, pid, tl, step, mstep, only = null, workers = 3) {
   const out = path.join(ROOT, "build", pid, "layout");
-  fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(out, { recursive: true });
-  const dpage = await browser.newPage({ viewport: { width: tl.width, height: tl.height }, deviceScaleFactor: 1 });
-  dpage.on("pageerror", (e) => { console.error("[draw pageerror]", e.message); process.exitCode = 2; });
-  await dpage.goto(`http://127.0.0.1:${PORT}/engine/hud/draw.html?project=${encodeURIComponent(pid)}`);
-  await dpage.waitForFunction(() => window.drawReady === true, null, { timeout: 180000 });
-  await dpage.evaluate(() => document.fonts.ready);
-  const hpage = await openPage(browser, pid);
-  const res = [];
-  for (const s of tl.shots) {
-    if (!s.draw || s.draw.engine === "motion") continue;
-    const f0 = Math.ceil(s.start * tl.fps) + 2, f1 = Math.floor(s.end * tl.fps) - 2;
-    const fr = [];
-    for (let f = f0; f < f1; f += step) fr.push(f);
-    if (f1 > f0 && fr[fr.length - 1] !== f1) fr.push(f1);
-    for (const f of fr) {
-      const { cam, realScene, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
-      const hud = await hpage.evaluate((x) => window.hudLayout(x), f);
-      const shotFile = `f_${String(f).padStart(5, "0")}.jpg`;
-      fs.writeFileSync(path.join(out, shotFile), await dpage.screenshot({ type: "jpeg", quality: 80 }));
-      res.push({ frame: f, t: Math.round((f / tl.fps) * 100) / 100, shot: s.id, scene: s.scene, image: shotFile, cam, real_scene: realScene, items, caption: hud.caption });
-    }
+  for (const f of fs.readdirSync(out)) if (f !== "captions.json") fs.rmSync(path.join(out, f), { recursive: true, force: true });
+  const shots = tl.shots.filter((s) => s.draw && s.draw.engine !== "motion" && (!only || only.includes(s.id)));
+  if (only) for (const id of only) if (!tl.shots.some((s) => s.id === id)) console.error(`  unknown shot '${id}'`);
+  const n = Math.max(1, Math.min(workers, shots.length));
+  // balance by duration: longest shots first, each to the least busy tab
+  const groups = Array.from({ length: n }, () => ({ load: 0, shots: [] }));
+  for (const s of [...shots].sort((a, b) => (b.end - b.start) - (a.end - a.start))) {
+    const g = groups.reduce((m, x) => (x.load < m.load ? x : m));
+    g.shots.push(s); g.load += s.end - s.start;
   }
-  fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ width: tl.width, height: tl.height, frames: res }));
-  console.log(`  measured ${res.length} frames`);
-  // motion pass: positions of every item on every `mstep`-th frame (no screenshots) — jumps, jitter, flicker
-  if (mstep > 0) {
-    const mot = [];
-    for (const s of tl.shots) {
-      if (!s.draw || s.draw.engine === "motion") continue;
-      const f0 = Math.ceil(s.start * tl.fps) + 1, f1 = Math.floor(s.end * tl.fps) - 1;
-      for (let f = f0; f <= f1; f += mstep) {
-        const { cam, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
-        mot.push({ frame: f, shot: s.id, cam, items: items.map((it) => ({ path: it.path, actor: it.actor, id: it.id, text: it.text, box: it.box, op: it.op,
-          moving: it.moving, loops: !!it.loops, space: it.space })) });
+  const res = [], mot = [];
+  await Promise.all(groups.map(async (g) => {
+    if (!g.shots.length) return;
+    const dpage = await browser.newPage({ viewport: { width: tl.width, height: tl.height }, deviceScaleFactor: 1 });
+    dpage.on("pageerror", (e) => { console.error("[draw pageerror]", e.message); process.exitCode = 2; });
+    await dpage.goto(`http://127.0.0.1:${PORT}/engine/hud/draw.html?project=${encodeURIComponent(pid)}`);
+    await dpage.waitForFunction(() => window.drawReady === true, null, { timeout: 180000 });
+    await dpage.evaluate(() => document.fonts.ready);
+    const hpage = await openPage(browser, pid);
+    for (const s of g.shots) {
+      const f0 = Math.ceil(s.start * tl.fps) + 2, f1 = Math.floor(s.end * tl.fps) - 2;
+      const fr = [];
+      for (let f = f0; f < f1; f += step) fr.push(f);
+      if (f1 > f0 && fr[fr.length - 1] !== f1) fr.push(f1);
+      for (const f of fr) {
+        const { cam, realScene, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
+        const hud = await hpage.evaluate((x) => window.hudLayout(x), f);
+        const shotFile = `f_${String(f).padStart(5, "0")}.jpg`;
+        fs.writeFileSync(path.join(out, shotFile), await dpage.screenshot({ type: "jpeg", quality: 80 }));
+        res.push({ frame: f, t: Math.round((f / tl.fps) * 100) / 100, shot: s.id, scene: s.scene, image: shotFile, cam, real_scene: realScene, items, caption: hud.caption });
+      }
+      // motion pass: positions of every item on every `mstep`-th frame (no screenshots) — jumps, jitter, flicker
+      if (mstep > 0) {
+        const m0 = Math.ceil(s.start * tl.fps) + 1, m1 = Math.floor(s.end * tl.fps) - 1;
+        for (let f = m0; f <= m1; f += mstep) {
+          const { cam, items } = await dpage.evaluate(([sid, x]) => window.drawLayout(sid, x), [s.id, f]);
+          mot.push({ frame: f, shot: s.id, cam, items: items.map((it) => ({ path: it.path, actor: it.actor, id: it.id, text: it.text, box: it.box, op: it.op,
+            moving: it.moving, loops: !!it.loops, space: it.space })) });
+        }
       }
     }
+    await dpage.close(); await hpage.close();
+  }));
+  res.sort((a, b) => a.frame - b.frame); mot.sort((a, b) => a.frame - b.frame);
+  fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ width: tl.width, height: tl.height, frames: res }));
+  console.log(`  measured ${res.length} frames of ${shots.length} shot(s) in ${n} tab(s)`);
+  if (mstep > 0) {
     fs.writeFileSync(path.join(out, "motion.json"), JSON.stringify({ fps: tl.fps, step: mstep, frames: mot }));
     console.log(`  motion: ${mot.length} frames`);
   }
@@ -188,7 +201,9 @@ async function layoutMode(browser, pid, tl, step, mstep) {
     const frames = args.length > 1 ? args.slice(1).map(Number) : null;
     await drawMode(browser, pid, tl, Number(args[0] || 3), frames, force);
   } else if (mode === "layout") {
-    await layoutMode(browser, pid, tl, Number(rest[0] || 12), Number(rest[1] ?? 2));
+    const opt = (k) => (rest.find((x) => x.startsWith(`--${k}=`)) || "").split("=")[1];
+    const only = opt("shots") ? opt("shots").split(",").filter(Boolean) : null;
+    await layoutMode(browser, pid, tl, Number(rest[0] || 12), Number(rest[1] ?? 2), only, Number(opt("workers") || 3));
   } else if (mode === "stills") {
     const dir = path.join(ROOT, "build", pid, "stills");
     fs.mkdirSync(dir, { recursive: true });

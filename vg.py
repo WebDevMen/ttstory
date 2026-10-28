@@ -262,12 +262,13 @@ def cmd_layout(a):
         print("  no draw shots")
         return
     step("layout audit")
-    run_node(["layout", a.id, str(a.step), str(a.mstep)])
+    extra = ([f"--shots={a.shots}"] if a.shots else []) + [f"--workers={a.workers}"]
+    run_node(["layout", a.id, str(a.step), str(a.mstep)] + extra)
     errs, warns, caps = layout.run(a.id, a.step)
     if caps:                                   # captions_top: auto picked new bands: recompile and check again
         step("layout audit (captions moved)")
         cmd_compile(a)
-        run_node(["layout", a.id, str(a.step), str(a.mstep)])
+        run_node(["layout", a.id, str(a.step), str(a.mstep)] + extra)
         errs, warns, _ = layout.run(a.id, a.step)
     if errs or warns > 3:
         sys.exit(1)
@@ -327,7 +328,9 @@ def main():
     p = sub.add_parser("qa"); p.add_argument("id"); p.set_defaults(fn=cmd_qa)
     p = sub.add_parser("storyboard"); p.add_argument("id"); p.set_defaults(fn=cmd_storyboard)
     p = sub.add_parser("bench"); p.add_argument("--update", action="store_true"); p.set_defaults(fn=cmd_bench)
-    p = sub.add_parser("layout"); p.add_argument("id"); p.add_argument("--step", type=int, default=12); p.add_argument("--mstep", type=int, default=2, help="motion pass: every N-th frame (0 = off)"); p.set_defaults(fn=cmd_layout)
+    p = sub.add_parser("layout"); p.add_argument("id"); p.add_argument("--step", type=int, default=12); p.add_argument("--mstep", type=int, default=2, help="motion pass: every N-th frame (0 = off)")
+    p.add_argument("--shots", default="", help="only these shots, comma-separated (re-check what changed)")
+    p.add_argument("--workers", type=int, default=3, help="browser tabs measuring shots in parallel"); p.set_defaults(fn=cmd_layout)
     from engine.script import cli as script_cli
     script_cli.add_parser(sub)
     p = sub.add_parser("all"); p.add_argument("id"); p.add_argument("--force", action="store_true"); p.add_argument("--jobs", type=int, default=4)

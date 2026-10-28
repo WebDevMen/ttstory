@@ -300,6 +300,8 @@ def _captions_auto(pid, d, data):
     res = {}
     for sid in auto:
         frames = [fr for fr in data["frames"] if fr["shot"] == sid]
+        if not frames:
+            continue                   # not audited this run (vg.py layout --shots): keep the band picked before
         best, best_cost = None, None
         for top in CAPTION_BANDS:
             band = [W / 2 - cw / 2, top - 10, W / 2 + cw / 2, top + ch + 10]
@@ -319,7 +321,8 @@ def _captions_auto(pid, d, data):
     merged = {**old, **res}
     json.dump(merged, open(f, "w", encoding="utf-8"), indent=1)
     changed = any(old.get(k) != v for k, v in res.items())
-    print("  субтитры (auto): " + ", ".join(f"{k} → {v}" for k, v in res.items()))
+    if res:
+        print("  субтитры (auto): " + ", ".join(f"{k} → {v}" for k, v in res.items()))
     return changed
 
 

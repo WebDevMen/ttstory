@@ -103,7 +103,9 @@ The user explicitly requires neat, consistent graphics: no text touching or cut 
 
 ```bash
 python3 vg.py layout <id>        # after compile; build/<id>/layout/sheet.jpg shows every issue boxed
+python3 vg.py layout <id> --shots a,b [--mstep 0]   # while iterating: re-check only the shots you changed (fast)
 ```
+Shots are measured in parallel browser tabs (`--workers`, default 3). Iterate with `--shots`; run the full audit (no flags) once before the storyboard and the render.
 Fix until **0 errors and ≤ 3 warnings**, and keep a warning only when it is deliberate (say which and why in the final note). Besides layout it reports proportions, floor contact, clamped poses, clutter, pop-ins, contrast, exposure and motion (jumps, jitter, flicker). It also reports `[support]` (a grounded object with nothing under its base, or standing on ground of another parallax layer — a gap opens when the camera moves) and `[backdrop]` (only sky behind the subject). Then look at the start, middle and end of every shot (`preview --at`) for what automation cannot judge — go through the «fresh eyes» checklist of `docs/DRAW.md` §10.6: floating or sliding objects, empty or flat backdrop, background showing at frame edges, repeated stamps, inconsistent light, a world that does not match itself, uneven gaps, ragged stacks, mismatched styles, parts of a composite drawing out of place. Never start the full render with known sloppy placement.
 
 ## 5c. Storyboard approval
