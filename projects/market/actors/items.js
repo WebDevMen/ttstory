@@ -267,7 +267,7 @@ export const appraiser_desk = {
   surface: true,
   size_m: { w: 1.8 },
   create(p, H) {
-    const w = p.w ?? 980, dh = 360, ch = p.chair === false ? 0 : 520, h = dh + ch + 260, id = H.uid("ad");
+    const w = p.w ?? 980, dh = 360, ch = p.chair === false ? 0 : 520, h = dh + Math.max(ch + 12, 200), id = H.uid("ad");
     const top = h - dh, lx = p.lamp_x ?? 200, cdx = p.chair_dx ?? 0;
     let s = `<defs><linearGradient id="${id}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a281a"/><stop offset="1" stop-color="#150d07"/></linearGradient>
       <linearGradient id="${id}t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1d12"/><stop offset="1" stop-color="#46301d"/></linearGradient>

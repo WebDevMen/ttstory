@@ -80,7 +80,7 @@ scenes:
             - {actor: laser, x: 0, y: 0, from: [1400, 340], to: [600, 930], beam: 0.5, at: "@Три+0.35", enter: {type: fade, dur: 0.12}}
             - {actor: laser, x: 0, y: 0, from: [760, -200], to: [700, 1080], beam: 0.5, at: "@банды-0.05", enter: {type: fade, dur: 0.12}}
             - {actor: text, slot: tag, text: "КОРОБКА С ЧЁРНОГО РЫНКА", font: plex, size: 40, weight: 600, letter: 6, color: warm, at: "@Коробку", enter: {type: fade, dur: 0.3}}
-            - {actor: text, x: 540, y: 420, space: screen, text: "04:00:00", font: plex, size: 72, weight: 600, color: red, at: "@Четыре", enter: {type: fade, dur: 0.15}}
+            - {actor: text, x: 540, y: 420, space: screen, text: "04:00:00", font: plex, size: 72, weight: 600, color: red, bg: {color: "rgba(7,8,10,0.82)", pad: 14, radius: 6}, at: "@Четыре", enter: {type: fade, dur: 0.15}}
             - {<<: *noir, flare: [540, 290], flare_k: 0.7}
       - id: k_title
         start: "@Одно-0.22"
@@ -146,6 +146,10 @@ scenes:
           camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 980}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 23, colors: ["#0a0d12", "#1b2430", "#33404c"], sun: false, moon: false, stars: 0, clouds: 0}
+            - {actor: cranes, x: 540, y: 1100, w: 1800, h: 520, n: 3, color: "#2e3640", seed: 6}
+            - {actor: ground, x: -300, y: 1090, w: 1700, h: 500, color: ["#232a31", "#181c20"]}
+            - {actor: shape, kind: rect, x: 540, y: 1080, w: 1800, h: 200, fill: {linear: ["rgba(90,104,118,0)", "rgba(90,104,118,0.5)", "rgba(90,104,118,0)"], angle: 180}}
+            - {actor: containers, x: 300, y: 1190, scale: 0.4, n: 2, seed: 2, fog: "#46525e", fog_k: 0.5}
             - {actor: ground, x: -300, y: 1180, w: 1700, h: 400, color: ["#20262c", "#15191d"]}
             - {actor: lamp_post, x: 760, y: 1200, h: 520, left: true}
             - {actor: rain, x: 0, y: 0, count: 200, alpha: 0.5, color: "#c9d6e0"}
@@ -158,9 +162,9 @@ scenes:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 930}]}
           layers:
             - {actor: market_hall, x: 0, y: 0, crowd: 8, lights: 1}
-            - {actor: noir_figure, id: savva, x: 540, y: 1660, view: front, kind: courier, hold: none, scale: 1.45, rim: "#ffcf8a", rim_side: 1, walk: 1.4,
+            - {actor: noir_figure, id: savva, x: 790, y: 1660, view: front, kind: courier, hold: none, scale: 1.45, rim: "#ffcf8a", rim_side: 1, walk: 1.4,
                anim: [{at: "@Савва-0.2", dur: 5.6, scale: 1.75, y: 1820, ease: linear}]}
-            - {actor: particles, kind: steam, from: [540, 980], region: [380, 760, 700, 1020], count: 5, alpha: 0.2, speed: 0.6, at: "@почтой-0.3"}
+            - {actor: particles, kind: steam, from: [790, 980], region: [630, 760, 950, 1020], count: 5, alpha: 0.2, speed: 0.6, at: "@почтой-0.3"}
             - {actor: name_tag, x: 540, y: 420, space: screen, label: "САВВА, 26", sub: "КУРЬЕР", at: "@Савва", enter: {type: wipe_right, dur: 0.3}}
             - {<<: *noir, flare: [540, 640], flare_k: 0.35}
     sfx:
@@ -214,11 +218,12 @@ scenes:
             - {<<: *noir, flare: [540, 560], flare_k: 0.35}
       - id: s_reflect
         start: "@проходит-0.22"
+        captions_top: 1490
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@отражении", z: 1.25, x: 540, y: 900, ease: out}, {t: "@Моргает", z: 1.25, x: 540, y: 900}, {t: end, z: 1.1, x: 540, y: 940}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@отражении", z: 1.12, x: 540, y: 900, ease: out}, {t: "@Моргает", z: 1.12, x: 540, y: 900}, {t: end, z: 1.1, x: 540, y: 940}]}
           layers:
             - *hall_blur
-            - {actor: mirror_24, x: 540, y: 920, scale: 1.1, frost: 0.5,
+            - {actor: mirror_24, x: 540, y: 900, scale: 0.95, frost: 0.5,
                ripple: [{at: 0, v: 0}, {at: "@отражении-0.15", v: 0.8, dur: 0.15}, {at: "@отражении+0.1", v: 0, dur: 0.3}, {at: "@Моргает-0.1", v: 1, dur: 0.1}, {at: "@Моргает+0.15", v: 0, dur: 0.25}],
                children: [
                  {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 360], crowd: 4, lights: 1, sway: 0, seed: 3},
@@ -259,14 +264,16 @@ scenes:
             - {<<: *noir, flare: [860, 760], flare_k: 0.3}
       - id: p_buyer
         start: "@Парень-0.22"
+        captions_top: 830
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 980}, {t: end, z: 1.06, x: 540, y: 960}]}
           layers:
             - {actor: market_hall, x: -160, y: 0, w: 1400, blur: 10, brightness: 0.5, crowd: 5}
+            - {actor: ground, x: -400, y: 1860, w: 1900, h: 500, color: ["#1e1b18", "#0a0908"]}
             - {actor: appraiser_desk, x: 600, y: 1880, scale: 1.0, chair: true}
-            - {actor: noir_figure, x: 210, y: 1900, scale: 1.75, kind: courier, rim: "#9fe0b0", rim_side: 1,
+            - {actor: noir_figure, x: 190, y: 1880, scale: 1.7, kind: courier, rim: "#9fe0b0", rim_side: 1,
                pose: [{at: 0, v: stand}, {at: "@берёт", v: reach, dur: 0.4}, {at: "@расписывается", v: {sh1: 60, el1: 40, sh2: -4, el2: 10, th1: 4, kn1: 2, th2: -4, kn2: 2, lean: 8}, dur: 0.3}]}
-            - {actor: price_tag, x: 640, y: 640, scale: 0.78, rot: -4, title: "ЛОТ 12 · ЧАСЫ", rows: [{k: "ЦЕНА", v: "10 ЛЕТ ЖИЗНИ", red: true}],
+            - {actor: price_tag, x: 640, y: 560, scale: 0.78, rot: -4, title: "ЛОТ 12 · ЧАСЫ", rows: [{k: "ЦЕНА", v: "10 ЛЕТ ЖИЗНИ", red: true}],
                show: [{at: 0, v: 0}, {at: "@Цена", v: 1, dur: 0.6}], sign_line: true, sign: [{at: 0, v: 0}, {at: "@расписывается", v: 1, dur: 0.9}], at: "@берёт", enter: {type: drop, dur: 0.3}}
             - {<<: *noir, flare: [400, 1440], flare_k: 0.25}
       - id: p_grey
@@ -311,10 +318,12 @@ scenes:
     shots:
       - id: j_box
         transition: {type: cut}
+        captions_top: 760
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: "@пломба", z: 1.0, x: 540, y: 1000}, {t: "@мол", z: 1.35, x: 520, y: 980, ease: inout}, {t: end, z: 1.38, x: 520, y: 980}]}
           layers:
             - {actor: market_hall, x: -160, y: 0, w: 1400, blur: 12, brightness: 0.45, crowd: 4}
+            - {actor: ground, x: -400, y: 1880, w: 1900, h: 500, color: ["#1e1b18", "#0a0908"]}
             - {actor: appraiser_desk, x: 540, y: 1900, scale: 1.25, chair: true, book: false}
             - {actor: lot_box, x: 500, y: 1458, scale: 0.85, at: "@ставит-0.15", enter: {type: drop, dur: 0.3}}
             - {actor: noir_rule, x: 540, y: 520, space: screen, kicker: "ЗАКАЗ", text: "СЕВЕРНЫЙ МОЛ · ДО 05:00", size: 70, at: "@мол", enter: {type: wipe_right, dur: 0.25}}
@@ -340,6 +349,7 @@ scenes:
           camera: {keys: [{t: 0, z: 1.15, x: 760, y: 1120}, {t: end, z: 1.25, x: 780, y: 1080}]}
           layers:
             - {actor: market_hall, x: -160, y: 0, w: 1400, blur: 12, brightness: 0.45, crowd: 4}
+            - {actor: ground, x: -400, y: 1880, w: 1900, h: 500, color: ["#1e1b18", "#0a0908"]}
             - {actor: appraiser_desk, x: 540, y: 1900, scale: 1.25, chair: true, book: false, scale_text: "0 Г"}
             - {actor: lot_box, x: 880, y: 1380, scale: 0.5, tag: 0, anim: [{at: "@поднимает", dur: 0.5, dy: -360, ease: "back.out(1.4)"}]}
             - {actor: noir_rule, x: 540, y: 520, space: screen, kicker: "ВЕСЫ", text: "ВЕС: 0 Г", size: 84, danger: false, at: "@весит", enter: {type: wipe_right, dur: 0.25}}
@@ -373,7 +383,7 @@ scenes:
         transition: {type: whip_y}
         ambience: [{sound: rain, gain: -13}]
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@вспыхивает-0.1", z: 1.0, x: 540, y: 960}, {t: "@вспыхивает+0.4", z: 1.5, x: 560, y: 1080, ease: expo}, {t: end, z: 1.55, x: 560, y: 1080}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@вспыхивает-0.1", z: 1.0, x: 540, y: 960}, {t: "@вспыхивает+0.4", z: 1.45, x: 460, y: 1100, ease: expo}, {t: end, z: 1.5, x: 460, y: 1100}]}
           layers:
             - *sky_night
             - *clouds
@@ -388,8 +398,8 @@ scenes:
             - {actor: shape, kind: rect, x: 900, y: 1240, w: 18, h: 120, fill: "#2a2e33"}
             - {actor: lamp_post, x: 760, y: 1310, h: 680, left: true, on: [{at: 0, v: 1}, {at: "@фонарь", v: 0.2, dur: 0.05}, {at: "@фонарь+0.1", v: 1, dur: 0.05}]}
             - {actor: puddle, x: 380, y: 1640, w: 460, h: 80, sky: "#3a4652", light: "#e8a23a"}
-            - {actor: noir_figure, id: sv, x: 500, y: 1560, scale: 1.25, kind: courier, hold: box, rim: "#e8a23a", rim_side: 1}
-            - {actor: laser, x: 0, y: 0, from: [1300, 200], to: [560, 1260], beam: 0.6, at: "@вспыхивает-0.05", enter: {type: fade, dur: 0.1}}
+            - {actor: noir_figure, id: sv, x: 300, y: 1560, scale: 1.25, kind: courier, hold: box, rim: "#e8a23a", rim_side: 1}
+            - {actor: laser, x: 0, y: 0, from: [1300, 200], to: [350, 1240], beam: 0.6, at: "@вспыхивает-0.05", enter: {type: fade, dur: 0.1}}
             - *rain
             - *noir
       - id: h_ada
@@ -401,8 +411,8 @@ scenes:
             - *clouds
             - {actor: noir_figure, id: ada, x: 700, y: 1130, scale: 1.0, kind: coat, pose: aim, hold: rifle, flip: true, rim: "#ff3a6a", rim_side: 1}
             - {actor: factory, x: 540, y: 2700, scale: 1.7, sign: "ЦЕХ № 2", door: 0}
-            - {actor: neon_sign, x: 300, y: 1000, text: "БАР 24", size: 70, color: "#ff3a6a", flicker: 0.35}
-            - {actor: light_pool, x: 300, y: 1000, r: 300, color: "#ff3a6a", a: 0.25, blur: 20}
+            - {actor: neon_sign, x: 340, y: 1000, text: "БАР 24", size: 70, color: "#ff3a6a", flicker: 0.35}
+            - {actor: light_pool, x: 340, y: 1000, r: 300, color: "#ff3a6a", a: 0.25, blur: 20}
             - {actor: laser, x: 0, y: 0, from: [590, 978], to: [120, 1950], beam: 0.75}
             - *rain
             - {actor: name_tag, x: 540, y: 330, space: screen, label: "АДА", sub: "СНАЙПЕР · 6 ПАТРОНОВ", at: "@Ада", enter: {type: wipe_right, dur: 0.3}}
@@ -414,7 +424,7 @@ scenes:
         start: "@бежит-0.22"
         draw:
           world: [2600, 1920]
-          camera: {keys: [{t: 0, z: 1.0, x: 600, y: 1000}, {t: "@прошивает", z: 1.0, x: 1700, y: 1000, ease: linear}, {t: end, z: 1.0, x: 1900, y: 1000}], shakes: [{at: "@прошивает", amp: 18, dur: 0.35, freq: 6}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 1000}], follow: {id: runner, dx: 260, axis: x}, shakes: [{at: "@прошивает", amp: 18, dur: 0.35, freq: 6}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 3200, h: 1500, hour: 23, colors: ["#07090c", "#121820", "#26303a"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: cranes, x: 1300, y: 1030, w: 3200, h: 620, n: 6, color: "#2e3640", par: 0.2, seed: 8}
@@ -430,25 +440,25 @@ scenes:
             - {actor: bullet_trail, x: 0, y: 0, d: "M2700,200 C2200,500 1700,1520 1520,1480 C1420,1460 1340,1400 1300,1345", tail: 520, k: [{at: 0, v: 0}, {at: "@прошивает-0.6", v: 1, dur: 0.6, ease: inQuad}], fade: [{at: 0, v: 0}, {at: "@прошивает", v: 1, dur: 0.6}]}
             - *rain
             - {actor: shape, kind: rect, x: 540, y: 960, w: 1200, h: 2100, space: screen, fill: "#050607", at: "@Внутри-0.12", enter: {type: fade, dur: 0.1}}
-            - {actor: light_pool, x: 540, y: 900, r: 420, space: screen, color: "#ffd89a", a: 0.18, at: "@Внутри-0.12", enter: {type: fade, dur: 0.1}}
-            - {actor: lot_box, x: 520, y: 1280, space: screen, scale: 1.25, hole: 1, tag: 0, at: "@Внутри-0.12", enter: {type: zoom, dur: 0.15}}
-            - {actor: shape, kind: path, space: screen, d: "M260,880 L420,900", stroke: "#ffd89a", sw: 3, opacity: 0.6, at: "@Внутри", enter: {type: fade, dur: 0.2}}
+            - {actor: light_pool, x: 540, y: 760, r: 420, space: screen, color: "#ffd89a", a: 0.18, at: "@Внутри-0.12", enter: {type: fade, dur: 0.1}}
+            - {actor: lot_box, x: 520, y: 1110, space: screen, scale: 1.1, hole: 1, tag: 0, at: "@Внутри-0.12", enter: {type: zoom, dur: 0.15}}
+            - {actor: shape, kind: path, space: screen, d: "M300,790 L430,810", stroke: "#ffd89a", sw: 3, opacity: 0.6, at: "@Внутри", enter: {type: fade, dur: 0.2}}
             - {<<: *noir, flash: [{at: 0, v: 0}, {at: "@прошивает", v: 0.7, dur: 0.04}, {at: "@прошивает+0.1", v: 0, dur: 0.2}]}
       - id: h_freeze
         start: "@замирает-0.22"
         draw:
-          camera: {keys: [{t: 0, z: 1.3, x: 520, y: 1000}, {t: "@идёт", z: 1.3, x: 520, y: 1000}, {t: end, z: 1.0, x: 700, y: 980, ease: inout}], shakes: [{at: "@бетон", amp: 16, dur: 0.35, freq: 6}]}
+          camera: {keys: [{t: 0, z: 1.3, x: 420, y: 1000}, {t: "@идёт", z: 1.3, x: 420, y: 1000}, {t: end, z: 1.0, x: 700, y: 980, ease: inout}], shakes: [{at: "@бетон", amp: 16, dur: 0.35, freq: 6}]}
           layers:
             - {actor: shape, kind: rect, x: 540, y: 900, w: 2000, h: 1400, fill: {linear: ["#3a3f44", "#23272b"], angle: 180}}
             - {actor: sketch, kind: rect, x: 540, y: 700, w: 1900, h: 900, stroke: "#2a2e33", sw: 2, fill: "none", roughness: 2, seed: 4}
             - {actor: shape, kind: rect, x: 540, y: 1560, w: 2200, h: 700, fill: {linear: ["#1d2227", "#0d0f11"], angle: 180}}
             - {actor: light_pool, x: 260, y: 600, r: 600, color: "#e8a23a", a: 0.2, blur: 30}
-            - {actor: noir_figure, id: fr, x: 440, y: 1500, scale: 1.25, kind: courier, hold: box, rim: "#e8a23a", rim_side: -1,
-               walk: [{at: 0, v: 0}, {at: "@идёт", v: 0.9, dur: 0.3}], anim: [{at: "@идёт", dur: 4.5, x: 1100, ease: linear}]}
-            - {actor: shape, kind: path, d: "M560,700 l-30,40 l20,30 l-40,50 M530,740 l-46,8", stroke: "#0d0f11", sw: 4, fill: "none", at: "@бетон", enter: {type: draw, dur: 0.15}}
-            - {actor: shape, kind: circle, x: 560, y: 700, r: 16, fill: "#0b0c0e", at: "@бетон", enter: {type: pop, dur: 0.1}}
-            - {actor: particles, kind: burst, from: [560, 700], at: "@бетон", count: 30, colors: ["#8a8f96", "#5a6168", "#c9c4b8"], size: [4, 10]}
-            - {actor: laser, x: 0, y: 0, from: [1400, 100], to: [{at: 0, v: [520, 740]}, {at: "@идёт", v: [1180, 900], dur: 4.5, ease: linear}], beam: 0.6}
+            - {actor: noir_figure, id: fr, x: 270, y: 1500, scale: 1.25, kind: courier, hold: box, rim: "#e8a23a", rim_side: -1,
+               walk: [{at: 0, v: 0}, {at: "@идёт", v: 0.9, dur: 0.3}], anim: [{at: "@идёт", dur: 4.5, x: 1000, ease: linear}]}
+            - {actor: shape, kind: path, d: "M410,700 l-30,40 l20,30 l-40,50 M380,740 l-46,8", stroke: "#0d0f11", sw: 4, fill: "none", at: "@бетон", enter: {type: draw, dur: 0.15}}
+            - {actor: shape, kind: circle, x: 410, y: 700, r: 16, fill: "#0b0c0e", at: "@бетон", enter: {type: pop, dur: 0.1}}
+            - {actor: particles, kind: burst, from: [410, 700], at: "@бетон", count: 30, colors: ["#8a8f96", "#5a6168", "#c9c4b8"], size: [4, 10]}
+            - {actor: laser, x: 0, y: 0, from: [1400, 100], to: [{at: 0, v: [360, 740]}, {at: "@идёт", v: [1080, 900], dur: 4.5, ease: linear}], beam: 0.6}
             - {actor: rain, x: 0, y: 0, space: screen, count: 200, alpha: 0.35, color: "#c9d6e0"}
             - {<<: *noir, flash: [{at: 0, v: 0}, {at: "@бетон", v: 0.5, dur: 0.04}, {at: "@бетон+0.1", v: 0, dur: 0.2}]}
     sfx:
@@ -484,9 +494,9 @@ scenes:
             - {actor: light_pool, x: 150, y: 880, r: 220, color: "#3fd0a0", a: 0.25, blur: 20, par: 0.5}
             - {actor: wet_ground, x: -500, y: 1300, w: 2100, h: 800, lights: [[150, "#3fd0a0", 50], [860, "#e8a23a", 60]]}
             - {actor: lamp_post, x: 860, y: 1320, h: 640, left: true}
-            - {actor: noir_figure, x: 380, y: 1520, scale: 1.0, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9, at: "@выходят-0.1", enter: {type: fade, dur: 0.6}, anim: [{at: "@выходят", dur: 5, y: 1600, scale: 1.12, ease: linear}]}
-            - {actor: noir_figure, x: 700, y: 1520, scale: 1.0, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9, at: "@выходят+0.1", enter: {type: fade, dur: 0.6}, anim: [{at: "@выходят", dur: 5, y: 1600, scale: 1.12, ease: linear}]}
-            - {actor: noir_figure, x: 540, y: 1560, scale: 1.08, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9, at: "@выходят", enter: {type: fade, dur: 0.6}, anim: [{at: "@выходят", dur: 5, y: 1650, scale: 1.2, ease: linear}]}
+            - {actor: noir_figure, x: 230, y: 1520, scale: 1.0, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9, at: "@выходят-0.1", enter: {type: fade, dur: 0.6}, anim: [{at: "@выходят", dur: 5, y: 1600, scale: 1.12, ease: linear}]}
+            - {actor: noir_figure, x: 980, y: 1520, scale: 1.0, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9, at: "@выходят+0.1", enter: {type: fade, dur: 0.6}, anim: [{at: "@выходят", dur: 5, y: 1600, scale: 1.12, ease: linear}]}
+            - {actor: noir_figure, x: 790, y: 1560, scale: 1.08, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9, at: "@выходят", enter: {type: fade, dur: 0.6}, anim: [{at: "@выходят", dur: 5, y: 1650, scale: 1.2, ease: linear}]}
             - {actor: shape, kind: rect, x: 540, y: 1400, w: 2000, h: 360, fill: {linear: ["rgba(90,104,118,0)", "rgba(90,104,118,0.35)", "rgba(90,104,118,0)"], angle: 180}}
             - *rain
             - *noir
@@ -501,11 +511,15 @@ scenes:
             - *noir
       - id: o_truck
         start: "@бросается-0.22"
+        captions_top: 760
         draw:
           world: [2400, 1920]
           camera: {keys: [{t: 0, z: 1.0, x: 900, y: 1000}, {t: end, z: 1.0, x: 1100, y: 1000}], shakes: [{at: "@фуру", amp: 22, dur: 0.4, freq: 6}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 3000, h: 1500, hour: 23, colors: ["#07090c", "#121820", "#26303a"], sun: false, moon: false, stars: 0, clouds: 0}
+            - {actor: cranes, x: 1200, y: 1060, w: 3200, h: 560, n: 5, color: "#2e3640", par: 0.2, seed: 5}
+            - {actor: ground, x: -700, y: 1040, w: 3800, h: 1000, color: ["#20262c", "#15191d"], par: 0.2}
+            - {actor: shape, kind: rect, x: 1200, y: 1040, w: 4000, h: 300, par: 0.22, fill: {linear: ["rgba(90,104,118,0)", "rgba(90,104,118,0.5)", "rgba(90,104,118,0)"], angle: 180}}
             - {actor: containers, x: 1200, y: 1220, scale: 0.6, n: 6, seed: 11, fog: "#46525e", fog_k: 0.5, par: 0.5}
             - {actor: ground, x: -700, y: 1200, w: 3800, h: 900, color: ["#1d2227", "#121518"], par: 0.5}
             - {actor: wet_ground, x: -500, y: 1380, w: 3400, h: 600, lights: [[1100, "#fff4d6", 160]]}
@@ -529,8 +543,8 @@ scenes:
             - {actor: containers, x: 540, y: 1180, scale: 0.55, n: 4, seed: 6, fog: "#46525e", fog_k: 0.45, par: 0.5}
             - *ground_mid
             - {actor: wet_ground, x: -500, y: 1300, w: 2100, h: 800, lights: [[540, "#e8a23a", 90]]}
-            - {actor: particles, kind: steam, from: [540, 1640], region: [200, 1000, 900, 1700], count: 10, alpha: 0.25, speed: 0.6}
-            - {actor: noir_figure, x: 540, y: 1700, scale: 1.4, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9,
+            - {actor: particles, kind: steam, from: [700, 1640], region: [360, 1000, 1060, 1700], count: 10, alpha: 0.25, speed: 0.6}
+            - {actor: noir_figure, x: 780, y: 1700, scale: 1.4, view: front, kind: hat, watch: "#e8a23a", rim: "#e8a23a", rim_side: 1, walk: 0.9,
                anim: [{at: "@Ему-0.2", dur: 2.6, scale: 1.65, y: 1820, ease: linear}]}
             - *rain
             - *noir
@@ -549,7 +563,7 @@ scenes:
       - id: o_run
         transition: {type: whip_x}
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 960}], sway: {x: 10, y: 8, roll: 0.8, freq: 1.2}}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.08, x: 540, y: 960}], sway: {x: 6, y: 5, roll: 0.4, freq: 0.5}}
           layers:
             - {actor: containers, view: corridor, origin: top-left, x: 0, y: 0, vp: [540, 880], seed: 5}
             - {actor: laser, x: 0, y: 0, from: [1300, -200], to: [{at: 0, v: [780, 1040]}, {at: "@видит", v: [1040, 760], dur: 0.4}], beam: 0.4, on: [{at: 0, v: 1}, {at: "@видит", v: 0, dur: 0.4}]}
@@ -602,14 +616,15 @@ scenes:
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 23, colors: ["#07090c", "#141b22", "#2a343e"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: pier, x: 0, y: 0, view: long, vp: [540, 820], spray: ["@прибоя"], beam_speed: 0.14}
-            - {actor: noir_figure, x: 540, y: 1960, scale: 2.1, view: front, kind: courier, hold: box, rim: "#ffcf8a", rim_side: 1}
+            - {actor: noir_figure, x: 900, y: 1960, scale: 2.1, view: front, kind: courier, hold: box, rim: "#ffcf8a", rim_side: 1}
             - *rain
             - {actor: timetag, slot: tag, text: "04:58 · СЕВЕРНЫЙ МОЛ", at: "@Четыре", enter: {type: fade, dur: 0.3}}
             - *noir
       - id: d_three
         start: "@Слева-0.22"
+        captions_top: 760
         draw:
-          camera: {keys: [{t: 0, z: 1.15, x: 300, y: 1200}, {t: "@Справа", z: 1.15, x: 780, y: 1200, ease: inout}, {t: "@Сверху", z: 1.0, x: 540, y: 960, ease: inout}, {t: end, z: 1.02, x: 540, y: 960}]}
+          camera: {keys: [{t: 0, z: 1.06, x: 340, y: 1000}, {t: "@Справа", z: 1.06, x: 740, y: 1000, ease: inout}, {t: "@Сверху", z: 1.0, x: 540, y: 960, ease: inout}, {t: end, z: 1.02, x: 540, y: 960}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 23, colors: ["#07090c", "#141b22", "#2a343e"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: pier, x: 0, y: 0, view: end, vp: [540, 900], beam_speed: 0.12}
@@ -641,13 +656,14 @@ scenes:
             - *noir
       - id: d_choice
         start: "@нарушить-0.22"
+        captions_top: 690
         draw:
-          camera: {keys: [{t: 0, z: 1.15, x: 540, y: 1000}, {t: end, z: 1.25, x: 540, y: 1020}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 980}]}
           layers:
             - *dark_bg
             - {actor: light_pool, x: 540, y: 700, r: 560, color: "#fff1c8", a: 0.18}
-            - {actor: lot_box, x: 470, y: 1400, scale: 1.25, tag: 0}
-            - {actor: human_hand, x: 600, y: 1040, scale: 1.3, rot: -30, skin: "#2a2420", sleeve: "#0b0d10", anim: [{at: "@дожить", dur: 0.4, dx: -16, dy: 10}]}
+            - {actor: lot_box, x: 470, y: 1640, scale: 1.2, tag: 0}
+            - {actor: human_hand, x: 600, y: 1270, scale: 1.3, rot: -30, skin: "#2a2420", sleeve: "#0b0d10", anim: [{at: "@дожить", dur: 0.4, dx: -16, dy: 10}]}
             - {actor: card, x: 300, y: 480, space: screen, w: 400, style: dark, title: "ОТКРЫТЬ", sub: "нарушить правило", at: "@правило-0.1", enter: {type: pop, dur: 0.25}}
             - {actor: card, x: 780, y: 480, space: screen, w: 400, style: dark, title: "ДОВЕЗТИ", sub: "не дожить до 05:00", color: red, at: "@дожить-0.1", enter: {type: pop, dur: 0.25}}
             - *noir
@@ -669,13 +685,14 @@ scenes:
     shots:
       - id: t_open
         transition: {type: cut}
+        captions_top: 1470
         draw:
-          camera: {keys: [{t: 0, z: 1.2, x: 560, y: 1000}, {t: "@пустая", z: 1.3, x: 600, y: 940, ease: out}, {t: end, z: 1.4, x: 620, y: 920}], shakes: [{at: "@срывает", amp: 8, dur: 0.25, freq: 6}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 560, y: 1150}, {t: "@пустая", z: 1.08, x: 580, y: 1130, ease: out}, {t: end, z: 1.12, x: 590, y: 1120}], shakes: [{at: "@срывает", amp: 8, dur: 0.25, freq: 6}]}
           layers:
             - *dark_bg
             - {actor: light_pool, x: 540, y: 760, r: 560, color: "#fff1c8", a: 0.2}
             - {actor: shape, kind: rect, x: 540, y: 600, w: 3000, h: 260, rot: -12, fill: {linear: ["rgba(255,244,214,0)", "rgba(255,244,214,0.16)", "rgba(255,244,214,0)"], angle: 180}, anim: [{at: "@twist.start", dur: 5.6, x: 1400, ease: linear}]}
-            - {actor: lot_box, x: 470, y: 1400, scale: 1.3, inside_tag: "ЦЕНА: ВСЁ",
+            - {actor: lot_box, x: 470, y: 1560, scale: 1.15, inside_tag: "ЦЕНА: ВСЁ",
                seal: [{at: 0, v: 1}, {at: "@срывает", v: 0, dur: 0.25}], string: [{at: 0, v: 1}, {at: "@срывает+0.2", v: 0, dur: 0.3}],
                open: [{at: 0, v: 0}, {at: "@пустая-0.4", v: 1, dur: 0.6, ease: out}], tag: [{at: 0, v: 1}, {at: "@срывает", v: 0, dur: 0.2}]}
             - *noir
@@ -715,9 +732,9 @@ scenes:
             - {actor: noir_figure, x: 380, y: 1650, scale: 1.05, kind: hat, watch: "#e8a23a", rim: "#ffcf8a", flip: true, walk: [{at: 0, v: 0}, {at: "@бегут", v: 3.4, dur: 0.2}], anim: [{at: "@бегут", dur: 1.8, x: -400, ease: in}]}
             - {actor: noir_figure, x: 860, y: 1650, scale: 1.05, kind: hat, rim: "#9fc4dc", walk: [{at: 0, v: 0}, {at: "@бегут-0.1", v: 3.4, dur: 0.2}], anim: [{at: "@бегут-0.1", dur: 1.6, x: 1500, ease: in}]}
             - {actor: noir_figure, x: 980, y: 1690, scale: 1.12, kind: coat, rim: "#9fc4dc", walk: [{at: 0, v: 0}, {at: "@бегут+0.1", v: 3.4, dur: 0.2}], anim: [{at: "@бегут+0.1", dur: 1.6, x: 1600, ease: in}]}
-            - {actor: noir_figure, x: 560, y: 1640, scale: 1.2, view: front, kind: courier, rim: "#ffcf8a", rim_side: 1}
-            - {actor: lot_box, x: 600, y: 1640, scale: 0.42, open: 1, tag: 0, string: 0, seal: 0}
-            - {actor: laser, x: 0, y: 0, from: [900, -100], to: [{at: 0, v: [560, 1300]}, {at: "@него-0.4", v: [700, 600], dur: 0.6, ease: in}], beam: 0.6, on: [{at: 0, v: 1}, {at: "@него", v: 0, dur: 0.3}]}
+            - {actor: noir_figure, x: 740, y: 1640, scale: 1.2, view: front, kind: courier, rim: "#ffcf8a", rim_side: 1}
+            - {actor: lot_box, x: 790, y: 1640, scale: 0.42, open: 1, tag: 0, string: 0, seal: 0}
+            - {actor: laser, x: 0, y: 0, from: [900, -100], to: [{at: 0, v: [740, 1300]}, {at: "@него-0.4", v: [700, 600], dur: 0.6, ease: in}], beam: 0.6, on: [{at: 0, v: 1}, {at: "@него", v: 0, dur: 0.3}]}
             - *rain
             - {actor: noir_title, x: 540, y: 560, space: screen, text: "ТЕПЕРЬ ОН — РЫНОК", size: 104, at: "@рынок-0.1", enter: {type: zoom, dur: 0.25}}
             - {actor: name_tag, x: 540, y: 300, space: screen, label: "ЧАСОВЩИК", color: sodium, at: "@открыл", until: "@бегут", enter: {type: fade, dur: 0.2}, exit: {type: fade, dur: 0.2}}
@@ -747,16 +764,19 @@ scenes:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.1, x: 540, y: 980}]}
           layers:
             - {actor: market_hall, x: -160, y: 0, w: 1400, blur: 8, brightness: 0.5, crowd: 0, lights: [{at: 0, v: 0.5}, {at: "@пустое", v: 0.1, dur: 0.3}]}
+            - {actor: ground, x: -400, y: 1860, w: 1900, h: 500, color: ["#1e1b18", "#0a0908"]}
             - {actor: appraiser_desk, x: 540, y: 1880, scale: 1.15, chair: true, lamp: [{at: 0, v: 1}, {at: "@пустое", v: 0.05, dur: 0.15}]}
             - {actor: death_watch, x: 740, y: 1365, kind: wrist, scale: 0.22, rot: 70, display: "05:00", stopped: [{at: 0, v: 0}, {at: "@остановились", v: 1}], tick: true}
             - *noir
       - id: c_loop
         start: "@Через-0.22"
+        captions_top: 750
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: "@ставит", z: 1.0, x: 540, y: 1000}, {t: end, z: 1.12, x: 560, y: 1020}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.04, x: 540, y: 1010}]}
           layers:
             - {actor: market_hall, x: -160, y: 0, w: 1400, blur: 8, brightness: 0.55, crowd: 5}
             - {actor: noir_figure, x: 540, y: 1560, scale: 1.25, view: front, kind: courier, rim: "#ffd89a", rim_side: -1, pose: {sh1: 20, el1: 50, sh2: 20, el2: 50, th1: 0, kn1: 0, th2: 0, kn2: 0, lean: 0}}
+            - {actor: ground, x: -400, y: 1860, w: 1900, h: 500, color: ["#1e1b18", "#0a0908"]}
             - {actor: appraiser_desk, x: 540, y: 1880, scale: 1.15, chair: false}
             - {actor: lot_box, x: 500, y: 1470, scale: 0.6, at: "@ставит-0.15", enter: {type: drop, dur: 0.3}}
             - {actor: noir_figure, x: 160, y: 2240, scale: 2.4, view: front, kind: courier, rim: "#9fb6c8", rim_side: 1, blur: 6, brightness: 0.7, par: 1.2, at: "@новый-0.2", enter: {type: slide_right, dur: 0.4}}
