@@ -8,7 +8,7 @@
 // Palette as part 1: ink #0a0c0f, steel #3c4650, grey #8a96a2, white #f2f4f6, red #e3262f; sea #1f4a4c (twist only).
 
 const RED = "#e3262f", WHITE = "#f2f4f6", GREY = "#8a96a2";
-const MONO = `"IBM Plex Mono", monospace`, COND = `"Oswald", sans-serif`;
+const MONO = `'IBM Plex Mono', monospace`, COND = `'Oswald', sans-serif`;   // single quotes: these also go inside style="…" attributes
 
 // a cloth panel anchored at (x, y) by its bottom edge, rising by `len` in direction dir (-1 up, +1 down)
 // flutter: travelling wave along the cloth, stronger at the free end. Returns an SVG path.

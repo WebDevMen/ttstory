@@ -2,7 +2,7 @@
 // They live in the world (move with the camera) unless the item has `space: screen`.
 
 const box = (H, css, html = "") => H.div(css, html);
-const mono = (H) => `"${H.fonts.mono}", monospace`;
+const mono = (H) => `'${H.fonts.mono}', monospace`;   // single quotes: used inside style="…" attributes
 
 // ------------------------------------------------------------------ phone
 // screen: alert | lock | chat | notify | blank | app; w, h, color (body), glow (color), time, right (status text),

@@ -311,7 +311,8 @@ export const city_chunk = {
     const dr = Array.from({ length: p.drops ?? 40 }, () => [R() * w, 30 + soil * (0.6 + R() * 0.4), R(), 0.6 + R()]);
     // buildings on top (bottom at y = 18)
     svg.remove();
-    for (const b of p.buildings ?? []) await H.child({ actor: "panel_block", x: b.x, y: 22, floors: b.floors ?? 9, cols: b.cols ?? 6, cell: b.cell ?? [70, 56], color: b.color ?? "#7d858c", seed: b.seed ?? Math.floor(R() * 99), lit: b.lit ?? 0.2, far: b.far ?? true, stains: 0.3 }, el);
+    // b.x is the building's bottom centre; a building never sticks out past the block's edge (it would hang in the air)
+    for (const b of p.buildings ?? []) await H.child({ actor: "panel_block", x: Math.min(w - 16 - ((b.cols ?? 6) * (b.cell ?? [70, 56])[0]) / 2, Math.max(16 + ((b.cols ?? 6) * (b.cell ?? [70, 56])[0]) / 2, b.x)), y: 22, floors: b.floors ?? 9, cols: b.cols ?? 6, cell: b.cell ?? [70, 56], color: b.color ?? "#7d858c", seed: b.seed ?? Math.floor(R() * 99), lit: b.lit ?? 0.2, far: b.far ?? true, stains: 0.3 }, el);
     el.append(svg);   // soil drawn over building bases
     return {
       el, w, h: soil + 40,

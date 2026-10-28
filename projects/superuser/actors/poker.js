@@ -1,7 +1,7 @@
 // Project actors for «Он видел карты всех игроков» (афера №2): monitor, spreadsheet, bell_curve, waveform.
 // Times in params are absolute seconds after compile ("@слово" works in YAML).
 
-const MONO = (H) => `"${H.fonts.mono}", monospace`;
+const MONO = (H) => `'${H.fonts.mono}', monospace`;   // single quotes: used inside style="…" attributes
 
 // ------------------------------------------------------------------ monitor: an app window on a dark screen
 // w, h, title, color (title bar accent), children (items in window-local px, origin = top-left of the content area),

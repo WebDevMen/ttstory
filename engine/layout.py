@@ -94,6 +94,10 @@ def _check_frame(fr, prev=None):
     cam, pc = fr.get("cam"), (prev or {}).get("cam")
     panning = bool(cam and pc) and (abs(cam["x"] - pc["x"]) > 12 or abs(cam["y"] - pc["y"]) > 12 or abs(cam["z"] - pc["z"]) > 0.015)
     items = [it for it in fr["items"] if it["op"] >= 0.35]
+    for it in fr["items"]:
+        if it.get("bad_markup"):
+            out.append(("err", "markup", it["path"], f"битая разметка в {_label(it)}: {it['bad_markup']} — двойные кавычки внутри "
+                        f"style=\"…\" (имя шрифта) обрывают атрибут, стили пропадают; берите одинарные кавычки", [it["box"]]))
     texts = [it for it in items if (it["texty"] or it["actor"] == "text") and not it["moving"] and (it["lines"] or it["actor"] != "text")]
     for it in texts:
         lines = it["lines"] or [it["box"]]
@@ -359,6 +363,16 @@ def _support(fr, items):
             # remember the base height over the surface's top edge; run() warns when it drifts during the shot
             sf = min(under_all, key=lambda q: abs(P(q) - par))
             out.append(("drift", "support", it["path"] + ":par", (b[3] - sf["box"][1], par, P(sf), _label(it)), [b]))
+    # parts of a composite surface actor (houses on a torn-off city block): the base must lie on the parent, not past its edge
+    for it in items:
+        op = it.get("on_parent")
+        if not op:
+            continue
+        b, pb = it["box"], op["box"]
+        over = max(pb[0] - b[0], b[2] - pb[2])
+        if b[2] - b[0] >= 12 and over > max(6, 0.04 * (b[2] - b[0])):
+            out.append(("warn", "support", it["path"], f"{_label(it)} выходит за край {op['parent']} на {round(over)} px: "
+                        f"часть основания висит над пустотой — сдвиньте его внутрь (у вложенных актёров x — это их точка привязки)", [b]))
     if any(it["actor"] == "sky" for it in items) and any(it.get("stands") for it in items):
         far = [it for it in items if it.get("par", 1) < 1 and it["actor"] not in SKYISH and not it.get("surface")]
         if len(far) < BACKDROP_FAR:

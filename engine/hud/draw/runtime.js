@@ -325,6 +325,21 @@ function layoutOf(it, out, parentPath, parentMoving) {
     // "floor": a real ground/floor (turns the check on for the shot); true: something one can stand on (shape, image…)
     if (SURFACES.has(it.spec.actor) || it.def.surface) rec.surface = it.def.surface || ["ground", "street", "room"].includes(it.spec.actor) ? "floor" : true;
   }
+  // a grounded part of a composite actor (a house on a city block, a lamp on a pier) must stand inside its parent surface
+  if (it.parent && it.parent.def && it.parent.def.surface && (GROUNDED.has(it.spec.actor) || (it.def && it.def.grounded))) {
+    const pr = it.parent.fx.getBoundingClientRect();
+    rec.on_parent = { box: [pr.left, pr.top, pr.right, pr.bottom].map((v) => Math.round(v)), parent: it.parent.id || it.parent.spec.actor };
+  }
+  // broken markup: a double quote inside style="…" (e.g. font-family "Oswald") ends the attribute early — the rest
+  // becomes junk attributes and the styles (font size, colour) silently vanish
+  if (it._badMarkup === undefined) {
+    it._badMarkup = null;
+    for (const e of it.fx.querySelectorAll("*")) {
+      const bad = [...e.attributes].find((a) => /["';,()]/.test(a.name));
+      if (bad) { it._badMarkup = `<${e.tagName.toLowerCase()} … ${bad.name}>`; break; }
+    }
+  }
+  if (it._badMarkup) rec.bad_markup = it._badMarkup;
   if (it.poseClamped) rec.pose_clamped = it.poseClamped;
   // appears with a hard cut (no enter, no reveal/count/opacity animation) after the shot has started
   const sp = it.spec, shotStart = H.shot ? H.shot.start : 0;

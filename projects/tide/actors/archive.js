@@ -5,7 +5,7 @@
 // Palette: near-black #0a0c0f, steel #3c4650, cold grey #8a96a2, white #f2f4f6, emergency red #e3262f.
 
 const RED = "#e3262f", WHITE = "#f2f4f6", GREY = "#8a96a2", STEEL = "#3c4650", INK = "#0a0c0f";
-const MONO = `"IBM Plex Mono", monospace`, COND = `"Oswald", sans-serif`;
+const MONO = `'IBM Plex Mono', monospace`, COND = `'Oswald', sans-serif`;   // single quotes: these also go inside style="…" attributes
 const pad = (v, n = 2) => String(Math.max(0, Math.floor(v))).padStart(n, "0");
 
 // look of each recording source: CSS backdrop filter + grain + scanlines + vignette + lens blur

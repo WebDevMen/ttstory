@@ -4,7 +4,7 @@
 // Full-frame scenes have origin top-left and are 1080 x 1920 (or w/h). Cold steel light; red only for danger.
 
 const RED = "#e3262f", WHITE = "#f2f4f6", GREY = "#8a96a2", STEEL = "#3c4650";
-const MONO = `"IBM Plex Mono", monospace`;
+const MONO = `'IBM Plex Mono', monospace`;
 
 // ------------------------------------------------------------------ stairwell
 // view: hall | stairs | ceiling; door (track 0..1: flat door opens, warm light), lamp (track 0..1), swing (track: lamp swing amp),
