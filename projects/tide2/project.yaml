@@ -197,6 +197,7 @@ scenes:
       - id: s_salt
         start: "@Соня-0.22"
         transition: {type: cut}
+        captions_top: 330
         look: {bloom: [0.7, 0.35]}
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: "@языком", z: 1.1, x: 540, y: 940}, {t: end, z: 1.04, x: 540, y: 1000}], shakes: [{at: "@Закрой", amp: 14, dur: 0.35, freq: 5}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.6}}
@@ -206,7 +207,7 @@ scenes:
             - {actor: person, id: sonya, x: 540, y: 2050, scale: 2.4, air: true, look: *sonya, face: [{at: 0, v: happy}, {at: "@солёный-0.3", v: surprised}, {at: "@Закрой", v: sad}],
                pose: [{at: 0, v: {a1: [150, 20], a2: [150, 20], l1: [2, 0], l2: [2, 0], tilt: -12}}, {at: "@Закрой", v: {a1: [30, 40], a2: [30, 40], l1: [2, 0], l2: [2, 0]}, dur: 0.3}],
                anim: [{at: "@высовывается", dur: 0.6, y: 1900, ease: out}, {at: "@Закрой", dur: 0.35, y: 2150, ease: in}]}
-            - {actor: shape, kind: circle, x: 548, y: 960, r: 9, fill: "#cfe3f0", at: "@ловит", until: "@языком+0.2", anim: [{at: "@ловит", dur: 0.6, y: 1150, ease: in}]}
+            - {actor: shape, kind: circle, x: 548, y: 960, r: 9, fill: "#cfe3f0", at: "@ловит", until: "@языком+0.2", enter: {type: fade, dur: 0.1}, anim: [{at: "@ловит", dur: 0.6, y: 1150, ease: in}]}
             - {<<: *arch, kind: cctv, src: "CAM ЛИФТ П-2 · ЛЮК", tc: 25402, status: "ВЕРХНИЙ ГОРОД"}
     sfx:
       - {sound: whoosh, at: "@Речной", gain: -14}
@@ -368,6 +369,7 @@ scenes:
     shots:
       - id: d_cut
         transition: {type: cut}
+        captions_top: 1680
         ambience: [{sound: wind, gain: -15}]
         draw:
           camera: {keys: [{t: 0, z: 1.06, x: 560, y: 1160}, {t: "@Сто", z: 1.0, x: 560, y: 900, ease: inout}, {t: end, z: 1.0, x: 560, y: 860}], shakes: [{at: "@небо", amp: 10, dur: 0.4, freq: 5}]}
@@ -384,14 +386,14 @@ scenes:
                anim: [{at: "@небо-0.1", dur: 0.4, y: 1430, ease: out}, {at: "@небо+0.3", dur: 0.6, y: 1450, ease: inOutSine}]}
             - {actor: person, id: gleb, x: 380, y: 1470, scale: 1.0, look: *gleb, face: determined, pose: [{at: 0, v: {a1: [150, 10], a2: [7, 4], l1: [2, 0], l2: [2, 0]}}, {at: "@Сто", v: hold, dur: 0.3}]}
             - {actor: person, id: sonya, x: 300, y: 1470, scale: 0.8, look: *sonya, face: neutral, pose: {a1: [120, 30], a2: [7, 4], l1: [2, 0], l2: [2, 0]}}
-            - {actor: sheet, x: 300, y: 1340, scale: 0.6, cord: 120, len: 300, w: 160, seed: 5, at: "@срезают", until: "@Сто", exit: {type: fly_up, dur: 0.6}}
+            - {actor: sheet, x: 300, y: 1340, scale: 0.6, cord: 120, len: 300, w: 160, seed: 5, at: "@срезают", until: "@Сто", enter: {type: fade, dur: 0.2}, exit: {type: fly_up, dur: 0.6}}
             - {actor: rain, x: 0, y: 0, space: screen, count: 200, v: -0.7, alpha: 0.4, seed: 9}
             - {actor: mark, x: 620, y: 860, w: 560, h: 520, at: "@Сто-0.05", until: "@Петрович", exit: fade, enter: {type: fade, dur: 0.2}, label: "100 ПРОСТЫНЕЙ", sub: "КАБИНА П-2 · 400 КГ", side: top}
             - {<<: *arch, kind: phone, src: "ТЕЛЕФОН ГЛЕБА · ВИДЕО", tc: 25780, status: "ОБЛАКО 01:40"}
       - id: d_argue
         start: "@Петрович-0.22"
         transition: {type: cut}
-        captions_top: 1640
+        captions_top: 1750
         draw:
           world: [1080, 2700]
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1800}, {t: "@мокрый-0.2", z: 1.0, x: 540, y: 900, ease: inout}, {t: "@живут#2", z: 1.0, x: 540, y: 960}, {t: end, z: 1.0, x: 540, y: 1700, ease: inout}], sway: {x: 6, y: 6, roll: 0.5, freq: 0.5}}
@@ -488,7 +490,7 @@ scenes:
         start: "@Глеб#2-0.22"
         transition: {type: cut}
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 980}, {t: end, z: 1.06, x: 540, y: 1000}], shakes: [{at: "@ревёт", amp: 10, dur: 0.8, freq: 6}], sway: {x: 12, y: 10, roll: 1.2, freq: 0.9}}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 980}, {t: end, z: 1.06, x: 540, y: 1000}], shakes: [{at: "@ревёт", amp: 10, dur: 0.8, freq: 6}], sway: {x: 10, y: 8, roll: 1.0, freq: 0.5}}
           layers:
             - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#8f9ba6", "#c3ccd3"], angle: 180}}
             - {actor: cloud_bank, x: -500, y: 1200, w: 2100, h: 900, color: "#e3e8ec", shade: "#a9b3bb", n: 30, blur: 40, speed: 60}
@@ -503,7 +505,7 @@ scenes:
         transition: {type: cut}
         draw:
           bg: "#9aa6b0"
-          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], sway: {x: 14, y: 12, roll: 1.4, freq: 1.0}}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}], sway: {x: 10, y: 8, roll: 1.0, freq: 0.5}}
           layers:
             - {actor: cloud_bank, x: -400, y: 0, w: 1900, h: 1920, color: "#dfe6eb", shade: "#9aa6b0", n: 40, blur: 40, speed: 80}
             - {actor: rain, x: 0, y: 0, count: 200, v: -1.0, alpha: 0.4, slant: 0.2, seed: 13}
@@ -516,7 +518,7 @@ scenes:
         start: "@Не-0.22"
         transition: {type: cut}
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 560, y: 900}], shakes: [{at: "@яму", amp: 12, dur: 0.6, freq: 6}], sway: {x: 14, y: 12, roll: 1.4, freq: 1.0}}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.1, x: 560, y: 900}], shakes: [{at: "@яму", amp: 12, dur: 0.6, freq: 6}], sway: {x: 10, y: 8, roll: 1.0, freq: 0.5}}
           layers:
             - {actor: shape, kind: rect, x: 540, y: 960, w: 1400, h: 2200, fill: {linear: ["#8f9ba6", "#c3ccd3"], angle: 180}}
             - {actor: sheet_rig, x: 540, y: 1500, scale: 1.4, n: 97, blur: 6, brightness: 0.9, cabin_only: false}
