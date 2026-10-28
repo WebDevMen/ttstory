@@ -80,7 +80,7 @@ scenes:
             - {actor: laser, x: 0, y: 0, from: [1400, 340], to: [600, 930], beam: 0.5, at: "@Три+0.35", enter: {type: fade, dur: 0.12}}
             - {actor: laser, x: 0, y: 0, from: [760, -200], to: [700, 1080], beam: 0.5, at: "@банды-0.05", enter: {type: fade, dur: 0.12}}
             - {actor: text, slot: tag, text: "КОРОБКА С ЧЁРНОГО РЫНКА", font: plex, size: 40, weight: 600, letter: 6, color: warm, at: "@Коробку", enter: {type: fade, dur: 0.3}}
-            - {actor: text, x: 540, y: 420, space: screen, text: "04:00:00", font: plex, size: 72, weight: 600, color: red, bg: {color: "rgba(7,8,10,0.82)", pad: 14, radius: 6}, at: "@Четыре", enter: {type: fade, dur: 0.15}}
+            - {actor: text, x: 540, y: 420, space: screen, text: "04:00:00", font: plex, size: 72, weight: 600, color: "#ff6a78", bg: {color: "rgba(7,8,10,0.94)", pad: 14, radius: 6}, at: "@Четыре", enter: {type: fade, dur: 0.15}}
             - {<<: *noir, flare: [540, 290], flare_k: 0.7}
       - id: k_title
         start: "@Одно-0.22"
@@ -146,8 +146,8 @@ scenes:
           camera: {keys: [{t: 0, z: 1.05, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 980}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 23, colors: ["#0a0d12", "#1b2430", "#33404c"], sun: false, moon: false, stars: 0, clouds: 0}
-            - {actor: cranes, x: 540, y: 1100, w: 1800, h: 520, n: 3, color: "#2e3640", seed: 6}
-            - {actor: ground, x: -300, y: 1090, w: 1700, h: 500, color: ["#232a31", "#181c20"]}
+            - {actor: cranes, x: 540, y: 1100, w: 1800, h: 520, n: 3, color: "#2e3640", seed: 6, par: 0.2}
+            - {actor: ground, x: -300, y: 1090, w: 1700, h: 500, color: ["#232a31", "#181c20"], par: 0.2}
             - {actor: shape, kind: rect, x: 540, y: 1080, w: 1800, h: 200, fill: {linear: ["rgba(90,104,118,0)", "rgba(90,104,118,0.5)", "rgba(90,104,118,0)"], angle: 180}}
             - {actor: containers, x: 300, y: 1190, scale: 0.4, n: 2, seed: 2, fog: "#46525e", fog_k: 0.5}
             - {actor: ground, x: -300, y: 1180, w: 1700, h: 400, color: ["#20262c", "#15191d"]}
@@ -158,6 +158,7 @@ scenes:
             - *noir
       - id: s_savva
         start: "@Савва-0.22"
+        captions_top: 740
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: end, z: 1.06, x: 540, y: 930}]}
           layers:
@@ -398,8 +399,8 @@ scenes:
             - {actor: shape, kind: rect, x: 900, y: 1240, w: 18, h: 120, fill: "#2a2e33"}
             - {actor: lamp_post, x: 760, y: 1310, h: 680, left: true, on: [{at: 0, v: 1}, {at: "@фонарь", v: 0.2, dur: 0.05}, {at: "@фонарь+0.1", v: 1, dur: 0.05}]}
             - {actor: puddle, x: 380, y: 1640, w: 460, h: 80, sky: "#3a4652", light: "#e8a23a"}
-            - {actor: noir_figure, id: sv, x: 300, y: 1560, scale: 1.25, kind: courier, hold: box, rim: "#e8a23a", rim_side: 1}
-            - {actor: laser, x: 0, y: 0, from: [1300, 200], to: [350, 1240], beam: 0.6, at: "@вспыхивает-0.05", enter: {type: fade, dur: 0.1}}
+            - {actor: noir_figure, id: sv, x: 220, y: 1560, scale: 1.25, kind: courier, hold: box, rim: "#e8a23a", rim_side: 1}
+            - {actor: laser, x: 0, y: 0, from: [1300, 200], to: [270, 1240], beam: 0.6, at: "@вспыхивает-0.05", enter: {type: fade, dur: 0.1}}
             - *rain
             - *noir
       - id: h_ada
@@ -424,7 +425,7 @@ scenes:
         start: "@бежит-0.22"
         draw:
           world: [2600, 1920]
-          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 1000}], follow: {id: runner, dx: 260, axis: x}, shakes: [{at: "@прошивает", amp: 18, dur: 0.35, freq: 6}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 1000}], follow: {id: runner, dx: 300, axis: x}, shakes: [{at: "@прошивает", amp: 18, dur: 0.35, freq: 6}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 3200, h: 1500, hour: 23, colors: ["#07090c", "#121820", "#26303a"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: cranes, x: 1300, y: 1030, w: 3200, h: 620, n: 6, color: "#2e3640", par: 0.2, seed: 8}
@@ -447,7 +448,7 @@ scenes:
       - id: h_freeze
         start: "@замирает-0.22"
         draw:
-          camera: {keys: [{t: 0, z: 1.3, x: 420, y: 1000}, {t: "@идёт", z: 1.3, x: 420, y: 1000}, {t: end, z: 1.0, x: 700, y: 980, ease: inout}], shakes: [{at: "@бетон", amp: 16, dur: 0.35, freq: 6}]}
+          camera: {keys: [{t: 0, z: 1.3, x: 540, y: 1000}, {t: "@идёт", z: 1.3, x: 540, y: 1000}, {t: end, z: 1.0, x: 700, y: 980, ease: inout}], shakes: [{at: "@бетон", amp: 16, dur: 0.35, freq: 6}]}
           layers:
             - {actor: shape, kind: rect, x: 540, y: 900, w: 2000, h: 1400, fill: {linear: ["#3a3f44", "#23272b"], angle: 180}}
             - {actor: sketch, kind: rect, x: 540, y: 700, w: 1900, h: 900, stroke: "#2a2e33", sw: 2, fill: "none", roughness: 2, seed: 4}
@@ -532,6 +533,7 @@ scenes:
             - {<<: *noir, flash: [{at: 0, v: 0}, {at: "@фуру", v: 0.6, dur: 0.04}, {at: "@фуру+0.1", v: 0, dur: 0.25}]}
       - id: o_walk
         start: "@Ему-0.22"
+        captions_top: 760
         transition: {type: whip_x}
         draw:
           camera: {keys: [{t: 0, z: 1.0, x: 540, y: 980}, {t: end, z: 1.12, x: 540, y: 900}]}
@@ -616,7 +618,7 @@ scenes:
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 23, colors: ["#07090c", "#141b22", "#2a343e"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: pier, x: 0, y: 0, view: long, vp: [540, 820], spray: ["@прибоя"], beam_speed: 0.14}
-            - {actor: noir_figure, x: 900, y: 1960, scale: 2.1, view: front, kind: courier, hold: box, rim: "#ffcf8a", rim_side: 1}
+            - {actor: noir_figure, x: 960, y: 1960, scale: 2.1, view: front, kind: courier, hold: box, rim: "#ffcf8a", rim_side: 1}
             - *rain
             - {actor: timetag, slot: tag, text: "04:58 · СЕВЕРНЫЙ МОЛ", at: "@Четыре", enter: {type: fade, dur: 0.3}}
             - *noir
@@ -720,9 +722,10 @@ scenes:
             - {<<: *noir, glitch: [{at: "@прыгают", dur: 0.2}]}
       - id: t_flee
         start: "@открыл-0.22"
+        captions_top: 770
         transition: {type: dip, dur: 0.3}
         draw:
-          camera: {keys: [{t: 0, z: 1.1, x: 540, y: 1100}, {t: end, z: 1.0, x: 540, y: 940}]}
+          camera: {keys: [{t: 0, z: 1.02, x: 540, y: 980}, {t: end, z: 1.0, x: 540, y: 950}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 1680, h: 1500, hour: 23, colors: ["#07090c", "#141b22", "#2a343e"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: pier, x: 0, y: 0, view: end, vp: [540, 900], beam_speed: 0.12}
@@ -759,9 +762,10 @@ scenes:
     shots:
       - id: c_chair
         transition: {type: dip, dur: 0.4}
+        captions_top: 700
         ambience: [{sound: hum, gain: -18}]
         draw:
-          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.1, x: 540, y: 980}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 1000}, {t: end, z: 1.04, x: 540, y: 1000}]}
           layers:
             - {actor: market_hall, x: -160, y: 0, w: 1400, blur: 8, brightness: 0.5, crowd: 0, lights: [{at: 0, v: 0.5}, {at: "@пустое", v: 0.1, dur: 0.3}]}
             - {actor: ground, x: -400, y: 1860, w: 1900, h: 500, color: ["#1e1b18", "#0a0908"]}
