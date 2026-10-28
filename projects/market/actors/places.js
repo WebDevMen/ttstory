@@ -8,7 +8,7 @@ const MONO = `"IBM Plex Mono", monospace`, COND = `"Oswald", sans-serif`;
 
 // ------------------------------------------------------------------ market_hall: long cold-storage hall turned into a market
 // w, h, vp [x, y] (vanishing point), lights (track 0..1: share of lamps lit, near → far), gate (track 0..1: far gate open),
-// crowd (count of far silhouettes), stalls (bool), sway (lamp swing), seed, fog (0..1)
+// crowd (count of far silhouettes), stalls (bool), lamp_sway (lamp swing), seed, fog (0..1)
 export const market_hall = {
   backdrop: true,
   origin: "top-left",
@@ -99,7 +99,7 @@ export const market_hall = {
     return {
       el: svg, w, h,
       update(t, it) {
-        const lit = it.v("lights", p.lights ?? 1), sw = p.sway ?? 1;
+        const lit = it.v("lights", p.lights ?? 1), sw = p.lamp_sway ?? 1;
         let l = "";
         lampZ.forEach((z, i) => {
           const on = lit * lampZ.length - i, k = 1 / z;
@@ -372,7 +372,7 @@ export const pier = {
 };
 
 // ------------------------------------------------------------------ truck: semi truck side view facing right (origin bottom)
-// color, lights (track 0..1), spin (wheel turns per second)
+// color, lights (track 0..1), wheels (wheel turns per second)
 export const truck = {
   origin: "bottom",
   grounded: true,
@@ -396,7 +396,7 @@ export const truck = {
       el: svg, w, h,
       update(t, it) {
         beam.setAttribute("opacity", it.v("lights", p.lights ?? 1));
-        const a = t * (p.spin ?? 2) * 360;
+        const a = t * (p.wheels ?? 2) * 360;
         whl.innerHTML = wx.map((x) => `<g transform="translate(${x},${h - 50}) rotate(${a})"><circle r="50" fill="#0e1012"/><circle r="26" fill="#5a6168"/>${[0, 72, 144, 216, 288].map((d) => `<rect x="-3" y="-24" width="6" height="14" fill="#2a2e33" transform="rotate(${d})"/>`).join("")}</g>`).join("");
       },
     };

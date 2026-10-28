@@ -123,7 +123,7 @@ export const price_tag = {
 };
 
 // ------------------------------------------------------------------ death_watch: market watch, macro (origin center)
-// kind: pocket | wrist; display (track text in the aperture), disp_color, glow (track 0..1), hands: real time from `time` (track,
+// kind: pocket | wrist; display (track text in the aperture), disp_color, lit (track 0..1), hands: real time from `time` (track,
 // hours) + seconds ticking; tick (bool), r (case radius), shake (track px: jumping display), stopped (track 0..1: hands stop)
 export const death_watch = {
   origin: "center",
@@ -168,7 +168,7 @@ export const death_watch = {
         const ha = (tm % 12) / 12 * 360, ma = (tm % 1) * 360, sa = sec * 6;
         const hand = (a, len, wd, c) => `<line x1="${cx - Math.sin(a * Math.PI / 180) * len * 0.18}" y1="${cy + Math.cos(a * Math.PI / 180) * len * 0.18}" x2="${cx + Math.sin(a * Math.PI / 180) * len}" y2="${cy - Math.cos(a * Math.PI / 180) * len}" stroke="${c}" stroke-width="${wd}" stroke-linecap="round"/>`;
         hands.innerHTML = hand(ha, r * 0.45, 9, "#e8e1d0") + hand(ma, r * 0.66, 6, "#e8e1d0") + hand(sa, r * 0.74, 2.5, RED) + `<circle cx="${cx}" cy="${cy}" r="9" fill="${metal[1]}"/>`;
-        const txt = String(it.v("display", p.display ?? "--.--.---- --:--")), gl = it.v("glow", 1), shk = it.v("shake", 0);
+        const txt = String(it.v("display", p.display ?? "--.--.---- --:--")), gl = it.v("lit", 1), shk = it.v("shake", 0);
         const jx = shk ? (H.rng(Math.floor(t * 30))() - 0.5) * shk : 0;
         const fs = Math.min(ah * 0.62, (aw - 30) / Math.max(1, txt.length) * 1.62);
         disp.innerHTML = `<text x="${cx + jx}" y="${ay + ah / 2 + fs * 0.36}" text-anchor="middle" font-family="${MONO}" font-weight="600" font-size="${fs}" fill="${dcol}" opacity="${0.35 + 0.65 * gl}" style="filter:drop-shadow(0 0 ${8 * gl}px ${dcol})">${txt}</text>`;
@@ -223,7 +223,7 @@ export const mirror_24 = {
 };
 
 // ------------------------------------------------------------------ bullet_macro: wooden cassette with brass cartridges (origin center)
-// n (holes), count (track: cartridges present), engrave (text on the cases), glow (track 0..1: engraving lights up)
+// n (holes), count (track: cartridges present), engrave (text on the cases), lit (track 0..1: engraving lights up)
 export const bullet_macro = {
   origin: "center",
   create(p, H) {
@@ -242,7 +242,7 @@ export const bullet_macro = {
     return {
       el: svg, w, h,
       update(t, it) {
-        const cnt = it.v("count", n), gl = it.v("glow", 0);
+        const cnt = it.v("count", n), gl = it.v("lit", 0);
         let c = "";
         for (let i = 0; i < n; i++) {
           const x = 60 + gap / 2 + i * (cw + gap), y = h - 214;

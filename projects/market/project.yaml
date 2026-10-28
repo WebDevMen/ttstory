@@ -189,7 +189,7 @@ scenes:
             - *hall_blur
             - {actor: shape, kind: rect, x: 540, y: 1500, w: 1800, h: 1200, fill: {linear: ["#3a1418", "#12060a"], angle: 180}}
             - {actor: light_pool, x: 760, y: 700, r: 520, color: "#ffd89a", a: 0.3, blur: 30}
-            - {actor: death_watch, x: 540, y: 880, scale: 1.0, time: 3.2, display: [{at: 0, v: "--.--.---- --:--"}, {at: "@смерти", v: "14.11.2061 · 03:12"}], glow: [{at: 0, v: 0.2}, {at: "@смерти", v: 1, dur: 0.4}]}
+            - {actor: death_watch, x: 540, y: 880, scale: 1.0, time: 3.2, display: [{at: 0, v: "--.--.---- --:--"}, {at: "@смерти", v: "14.11.2061 · 03:12"}], lit: [{at: 0, v: 0.2}, {at: "@смерти", v: 1, dur: 0.4}]}
             - {actor: name_tag, x: 540, y: 330, space: screen, label: "ЧАСЫ", sub: "ВРЕМЯ СМЕРТИ ВЛАДЕЛЬЦА", color: sodium, at: "@часы", enter: {type: wipe_right, dur: 0.3}}
             - {<<: *noir, flare: [760, 520], flare_k: 0.4}
       - id: s_mirror
@@ -201,8 +201,8 @@ scenes:
             - *hall_blur
             - {actor: mirror_24, x: 540, y: 960, scale: 1.05, stamp: "+24 Ч", ripple: [{at: 0, v: 0}, {at: "@сутки-0.2", v: 1, dur: 0.25}, {at: "@сутки+0.2", v: 0, dur: 0.4}],
                children: [
-                 {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 380], crowd: 5, lights: 1, sway: 0},
-                 {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 380], crowd: 0, lights: 0.35, sway: 0, stalls: false, seed: 9, at: "@сутки", enter: {type: fade, dur: 0.3}},
+                 {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 380], crowd: 5, lights: 1, lamp_sway: 0},
+                 {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 380], crowd: 0, lights: 0.35, lamp_sway: 0, stalls: false, seed: 9, at: "@сутки", enter: {type: fade, dur: 0.3}},
                  {actor: shape, kind: rect, x: 274, y: 404, w: 560, h: 820, fill: "rgba(60,90,130,0.25)", at: "@сутки", enter: {type: fade, dur: 0.3}}]}
             - {actor: name_tag, x: 540, y: 330, space: screen, label: "ЗЕРКАЛО", sub: "ЭТА КОМНАТА ЧЕРЕЗ 24 ЧАСА", color: "#9fc4dc", at: "@Зеркало", enter: {type: wipe_right, dur: 0.3}}
             - *noir
@@ -214,7 +214,7 @@ scenes:
             - *hall_blur
             - {actor: shape, kind: rect, x: 540, y: 1500, w: 1800, h: 1200, fill: {linear: ["#2a1d12", "#0e0905"], angle: 180}}
             - {actor: light_pool, x: 540, y: 600, r: 600, color: "#ffd89a", a: 0.25, blur: 30}
-            - {actor: bullet_macro, x: 540, y: 1000, scale: 1.0, glow: [{at: 0, v: 0}, {at: "@условии", v: 1, dur: 0.4}]}
+            - {actor: bullet_macro, x: 540, y: 1000, scale: 1.0, lit: [{at: 0, v: 0}, {at: "@условии", v: 1, dur: 0.4}]}
             - {actor: name_tag, x: 540, y: 330, space: screen, label: "ПАТРОНЫ", sub: "БЬЮТ ПРИ УСЛОВИИ", color: sodium, at: "@Патроны", enter: {type: wipe_right, dur: 0.3}}
             - {<<: *noir, flare: [540, 560], flare_k: 0.35}
       - id: s_reflect
@@ -227,7 +227,7 @@ scenes:
             - {actor: mirror_24, x: 540, y: 900, scale: 0.95, frost: 0.5,
                ripple: [{at: 0, v: 0}, {at: "@отражении-0.15", v: 0.8, dur: 0.15}, {at: "@отражении+0.1", v: 0, dur: 0.3}, {at: "@Моргает-0.1", v: 1, dur: 0.1}, {at: "@Моргает+0.15", v: 0, dur: 0.25}],
                children: [
-                 {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 360], crowd: 4, lights: 1, sway: 0, seed: 3},
+                 {actor: market_hall, x: 0, y: 0, w: 548, h: 808, vp: [274, 360], crowd: 4, lights: 1, lamp_sway: 0, seed: 3},
                  {actor: noir_figure, x: 120, y: 760, scale: 1.0, kind: courier, rim: "#ffcf8a", walk: 1.3, anim: [{at: "@проходит-0.2", dur: 6.5, x: 520, ease: linear}], until: "@отражении", exit: {type: fade, dur: 0.1}},
                  {actor: noir_figure, x: 274, y: 760, scale: 0.62, view: front, kind: courier, rim: "#ffcf8a", pose: {sh1: 20, el1: 60, sh2: 20, el2: 60, th1: 0, kn1: 0, th2: 0, kn2: 0, lean: 0}, at: "@отражении", until: "@Моргает", enter: {type: fade, dur: 0.1}, exit: {type: fade, dur: 0.08}},
                  {actor: appraiser_desk, x: 274, y: 800, scale: 0.42, at: "@отражении", until: "@Моргает", enter: {type: fade, dur: 0.1}, exit: {type: fade, dur: 0.08}},
@@ -364,7 +364,7 @@ scenes:
             - {actor: shape, kind: rect, x: 540, y: 960, w: 1500, h: 2200, fill: {radial: ["#1e1a14", "#050505"]}}
             - {actor: death_watch, x: 540, y: 900, kind: wrist, scale: 1.0, time: 1.33,
                display: [{at: 0, v: "СЕГОДНЯ"}, {at: "@дата", v: "СЕГОДНЯ · 14.11"}, {at: "@Пять", v: "05:00"}], disp_color: "#ff5a68",
-               glow: [{at: 0, v: 0.4}, {at: "@Пять", v: 1, dur: 0.3}]}
+               lit: [{at: 0, v: 0.4}, {at: "@Пять", v: 1, dur: 0.3}]}
             - {actor: shape, kind: rect, x: 540, y: -400, w: 760, h: 900, fill: {linear: ["#0d0e10", "#1c1e22"], angle: 180}, anim: [{at: "@Пять+0.9", dur: 0.8, y: 360, ease: inout}]}
             - {actor: name_tag, x: 540, y: 300, space: screen, label: "ЧАСЫ ВАЙСА", sub: "ВРЕМЯ ЕГО СМЕРТИ", color: sodium, at: "@запястье", enter: {type: wipe_right, dur: 0.3}}
             - *noir
@@ -507,7 +507,7 @@ scenes:
           camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.1}], shakes: [{at: "@шестьдесят", amp: 6, dur: 0.25, freq: 6}]}
           layers:
             - *dark_bg
-            - {actor: death_watch, x: 540, y: 980, kind: wrist, scale: 1.0, time: 3.7, display: [{at: 0, v: "----"}, {at: "@шестьдесят", v: "2061"}], glow: [{at: 0, v: 0.3}, {at: "@шестьдесят", v: 1, dur: 0.3}]}
+            - {actor: death_watch, x: 540, y: 980, kind: wrist, scale: 1.0, time: 3.7, display: [{at: 0, v: "----"}, {at: "@шестьдесят", v: "2061"}], lit: [{at: 0, v: 0.3}, {at: "@шестьдесят", v: 1, dur: 0.3}]}
             - {actor: name_tag, x: 540, y: 330, space: screen, label: "ЧАСОВЩИК", sub: "ЕГО ЧАСЫ: 2061", color: sodium, at: "@Часовщик", enter: {type: wipe_right, dur: 0.3}}
             - *noir
       - id: o_truck
@@ -515,7 +515,7 @@ scenes:
         captions_top: 760
         draw:
           world: [2400, 1920]
-          camera: {keys: [{t: 0, z: 1.0, x: 900, y: 1000}, {t: end, z: 1.0, x: 1100, y: 1000}], shakes: [{at: "@фуру", amp: 22, dur: 0.4, freq: 6}]}
+          camera: {keys: [{t: 0, z: 1.0, x: 900, y: 1000}, {t: end, z: 1.0, x: 1100, y: 1000}], shakes: [{at: "@фуру", amp: 9, dur: 0.3, freq: 6}]}
           layers:
             - {actor: sky, x: -300, y: 0, w: 3000, h: 1500, hour: 23, colors: ["#07090c", "#121820", "#26303a"], sun: false, moon: false, stars: 0, clouds: 0}
             - {actor: cranes, x: 1200, y: 1060, w: 3200, h: 560, n: 5, color: "#2e3640", par: 0.2, seed: 5}
@@ -527,7 +527,7 @@ scenes:
             - {actor: noir_figure, id: ck, x: 1180, y: 1600, scale: 1.2, kind: hat, watch: "#e8a23a", rim: "#fff4d6", rim_side: -1, flip: true,
                rot: [{at: 0, v: 0}, {at: "@фуру", v: -84, dur: 0.18, ease: out}, {at: "@встаёт-0.1", v: 0, dur: 0.5, ease: out}],
                anim: [{at: "@фуру", dur: 0.18, dx: 120, dy: -10}]}
-            - {actor: truck, x: -600, y: 1640, scale: 0.85, lights: 1, spin: 3, anim: [{at: "@бросается-0.22", dur: 2.4, x: 2600, ease: linear}]}
+            - {actor: truck, x: -600, y: 1640, scale: 0.85, lights: 1, wheels: 3, anim: [{at: "@бросается-0.22", dur: 2.4, x: 2600, ease: linear}]}
             - {actor: particles, kind: burst, from: [1180, 1560], at: "@фуру", count: 34, colors: ["#ffcf8a", "#fff4d6", "#e8a23a"], size: [3, 8]}
             - *rain
             - {<<: *noir, flash: [{at: 0, v: 0}, {at: "@фуру", v: 0.6, dur: 0.04}, {at: "@фуру+0.1", v: 0, dur: 0.25}]}
@@ -715,9 +715,9 @@ scenes:
           camera: {keys: [{t: 0, z: 1.0, x: 400, y: 960}, {t: end, z: 1.0, x: 680, y: 960}]}
           layers:
             - *dark_bg
-            - {actor: death_watch, x: 200, y: 960, kind: wrist, scale: 0.6, display: [{at: 0, v: "2061"}, {at: "@прыгают", v: "05:01"}], disp_color: [{at: 0, v: "#e8a23a"}], glow: 1, shake: [{at: 0, v: 0}, {at: "@прыгают", v: 12}, {at: "@прыгают+0.5", v: 0, dur: 0.3}]}
-            - {actor: death_watch, x: 540, y: 960, kind: wrist, scale: 0.6, display: [{at: 0, v: "2058"}, {at: "@прыгают+0.08", v: "05:01"}], glow: 1, shake: [{at: 0, v: 0}, {at: "@прыгают", v: 12}, {at: "@прыгают+0.5", v: 0, dur: 0.3}]}
-            - {actor: death_watch, x: 880, y: 960, kind: wrist, scale: 0.6, display: [{at: 0, v: "2049"}, {at: "@прыгают+0.16", v: "05:01"}], glow: 1, shake: [{at: 0, v: 0}, {at: "@прыгают", v: 12}, {at: "@прыгают+0.5", v: 0, dur: 0.3}]}
+            - {actor: death_watch, x: 200, y: 960, kind: wrist, scale: 0.6, display: [{at: 0, v: "2061"}, {at: "@прыгают", v: "05:01"}], disp_color: [{at: 0, v: "#e8a23a"}], lit: 1, shake: [{at: 0, v: 0}, {at: "@прыгают", v: 12}, {at: "@прыгают+0.5", v: 0, dur: 0.3}]}
+            - {actor: death_watch, x: 540, y: 960, kind: wrist, scale: 0.6, display: [{at: 0, v: "2058"}, {at: "@прыгают+0.08", v: "05:01"}], lit: 1, shake: [{at: 0, v: 0}, {at: "@прыгают", v: 12}, {at: "@прыгают+0.5", v: 0, dur: 0.3}]}
+            - {actor: death_watch, x: 880, y: 960, kind: wrist, scale: 0.6, display: [{at: 0, v: "2049"}, {at: "@прыгают+0.16", v: "05:01"}], lit: 1, shake: [{at: 0, v: 0}, {at: "@прыгают", v: 12}, {at: "@прыгают+0.5", v: 0, dur: 0.3}]}
             - {actor: noir_rule, x: 540, y: 1480, space: screen, kicker: "ЧАСЫ ВСЕХ ТРОИХ", text: "05:01 — ЧЕРЕЗ МИНУТУ", size: 76, at: "@одну", enter: {type: wipe_right, dur: 0.2}}
             - {<<: *noir, glitch: [{at: "@прыгают", dur: 0.2}]}
       - id: t_flee
