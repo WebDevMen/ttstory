@@ -271,7 +271,8 @@ export const wet_ground = {
 
 // ------------------------------------------------------------------ city_chunk: a city block torn off the ground, side view
 // w, soil (depth px), buildings: [{x, floors, cols, color, seed}] (panel_block, x from the left edge), view: side;
-// drip (0..1): water and dirt fall UP from the underside; crack (0..1): glow line along the tear; ground (asphalt colour)
+// drip (0..1): water and dirt fall UP from the underside; crack (0..1): glow line along the tear; ground (asphalt colour);
+// flat: true — a level underside at y = soil + 30 (people stand on it upside down); weed (0..1): sea weed on the underside
 export const city_chunk = {
   backdrop: true,
   origin: "top-left",
@@ -282,7 +283,7 @@ export const city_chunk = {
     // underside: jagged bottom contour
     let bot = `M0,30`;
     const n = 18;
-    for (let i = 0; i <= n; i++) { const x = (w * i) / n, depth = soil * (0.55 + 0.45 * Math.sin(Math.PI * i / n)) * (0.85 + R() * 0.3); bot += ` L${x},${30 + depth}`; }
+    for (let i = 0; i <= n; i++) { const x = (w * i) / n, depth = p.flat ? soil * (i === 0 || i === n ? 0.7 : 1 - 0.03 * R()) : soil * (0.55 + 0.45 * Math.sin(Math.PI * i / n)) * (0.85 + R() * 0.3); bot += ` L${x},${30 + depth}`; }
     bot += ` L${w},30 Z`;
     let s = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4038"/><stop offset=".35" stop-color="#3a322b"/><stop offset=".7" stop-color="#2a2622"/><stop offset="1" stop-color="#1c1a18"/></linearGradient>
       <clipPath id="${id}c"><path d="${bot}"/></clipPath></defs>
@@ -299,6 +300,9 @@ export const city_chunk = {
     for (let i = 0; i < 26; i++) { let x = R() * w, y = 34, d = `M${x},${y}`; for (let k = 0; k < 4; k++) { x += (R() - 0.5) * 40; y += 20 + R() * 40; d += ` L${x},${y}`; } s += `<path d="${d}" stroke="#2a221c" stroke-width="${1.5 + R() * 3}" fill="none" opacity=".8"/>`; }
     // top surface (asphalt + curb)
     s += `<rect x="0" y="16" width="${w}" height="20" fill="${p.ground ?? "#3a4046"}"/><rect x="0" y="12" width="${w}" height="6" fill="#7b838a"/>`;
+    // weed (0..1): sea weed stuck to the underside, pressed up against the soil (wet things fall up), drips upward
+    if (p.weed) for (let i = 0; i < 30 * p.weed; i++) { const x = w * (0.04 + 0.92 * R()), y = 30 + soil * (p.flat ? 0.97 : 0.6), l = 50 + R() * 90;
+      s += `<path d="M${x},${y} q${-14 + R() * 28},${-l * 0.4} ${-20 + R() * 40},${-l * 0.5} t${-10 + R() * 20},${-l * 0.5}" stroke="${R() < 0.5 ? "#2f4a33" : "#3e5a3c"}" stroke-width="${4 + R() * 6}" fill="none" stroke-linecap="round" opacity=".9"/>`; }
     s += `<path class="crack" d="${bot}" fill="none" stroke="#dfe8ee" stroke-width="3" opacity="0"/><g class="drip"></g>`;
     const svg = H.svg(s, w, soil + 40);
     svg.style.top = "0px";

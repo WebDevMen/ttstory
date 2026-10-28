@@ -1,6 +1,6 @@
 // EMERGENCY ARCHIVE — interface of a leaked survival-protocol recording (projects/tide).
 // archive: the "found footage" look of a source (CCTV, phone, dashcam, helmet cam, drone, document scan, cinema)
-//          + the protocol corner (PROTOCOL 07, timecode, source) + signal failures at given moments.
+//          + the protocol corner (PROTOCOL 07 or `proto`, timecode, source) + signal failures at given moments.
 // rule_card: a new protocol rule in large type for 1–2 s. Red only for danger.
 // Palette: near-black #0a0c0f, steel #3c4650, cold grey #8a96a2, white #f2f4f6, emergency red #e3262f.
 
@@ -83,7 +83,7 @@ export const archive = {
         }
         tc.textContent = tcs;
         sub.textContent = it.v("date", p.date ?? "14.11.2026");
-        proto.innerHTML = `PROTOCOL 07${stage >= 1 ? ` <span style="color:${stage >= 2 ? RED : WHITE};opacity:.9">· ${it.v("status", p.status ?? (stage >= 2 ? "СБОЙ" : "АКТИВЕН"))}</span>` : ""}`;
+        proto.innerHTML = `${p.proto ?? "PROTOCOL 07"}${stage >= 1 ? ` <span style="color:${stage >= 2 ? RED : WHITE};opacity:.9">· ${it.v("status", p.status ?? (stage >= 2 ? "СБОЙ" : "АКТИВЕН"))}</span>` : ""}`;
         src.textContent = it.v("src", p.src ?? "ИСТОЧНИК НЕИЗВЕСТЕН");
         src.style.color = it.v("src_red", 0) ? RED : GREY;
         dot.style.opacity = (p.rec ?? (p.kind === "phone" || p.kind === "dash" || p.kind === "helmet")) ? (Math.sin(t * 5.5) > -0.2 ? 1 : 0.15) : 0;
