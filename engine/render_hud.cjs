@@ -51,7 +51,12 @@ async function renderRange(browser, pid, fps, start, end, outFile) {
     const src = bg(pid, f);
     if (!src) throw new Error(`missing scene frame ${f} — run: python3 vg.py scene ${pid}`);
     await page.evaluate(([fr, s]) => window.renderFrame(fr, s), [f, src]);
-    const buf = await page.screenshot({ type: "jpeg", quality: 95 });
+    // under heavy load a screenshot can time out "waiting for fonts": retry the same frame instead of losing the whole range
+    let buf = null;
+    for (let k = 0; !buf; k++) {
+      try { buf = await page.screenshot({ type: "jpeg", quality: 95, timeout: 90000 }); }
+      catch (e) { if (k >= 3) throw e; console.log(`  [${start}-${end}] frame ${f}: screenshot retry ${k + 1} (${e.name})`); }
+    }
     if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
     if ((f - start) % 90 === 0) console.log(`  [${start}-${end}] frame ${f} (${((Date.now() - t0) / (f - start + 1)).toFixed(0)} ms/f)`);
   }

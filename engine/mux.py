@@ -26,7 +26,10 @@ def run(pid, out=None, maxrate="8M", crf=19):
                            capture_output=True, text=True).stderr
     m = json.loads(re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", probe, re.S).group(0))
     af = (f"loudnorm={target}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}"
-          f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true,aresample=48000")
+          f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true,aresample=48000,"
+          # loud short hits (glitch, shutter) can still reach 0 dBFS after the linear gain: a limiter at −4 dBFS keeps the
+          # true peak under the −1.5 dBTP the platforms expect (AAC adds 1–2.5 dB of overshoot on noisy hits)
+          f"alimiter=limit=0.63:attack=1:release=60:level=false")
     bufsize = f"{int(maxrate.rstrip('M')) * 2}M"
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", video, "-i", audio, "-map", "0:v", "-map", "1:a",
                     "-c:v", "libx264", "-preset", "slow", "-crf", str(crf), "-maxrate", maxrate, "-bufsize", bufsize, "-pix_fmt", "yuv420p",
