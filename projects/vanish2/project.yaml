@@ -161,18 +161,17 @@ scenes:
                 - {actor: chat_screen, x: 0, y: 0, w: 484, h: 904, name: "Ира", status: "была в 09:55",
                    msgs: [{text: "Лен, если меня не будет на селфи — не смотри.", time: "09:53"}, {photo: true, time: "09:55", label: "НЕ ОТКРЫТО"}],
                    hl: [{at: 0, v: -1}, {at: "@селфи", v: 0}, {at: "@помнит", v: 1}]}
-            - {actor: human_hand, x: 1200, y: 1500, rot: -60, skin: "#f1d2bd", sleeve: "#3f7a5a", anim: [{at: "@помнит-0.3", dur: 0.6, x: 700, y: 1160, ease: out}, {at: "@видела", dur: 0.4, x: 1300, y: 1000, ease: in}]}
+            - {actor: human_hand, x: 1300, y: 950, rot: -60, skin: "#f1d2bd", sleeve: "#3f7a5a", anim: [{at: "@помнит-0.3", dur: 0.6, x: 700, y: 1160, ease: out}, {at: "@видела", dur: 0.4, x: 1300, y: 1000, ease: in}]}
             - {<<: *tag, at: "@видела", x: 540, y: 250, text: "НЕ ВИДЕЛА СНИМОК → ПОМНИТ"}
             - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · ЧАТ", time: "10:02:20"}
       - id: s_tema
         start: "@Сын-0.22"
-        captions_top: 1700
         draw:
-          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05, y: 940}]}
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04, y: 940}]}
           layers:
-            - {actor: kitchen, x: -200, y: 0, w: 1500, h: 1920, floor_y: 1400, window: [560, 260, 560, 640], steam: 1}
-            - {<<: *tema, x: 540, y: 1760, h: 1150, arms: [hold, hold], face: calm, look_dx: 0.2}
-            - {actor: kitchen_table, x: 540, y: 1920, w: 1200, h: 560}
+            - {actor: kitchen, x: -200, y: 0, w: 1500, h: 1920, floor_y: 1150, window: [560, 160, 560, 560], steam: 1}
+            - {<<: *tema, x: 540, y: 1200, h: 720, arms: [hold, hold], face: calm, look_dx: 0.2}
+            - {actor: kitchen_table, x: 540, y: 1250, w: 900, h: 340}
             - {<<: *tag, at: "@Тёма", x: 540, y: 300, text: "ТЁМА, 7"}
       - id: s_draw
         start: "@рисует-0.22"
@@ -781,7 +780,7 @@ scenes:
               glitch: [{at: "@закрашивают", dur: 0.5}]
               marks: [{x: 40, y: 40, w: 150, h: 150, at: "@повторяется", dash: "1 0", pad: 0}, {x: 200, y: 40, w: 150, h: 150, at: "@повторяется+0.12", dash: "1 0", pad: 0}, {x: 360, y: 40, w: 150, h: 150, at: "@повторяется+0.24", dash: "1 0", pad: 0}]
               children:
-                - {actor: sky, x: 0, y: 0, w: 560, h: 500, hour: 15, clouds: 0}
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 560, h: 500, fill: {linear: ["#8cc0e8", "#e8f0f4"], angle: 180}, origin: top-left}
                 - {actor: building, x: 420, y: 490, floors: 6, cols: 5, color: "#c9b39a", scale: 0.55, seed: 7}
                 - {actor: tree, kind: round, x: 70, y: 500, h: 260, seed: 5}
                 - {actor: shape, kind: rect, x: 0, y: 480, w: 560, h: 200, fill: "#7ea35a", origin: top-left}
@@ -874,7 +873,7 @@ scenes:
         transition: {type: fade, dur: 0.3}
         draw:
           bg: *desk_bg
-          camera: {keys: [{t: 0, z: 1.3, x: 480, y: 980}, {t: "@Ира", z: 1.3, x: 480, y: 980}, {t: end, z: 1.6, x: 720, y: 820, ease: inout}]}
+          camera: {keys: [{t: 0, z: 1.3, x: 480, y: 980}, {t: "@Ира", z: 1.3, x: 480, y: 980}, {t: end, z: 1.45, x: 700, y: 800, ease: inout}]}
           layers:
             - actor: photo
               x: 540
