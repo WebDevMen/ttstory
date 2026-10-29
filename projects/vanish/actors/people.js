@@ -277,7 +277,11 @@ export const class_photo = {
     for (let ri = rows - 1; ri >= 0; ri--) {
       const sc = 1 - ri * 0.1, y = H0 - ri * h0 * 0.36, step = (w * (0.92 - ri * 0.06)) / cols;
       for (let c = 0; c < cols; c++) {
-        if (p.gap && p.gap[0] === ri && p.gap[1] === c) continue;
+        if (p.gap && p.gap[0] === ri && p.gap[1] === c) {
+          // the vanished pupil: kept invisible (gone: 1) so a mark can frame the exact empty place
+          if (p.gap_id) await H.child({ actor: "figure", id: p.gap_id, x: w / 2 + (c - (cols - 1) / 2) * step + (ri % 2) * step * 0.12, y, h: h0 * sc, gone: 1 }, el);
+          continue;
+        }
         const x = w / 2 + (c - (cols - 1) / 2) * step + (ri % 2) * step * 0.12;
         const nextToGap = p.gap && p.gap[0] === ri && Math.abs(p.gap[1] - c) === 1;
         const arms = nextToGap ? (p.gap[1] > c ? ["down", "around"] : ["around", "down"]) : ["down", "down"];

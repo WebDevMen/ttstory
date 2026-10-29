@@ -387,6 +387,16 @@ def _static(pid):
                     continue
                 yield it
                 yield from walk(it.get("children") or it.get("layers"))
+        top = [it for it in (dr.get("layers") or []) if isinstance(it, dict)]
+        if any(it.get("children") for it in top):
+            for it in top:
+                if it.get("actor") in ("shape", "sketch") and str(it.get("fill", "")).lower() in ("none", "transparent") \
+                        and it.get("stroke") and not it.get("children") and not it.get("decor"):
+                    out.append(("warn", "marker", sh["id"], f"shape:{it.get('kind')}", sh["start"], sh["end"],
+                                "рамка-обводка лежит поверх снимка/экрана числами кадра — при повороте снимка, наезде или "
+                                "сдвиге содержимого она «слетает» с объекта; положите её внутрь (photo: marks: [{of: <id>}] — "
+                                "по реальному месту элемента, или в children того же контейнера; декоративный знак, а не "
+                                "рамка на предмет, — decor: true; docs/DRAW.md §10.1)"))
         for it in walk(dr.get("layers")):
             a = it.get("actor")
             if a == "callout" and isinstance(it.get("target"), list) and moving and it.get("space") == "screen":

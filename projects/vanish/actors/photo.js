@@ -2,6 +2,10 @@
 // photo: бумажный отпечаток (белое поле, глянец, зерно, оранжевая дата плёночной камеры) со сценой внутри (children —
 //        координаты внутри изображения 0..w, 0..h). tone: warm | faded | bw | cold | none; glitch: [{at, dur}] — помеха;
 //        fade (дорожка 0..1) — снимок засвечивается до белого; date (строка); border; paper; gloss; Якорь img:x,y.
+//        marks: [{of: <id>, at, until, pad, label, dash}] — рамка вокруг вложенного элемента (в т.ч. невидимого: пропавший
+//        человек ставится в children с gone: 1 и id), считается по его реальному месту внутри снимка и поворачивается,
+//        масштабируется и едет вместе со снимком; {in: <id>, x, y, w, h} — рамка в координатах вложенного элемента;
+//        {x, y, w, h} — в координатах изображения. Рамки поверх снимка числами кадра не задавайте — они «слетают».
 // evidence: оверлей свидетельства (space: screen): «ДЕЛО 0841 · СВИДЕТЕЛЬСТВО 004», источник, время; уголки рамки.
 // rule_card: правило мира крупно: ключ (моно, оранжевый) + текст (Oswald) на тёмной плашке.
 // timeline: лист дела — метки времени на линии, стрелка-интервал с подписью; span (дорожка 0..1) сжимает интервал.
@@ -30,9 +34,22 @@ function fillGrain(H, cv, seed) {
   ctx.putImageData(img, 0, 0);
 }
 
+// box of a nested item in the coordinates of `root`'s content (x, y, scale, origin of every parent applied)
+function boxIn(it, root, inner) {
+  const tf = (node, [x, y, w, h]) => {
+    const s = Number(node.spec.scale ?? 1), o = node.origin || [0, 0];
+    return [(node.spec.x ?? 0) + (x - o[0]) * s, (node.spec.y ?? 0) + (y - o[1]) * s, w * s, h * s];
+  };
+  let b = inner ?? [0, 0, it.w || 0, it.h || 0];
+  if (!inner && it.spec.actor === "figure") b = [(it.w || 0) * 0.27, (it.h || 0) * 0.02, (it.w || 0) * 0.46, (it.h || 0) * 0.94];
+  let node = it;
+  while (node && node !== root) { b = tf(node, b); node = node.parent; }
+  return b;
+}
+
 export const photo = {
   origin: "center",
-  async create(p, H) {
+  async create(p, H, item) {
     const iw = p.w ?? 760, ih = p.h ?? 960, b = p.border ?? 30, bb = p.border_bottom ?? b;
     const W = iw + 2 * b, Hh = ih + b + bb;
     const el = H.div(`width:${W}px;height:${Hh}px`);
@@ -57,6 +74,28 @@ export const photo = {
     date.style.position = "absolute";
     if (!p.date) date.style.display = "none";
     img.append(vig, grain, gl, white, date);
+    // marks: dashed frames around nested items (the vanished person), in image coordinates
+    const mk = H.svg("", iw, ih);
+    img.appendChild(mk);
+    const marks = (p.marks ?? []).map((m) => {
+      const g = H.el("g", {}, mk);
+      const r = H.el("rect", { fill: "none", stroke: H.col(m.color ?? ORANGE), "stroke-width": m.sw ?? 5, "stroke-dasharray": m.dash ?? "14 10", rx: 4 }, g);
+      let tx = null;
+      if (m.label) { tx = H.el("text", { "font-family": "IBM Plex Mono", "font-weight": 600, "font-size": m.label_size ?? 26, fill: H.col(m.color ?? ORANGE), "text-anchor": "middle" }, g); tx.textContent = m.label; }
+      return { m, g, r, tx, box: null };
+    });
+    const place = (k) => {
+      const m = k.m, pad = m.pad ?? 10;
+      let b = null;
+      if (m.of) { const it = item.find(m.of); if (it) b = boxIn(it, item); }
+      else if (m.in) { const it = item.find(m.in); if (it) b = boxIn(it, item, [m.x - m.w / 2, m.y - m.h / 2, m.w, m.h]); }
+      else b = [m.x - m.w / 2, m.y - m.h / 2, m.w, m.h];
+      if (!b) return;
+      k.box = [b[0] - pad, b[1] - pad, b[2] + 2 * pad, b[3] + 2 * pad];
+      const [x, y, w, h] = k.box;
+      k.r.setAttribute("x", x); k.r.setAttribute("y", y); k.r.setAttribute("width", w); k.r.setAttribute("height", h);
+      if (k.tx) { k.tx.setAttribute("x", x + w / 2); k.tx.setAttribute("y", y + h + 34); }
+    };
     const gloss = H.div(`left:${b}px;top:${b}px;width:${iw}px;height:${ih}px;pointer-events:none;mix-blend-mode:screen;
       background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,${p.gloss ?? 0.13}) 45%, transparent 60%);background-size:300% 100%`);
     el.append(paper, img, gloss);
@@ -69,6 +108,12 @@ export const photo = {
         const fade = H.clamp(it.v("fade", 0), 0, 1);
         white.style.opacity = fade;
         date.textContent = it.v("date", p.date ?? "");
+        for (const k of marks) {
+          if (!k.box) place(k);
+          const a = H.P(t, k.m.at ?? -1e9, 0.25) * (t < (k.m.until ?? 1e9) ? 1 : 0);
+          const blink = t - (k.m.at ?? -1e9) < 0.6 ? (Math.floor(t * 10) % 2 ? 0.35 : 1) : 1;
+          k.g.style.opacity = a * blink;
+        }
         let on = null;
         for (const x of glitches) if (t >= x.at && t < x.at + x.dur) on = x;
         if (on) {

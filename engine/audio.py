@@ -1087,7 +1087,7 @@ def run(pid, stems=False):
         pre, post = 0.15, 0.25
         d = s["end"] - s["start"] + pre + post
         for L in layers:
-            params = {k: v_ for k, v_ in L.items() if k not in ("sound", "gain", "lowpass")}
+            params = {k: v_ for k, v_ in L.items() if k not in ("sound", "gain", "lowpass", "until")}
             fn = AMBIENCES.get(L["sound"])
             if fn is None:
                 raise KeyError(f"unknown ambience '{L['sound']}' (available: {', '.join(sorted(AMBIENCES))})")
@@ -1095,7 +1095,14 @@ def run(pid, stems=False):
             if L.get("lowpass"):
                 sig = np.stack([filt(sig[:, c], "lowpass", L["lowpass"]) for c in range(2)], 1)
             sig = sig / (np.sqrt((sig ** 2).mean()) + 1e-9) * 0.1 * db(L.get("gain", -10))
-            amb.add(sig * env_win(len(sig), pre, post)[:, None], s["start"] - pre)
+            sig = sig * env_win(len(sig), pre, post)[:, None]
+            if isinstance(L.get("until"), (int, float)):     # abrupt stop at a moment (a hum that cuts off): 40 ms fade
+                cut = int((L["until"] - (s["start"] - pre)) * SR)
+                if 0 < cut < len(sig):
+                    f = min(int(0.04 * SR), cut)
+                    sig[cut - f:cut] *= np.linspace(1, 0, f)[:, None]
+                    sig[cut:] = 0
+            amb.add(sig, s["start"] - pre)
 
     sfx = Bus(n, norm=True)
     events = []

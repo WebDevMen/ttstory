@@ -277,7 +277,7 @@ def run(pid):
     for x, sh in zip(shots, [s for sc in p["scenes"] for s in sc["shots"]]):
         amb = sh.get("ambience", au.get("ambience", {}).get(x["id"]))
         if amb:
-            ambience[x["id"]] = amb
+            ambience[x["id"]] = refs.deep(amb, x["scene"], (x["start"], x["end"]))   # until: "@слово" -> seconds
 
     theme = refs.deep(p["theme"], None, (0.0, duration))
     if (theme.get("captions") or {}).get("top") == "auto":
