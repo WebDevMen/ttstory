@@ -364,6 +364,39 @@ def s_click():
     return (filt(white(0.04), "highpass", 2500) * np.exp(-t / 0.004) + np.sin(2 * np.pi * 3200 * t) * np.exp(-t / 0.006)) * 0.8
 
 
+@sound("shutter")
+def s_shutter(gap=0.075):
+    """Camera shutter: two mechanical clacks (mirror up / curtain) with a short whirr between them."""
+    def clack(d=0.05, f=2600):
+        t = tt(d)
+        return (filt(white(d), "bp", (f * 0.6, f * 1.8)) * np.exp(-t / 0.006) * 1.2
+                + filt(white(d), "lowpass", 500) * np.exp(-t / 0.012) * 1.5)
+    out = np.zeros(int((gap + 0.12) * SR))
+    a, b = clack(), clack(0.06, 1900)
+    out[:len(a)] += a
+    i0 = int(gap * SR)
+    out[i0:i0 + len(b)] += b * 0.85
+    t = tt(gap)
+    out[:len(t)] += filt(white(gap), "bp", (3500, 7000)) * 0.12 * np.sin(np.pi * t / gap)
+    return out * 0.9
+
+
+@sound("drop")
+def s_drop(seed=0):
+    """A phone falling on a hard floor: a hard knock, a smaller bounce, a short rattle."""
+    r = np.random.RandomState(seed)
+    out = np.zeros(int(0.7 * SR))
+    for t0, g in ((0.0, 1.0), (0.17, 0.45), (0.27, 0.2)):
+        d = 0.18
+        t = tt(d)
+        hit = (filt(white(d), "lowpass", 260) * np.exp(-t / 0.03) * 3.0
+               + filt(white(d), "bp", (1800, 5200)) * np.exp(-t / 0.008) * 0.9
+               + s_metal(d, r.uniform(900, 1300), seed)[:len(t)] * 0.25)
+        i0 = int(t0 * SR)
+        out[i0:i0 + len(hit)] += hit * g
+    return out
+
+
 @sound("pop")
 def s_pop(f=520):
     t = tt(0.12)
