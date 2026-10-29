@@ -382,6 +382,9 @@ def _static(pid):
 
         def walk(layers):
             for it in layers or []:
+                if isinstance(it, list):            # a YAML anchor list inserted as one item (children: [*shared, ...])
+                    yield from walk(it)
+                    continue
                 yield it
                 yield from walk(it.get("children") or it.get("layers"))
         for it in walk(dr.get("layers")):

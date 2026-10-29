@@ -33,5 +33,17 @@ mkdir -p models
 [ -f models/esrgan_x4.onnx ] || curl -fL --retry 4 -o models/esrgan_x4.onnx https://huggingface.co/imgdesignart/realesrgan-x4-onnx/resolve/main/onnx/model.onnx
 [ -f models/depth.onnx ] || curl -fL --retry 4 -o models/depth.onnx https://huggingface.co/onnx-community/depth-anything-v2-small/resolve/main/onnx/model.onnx
 
+# optional local (offline) Russian voices: VG_LOCAL_TTS=1 ./setup.sh — Vosk-TTS (5 voices, ~750 MB) + Vosk ASR for word timings
+if [ "${VG_LOCAL_TTS:-0}" = "1" ]; then
+  echo "▶ local TTS (Vosk-TTS ru 0.9 multi + Vosk small ru for word timings)"
+  if command -v uv >/dev/null; then uv pip install -q --python .venv/bin/python vosk-tts vosk; else .venv/bin/pip install -q vosk-tts vosk; fi
+  if [ ! -d models/vosk-model-tts-ru-0.9-multi ]; then
+    curl -fL --retry 4 -o models/vosk-tts.zip https://alphacephei.com/vosk/models/vosk-model-tts-ru-0.9-multi.zip && (cd models && unzip -q vosk-tts.zip && rm vosk-tts.zip)
+  fi
+  if [ ! -d models/vosk-model-small-ru-0.22 ]; then
+    curl -fL --retry 4 -o models/vosk-asr.zip https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip && (cd models && unzip -q vosk-asr.zip && rm vosk-asr.zip)
+  fi
+fi
+
 echo "▶ check"
 .venv/bin/python vg.py doctor

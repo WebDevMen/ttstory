@@ -66,7 +66,12 @@ def _flat(layers):
     """A YAML anchor of a list of layers (`- *forge_inside`) arrives as a nested list: splice it into the shot's layers."""
     out = []
     for it in layers or []:
-        out.extend(_flat(it) if isinstance(it, list) else [it])
+        if isinstance(it, list):
+            out.extend(_flat(it))
+            continue
+        if isinstance(it, dict) and isinstance(it.get("children"), list):   # the same inside nested children (photo, group…)
+            it = {**it, "children": _flat(it["children"])}
+        out.append(it)
     return out
 
 

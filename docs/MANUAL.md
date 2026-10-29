@@ -236,7 +236,7 @@ python3 vg.py voice my_video          # синтез по сценам, кэши
 python3 vg.py compile my_video        # покажет длительность, тайминги сцен и шотов
 ```
 
-**Голос:** `ru-RU-DmitryNeural` (уверенный мужской), `ru-RU-SvetlanaNeural` (тёплый женский), `ru-RU-DariyaNeural` (молодой женский). `rate: +15…25%` — динамичный TikTok-темп, `+5…10%` — спокойный. `pitch: -4Hz` делает голос чуть ниже и солиднее.
+**Голос:** `ru-RU-DmitryNeural` (уверенный мужской), `ru-RU-SvetlanaNeural` (тёплый женский), `ru-RU-DariyaNeural` (молодой женский). Для историй лучше мультиязычные голоса Edge — они читают по-русски с более живой интонацией: `fr-FR-RemyMultilingualNeural` (рассказчик), `en-US-AndrewMultilingualNeural`, `en-US-AvaMultilingualNeural`, `en-US-EmmaMultilingualNeural` (реплики героев); офлайн — локальные `vosk:*` (REFERENCE §2). Голос выбирает пользователь: пришлите ему 5–8 коротких образцов одного куска сценария. `rate: +15…25%` — динамичный TikTok-темп, `+5…10%` — спокойный. `pitch: -4Hz` делает голос чуть ниже и солиднее.
 
 **Если ударение неверное:** поставьте `ё` или перепишите фразу. Если пауза слишком длинная или короткая — `voice.pause_long/pause_short`, `keep_pauses: {слово: 0.45}`, `gap_after` у сцены.
 

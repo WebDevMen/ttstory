@@ -48,7 +48,7 @@
 
 | Ключ | По умолчанию | Описание |
 |---|---|---|
-| `voice` | `ru-RU-DmitryNeural` | голос Microsoft Edge TTS. Русские: `ru-RU-DmitryNeural` (муж.), `ru-RU-SvetlanaNeural` (жен.), `ru-RU-DariyaNeural` (жен.). Весь список — `edge-tts --list-voices`; подходят и другие языки (`en-US-GuyNeural`, …) |
+| `voice` | `ru-RU-DmitryNeural` | голос. **Microsoft Edge TTS** (бесплатно, онлайн): русские `ru-RU-DmitryNeural` (муж.), `ru-RU-SvetlanaNeural` (жен.); **мультиязычные голоса говорят по-русски живее** (шире интонация, ровнее ударения): `fr-FR-RemyMultilingualNeural` (муж., рассказчик «Люди выпадают из фотографий»), `en-US-AndrewMultilingualNeural` (тёплый муж.), `en-US-BrianMultilingualNeural`, `en-US-AvaMultilingualNeural` (жен.), `en-US-EmmaMultilingualNeural`, `de-DE-FlorianMultilingualNeural`, `de-DE-SeraphinaMultilingualNeural`. Мультиязычные читают медленнее русских — ставьте `rate` на 5–8 % выше. **Локальный голос (офлайн, процессор):** `vosk:female_0`, `vosk:female_1`, `vosk:female_2`, `vosk:male_0`, `vosk:male_1` — модель Vosk‑TTS ru 0.9 (≈750 МБ, ставится `VG_LOCAL_TTS=1 ./setup.sh`); слова по времени размечаются офлайн-распознавателем Vosk по известному тексту; медленнее Edge (минуты на ролик) и менее выразительно, зато без интернета и сервиса. Весь список Edge — `edge-tts --list-voices` |
 | `rate` | `+20%` | темп речи |
 | `pitch` | `+0Hz` | высота голоса (`-4Hz` — чуть ниже и «увереннее») |
 | `lead_in` | `0.25` | тишина перед первым словом |
