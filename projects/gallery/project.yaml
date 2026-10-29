@@ -251,3 +251,40 @@ scenes:
             - {actor: eclipse, x: 200, y: 380, r: 70, cover: 0.8}
             - {actor: shield, x: 980, y: 1300, r: 70, shine: 1}
             - {actor: hourglass, x: 1000, y: 1060, scale: 0.6, flow: 0.4}
+  - id: archive
+    text: Архив свидетельств и дом.
+    shots:
+      - id: archive_evidence
+        draw:
+          bg: "#2a2420"
+          layers:
+            - {actor: satellite, x: 40, y: 120, w: 1000, h: 700, label: "", erase: 1, patch: 1, patch_outline: 1, patch_label: "ЗАРЕЧЬЕ"}
+            - actor: photo
+              x: 300
+              y: 1180
+              w: 520
+              h: 620
+              rot: -4
+              date: "'26 10 29  08:41"
+              marks: [{of: gone1, pad: 6}]
+              children:
+                - {actor: river, x: 0, y: 0, w: 520, h: 620, horizon: 230, rail_y: 450, waves: [[120, 320], [330, 360]], clouds: [[130, 80], [380, 60]]}
+                - {actor: figure, x: 160, y: 590, h: 300, top: sweater, top_color: "#d9c9a8", hair: bun, arms: [hold, hold], face: smile}
+                - {actor: figure, id: gone1, x: 280, y: 592, h: 310, gone: 1}
+                - {actor: figure, x: 400, y: 590, h: 220, kid: true, top: tshirt, top_color: "#f2c230", face: laugh}
+            - {actor: note, x: 790, y: 1010, w: 420, h: 300, rot: 5}
+            - {actor: carousel, x: 800, y: 1640, h: 360}
+            - {actor: evidence, x: 0, y: 0, space: screen, case: "ДЕЛО 0841", src: "ГАЛЕРЕЯ · АРХИВ", time: "10:31:00"}
+      - id: archive_home
+        start: "@дом-0.1"
+        draw:
+          layers:
+            - {actor: kitchen, x: -160, y: 0, w: 1400, h: 1920, floor_y: 1500, window: [440, 300, 520, 600], steam: 1}
+            - {actor: fridge, x: 1000, y: 1510, h: 1000}
+            - {actor: town_house, x: 230, y: 980, w: 360}
+            - {actor: figure, x: 330, y: 1520, h: 900, top: dress, top_color: "#3f7a5a", hair: bob, hair_color: "#b5562c", arms: [down, hold], face: smile}
+            - {actor: figure, x: 560, y: 1520, h: 620, kid: true, top: jacket, top_color: "#3d7fb8", bag: "#c0503a", face: laugh}
+            - {actor: kitchen_table, x: 760, y: 1700, w: 560, h: 330}
+            - {actor: drawing, x: 760, y: 1300, w: 360, h: 258, rot: -6, door: 0.7, marker: [0.55, 0.7]}
+            - {actor: car, x: 300, y: 1880, w: 420, trunk: 1, boxes: true}
+            - {actor: grill, x: 850, y: 1880, w: 200}

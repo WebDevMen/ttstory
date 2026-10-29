@@ -8,6 +8,7 @@
 //   face (дорожка): calm smile laugh worry sad talk; talk: [[от, до]] — рот двигается; look_dx (−1..1);
 //   gone (дорожка 0..1): человек «выпадает» — полосы помехи, сдвиг строк, затем пусто. Тень на земле уходит вместе с ним.
 //   lean (°), step (дорожка: фаза шага, 0 — стоит).
+//   kid: true — ребёнок 6–8 лет: голова крупнее (≈ 6 голов в росте), h — его рост в px.
 // Якоря: head, face, hand_l, hand_r, top, hip.
 
 const SKIN = { light: "#f1d2bd", mid: "#dcb091", tan: "#c08b66", dark: "#8a5a3c" };
@@ -125,6 +126,7 @@ export const figure = {
       H.el("path", { d: "M-3.4,6.4 a1.5,1.3 0 1,0 3,0 a1.5,1.3 0 1,0 -3,0 M0.4,6.4 a1.5,1.3 0 1,0 3,0 a1.5,1.3 0 1,0 -3,0 M-0.4,6.3 L0.4,6.3", stroke: "#2b2b2b", "stroke-width": 0.32, fill: "none" }, face);
     }
     if (back) face.style.display = "none";
+    if (p.kid) headG.setAttribute("transform", "translate(0,15.5) scale(1.34) translate(0,-15.5)");
     // arms: upper + forearm as thick round lines, hand circle
     const mkArm = (parent) => {
       const a = g(parent);
@@ -253,7 +255,7 @@ export const figure = {
       anchor(name) {
         const k = U;
         const toPx = ([x, y]) => [(x + 30) * k, (y + 4) * k];
-        if (name === "head" || name === "face") return toPx([0, 6]);
+        if (name === "head" || name === "face") return toPx([0, p.kid ? 2.8 : 6]);
         if (name === "top") return toPx([0, -1]);
         if (name === "hip") return toPx([0, 47]);
         if (name === "hand_l") return toPx(hands[0]);

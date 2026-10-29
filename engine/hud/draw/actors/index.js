@@ -14,8 +14,10 @@ import * as figures from "./figures.js";
 import * as evidence from "./evidence.js";
 import * as places from "./places.js";
 import * as aerial from "./aerial.js";
+import * as home from "./home.js";
+import * as phone_screens from "./phone_screens.js";
 
-const FILES = { basic, people, world, interior, ui, libs, casino, cards, odds, medieval, figures, evidence, places, aerial };
+const FILES = { basic, people, world, interior, ui, libs, casino, cards, odds, medieval, figures, evidence, places, aerial, home, phone_screens };
 const seen = {};
 for (const [file, mod] of Object.entries(FILES)) for (const name of Object.keys(mod)) {
   if (seen[name]) throw new Error(`draw actor '${name}' is defined twice: actors/${seen[name]}.js and actors/${file}.js`);

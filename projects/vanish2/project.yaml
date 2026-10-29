@@ -1,0 +1,933 @@
+# «Выпадение. Часть 2: Город, которого не было» (~3:15). Своя графика кодом (method draw), без ИИ-картинок.
+# Продолжение projects/vanish в том же стиле ДЕЛО 0841 · ФОТОАРХИВ СВИДЕТЕЛЬСТВ: отпечатки с оранжевой датой, экран
+# телефона, спутник, дрон, новости; в углу — номер дела, источник и время. Заречье «слишком красивое»: яркие крыши, синие
+# двери, тёплый свет — и повторы (волны, облака, окна), которые видит тот, кто ищет штамп.
+# Сценарий: projects/vanish2/script.yaml. Актёры — библиотека: figures, evidence, places, aerial (из части 1),
+# home и phone_screens (новые для части 2). Время: "@слово" (числа в at — абсолютные секунды ролика).
+
+title: "Выпадение. Часть 2: Город, которого не было"
+
+voice: {voice: fr-FR-RemyMultilingualNeural, rate: "+20%", pitch: "+0Hz", tail: 1.6}
+voices:
+  lena: {voice: en-US-EmmaMultilingualNeural, rate: "+14%", pitch: "+6Hz"}
+  tema: {voice: de-DE-SeraphinaMultilingualNeural, rate: "+8%", pitch: "+38Hz"}
+  sergey: {voice: en-US-BrianMultilingualNeural, rate: "+6%", pitch: "-6Hz"}
+
+theme:
+  preset: archive
+  accent: "#ffb23e"
+  captions: {style: clean, top: auto, size: 62, max_chars: 20, hide: [{from: "@cta/Ты-0.2", until: "@cta/нет.end"}]}
+
+post: {vignette: 0.16, chromatic: 0, grain: 0.018}
+
+draw:
+  palette: {paper: "#f6f2ea", orange: "#ffb23e", desk: "#2a2420", grey: "#8b939c", blue_door: "#2f6fc0"}
+
+audio:
+  music:
+    key: D
+    mode: minor
+    bpm: 84
+    gain: -15
+    sections:
+      - {at: 0, style: drone}
+      - {at: "@setup.start", style: calm}
+      - {at: "@problem.start", style: tension}
+      - {at: "@rule.start", style: pulse}
+      - {at: "@clue.start", style: tension}
+      - {at: "@sergey.start", style: dark}
+      - {at: "@stamp.start", style: pulse}
+      - {at: "@twist.start", style: sub}
+      - {at: "@road.start", style: epic}
+      - {at: "@dilemma.start", style: drone}
+      - {at: "@cliff.start", style: silence}
+      - {at: "@cta.start", style: drone}
+  duck: 0.6
+
+# ------------------------------------------------------------------ shared pieces
+x-ira: &ira {actor: figure, top: sweater, top_color: "#d9c9a8", hair: bun, hair_color: "#3a2a22", seed: 1}
+x-lena: &lena {actor: figure, top: dress, top_color: "#3f7a5a", hair: bob, hair_color: "#b5562c", seed: 2}
+x-tema: &tema {actor: figure, kid: true, top: tshirt, top_color: "#f2c230", hair: short, hair_color: "#6b4a2e", bottom_color: "#3a4a6a", seed: 21}
+x-tema-out: &tema_out {actor: figure, kid: true, top: jacket, top_color: "#3d7fb8", top2: "#f2c230", hair: short, hair_color: "#6b4a2e", bottom_color: "#3a4a6a", bag: "#c0503a", seed: 21}
+x-sergey: &sergey {actor: figure, top: shirt, top_color: "#9a3b3b", hair: cap, cap_color: "#2a2f36", seed: 23}
+x-ev: &ev {actor: evidence, x: 0, y: 0, space: screen, case: "ДЕЛО 0841 · ЧАСТЬ 2"}
+x-tag: &tag {actor: text, space: screen, font: plex, size: 44, weight: 600, color: orange, bg: {color: "rgba(18,16,14,.86)", pad: 14}, enter: {type: fade, dur: 0.2}, sfx: false}
+x-title: &title {actor: text, slot: title, font: cond, size: 96, weight: 700, color: "#f6f2ea", lines: 2, width: 940, bg: {color: "rgba(18,16,14,.85)", pad: 24}, enter: fade}
+x-desk: &desk_bg {type: radial, at: "50% 40%", stops: [[0, "#3a312a"], [1, "#16120f"]]}
+
+# Заречье in prints (image 740 x 880). The waves and clouds are stamped copies — the same everywhere.
+x-emb: &emb
+  - {actor: river, x: 0, y: 0, w: 740, h: 880, horizon: 330, rail_y: 640, boat: true, waves: [[150, 450], [420, 520], [612, 470]], clouds: [[150, 120], [330, 80], [510, 120], [660, 70]]}
+x-car-park: &car_park
+  - {actor: sky, x: 0, y: 0, w: 740, h: 640, hour: 12.5, clouds: 0}
+  - {actor: cloud, x: 160, y: 120, w: 200}
+  - {actor: cloud, x: 520, y: 90, w: 200}
+  - {actor: tree, kind: round, x: 90, y: 660, h: 420, seed: 2}
+  - {actor: tree, kind: round, x: 690, y: 650, h: 380, seed: 6}
+  - {actor: shape, kind: rect, x: 0, y: 640, w: 740, h: 240, fill: "#7ea35a", origin: top-left}
+  - {actor: shape, kind: rect, x: 0, y: 700, w: 740, h: 60, fill: "#d6c8b2", origin: top-left}
+  - {actor: carousel, x: 370, y: 730, h: 430}
+x-house-blue: &house_blue
+  - {actor: sky, x: 0, y: 0, w: 740, h: 700, hour: 11, clouds: 0}
+  - {actor: cloud, x: 560, y: 110, w: 220}
+  - {actor: tree, kind: round, x: 650, y: 720, h: 460, seed: 4}
+  - {actor: shape, kind: rect, x: 0, y: 690, w: 740, h: 190, fill: "#7ea35a", origin: top-left}
+  - {actor: shape, kind: rect, x: 0, y: 760, w: 740, h: 120, fill: "#cdbfa8", origin: top-left}
+  - {actor: town_house, x: 330, y: 720, w: 500}
+x-school-yard: &school_yard
+  - {actor: sky, x: 0, y: 0, w: 740, h: 620, hour: 10.5, clouds: 0}
+  - {actor: cloud, x: 200, y: 100, w: 200}
+  - {actor: building, x: 400, y: 640, floors: 3, cols: 7, color: "#e2c8a8", seed: 4}
+  - {actor: tree, kind: round, x: 80, y: 660, h: 380, seed: 3}
+  - {actor: shape, kind: rect, x: 0, y: 630, w: 740, h: 250, fill: "#b8a890", origin: top-left}
+  - {actor: shape, kind: rect, x: 0, y: 630, w: 740, h: 14, fill: "#d6ccb8", origin: top-left}
+
+scenes:
+
+  # ------------------------------------------------------------------ 1. HOOK — на месте степи проступает новый город
+  - id: hook
+    text: "На месте пропавшего города появился другой. Через семь минут его вспомнили все. Даже те, кто там никогда не был."
+    caption_marks: {"семь минут": "#ffb23e"}
+    shots:
+      - id: k_steppe
+        transition: {type: fade, dur: 0.2}
+        ambience: [{sound: rumble, gain: -20}]
+        draw:
+          world: [2000, 2800]
+          camera: {keys: [{t: 0, z: 0.74, x: 1000, y: 1400}, {t: end, z: 0.82, x: 1000, y: 1380}], shakes: [{at: "@появился", amp: 6, dur: 0.3}]}
+          layers:
+            - {actor: satellite, x: 0, y: 0, label: "", erase: 1, patch: [{at: 0, v: 0}, {at: "@появился-0.2", v: 1, dur: 1.6, ease: linear}], patch_label_on: 0}
+            - {actor: text, x: 540, y: 290, space: screen, at: "@семь", enter: pop, font: plex, size: 72, weight: 600, color: orange, bg: {color: "rgba(18,16,14,.86)", pad: 14},
+               text: [{at: 0, v: "7:00"}, {at: "@семь+1", v: "6:59"}, {at: "@семь+2", v: "6:58"}]}
+            - {<<: *ev, src: "СПУТНИК · 3 М/ПИКС", time: [{at: 0, v: "10:01:00"}, {at: "@появился", v: "10:02:00"}], sub: "СНИМОК 3 / ?"}
+      - id: k_title
+        start: "@Даже-0.22"
+        transition: {type: zoom}
+        draw:
+          world: [2000, 2800]
+          camera: {keys: [{t: 0, z: 0.9, x: 1000, y: 1300}, {t: end, z: 1.1, x: 1000, y: 1250, ease: out}]}
+          layers:
+            - {actor: satellite, x: 0, y: 0, label: "", erase: 1, patch: 1, patch_label_on: [{at: 0, v: 0}, {at: "@Даже", v: 1, dur: 0.3}]}
+            - {actor: text, x: 540, y: 470, space: screen, at: "@никогда-0.1", enter: {type: fade, dur: 0.15}, text: "ДЕЛО 0841 · ЧАСТЬ 2", font: plex, size: 34, weight: 600, color: orange, letter: 4}
+            - {actor: text, x: 540, y: 640, space: screen, at: "@никогда-0.1", enter: {type: fade, dur: 0.2}, text: "ГОРОД, КОТОРОГО НЕ БЫЛО", font: cond, size: 118, weight: 700, color: "#f6f2ea", lines: 2, width: 960,
+               bg: {color: "rgba(18,16,14,.86)", pad: 30, radius: 4}}
+    sfx:
+      - {sound: hiss, at: 0.1, gain: -16}
+      - {sound: glitch, at: "@появился", gain: -12}
+      - {sound: boom, at: "@никогда", gain: -12}
+
+  # ------------------------------------------------------------------ 2. SETUP — кухня Лены; Ира пропала; Тёма рисует дом
+  - id: setup
+    text: "Десять ноль две. Кухня Лены. Лена, двадцать шесть лет, администратор ателье на Садовой. Семь минут назад её коллега Ира сделала селфи и пропала. Лена её помнит: тот снимок она не видела. Сын Тёма, семь лет, рисует дом с синей дверью. Такого дома у них нет."
+    caption_marks: {"синей дверью": "#ffb23e"}
+    shots:
+      - id: s_kitchen
+        transition: {type: dip, dur: 0.3}
+        ambience: [{sound: room, gain: -22}, {sound: birds, gain: -24}]
+        draw:
+          world: [1500, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 820, y: 960}, {t: end, z: 1.04, x: 680, y: 980, ease: inout}]}
+          layers:
+            - {actor: kitchen, x: 0, y: 0, w: 1500, h: 1920, floor_y: 1330, window: [560, 220, 560, 640], steam: 1}
+            - {actor: fridge, x: 1330, y: 1340, h: 1020}
+            - {actor: photo, x: 1330, y: 640, w: 150, h: 120, rot: 4, border: 8, date: "", children: [{actor: shape, kind: rect, x: 0, y: 0, w: 150, h: 120, fill: "#9cc8e8", origin: top-left}, {<<: *tema, x: 75, y: 118, h: 90, face: smile}]}
+            - {<<: *tema, x: 900, y: 1350, h: 560, view: back}
+            - {actor: kitchen_table, x: 860, y: 1470, w: 720, h: 420}
+            - {actor: particles, kind: dust, region: [500, 200, 1200, 1300], count: 22, colors: ["#fff7e0"], alpha: 0.45}
+            - {actor: timetag, slot: tag, at: "@Десять", enter: fade, text: "10:02 · КУХНЯ ЛЕНЫ"}
+      - id: s_lena
+        start: "@Лена-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06, y: 940}]}
+          layers:
+            - {actor: kitchen, x: -260, y: 0, w: 1600, h: 1920, floor_y: 1500, window: [420, 260, 560, 640]}
+            - {<<: *lena, x: 540, y: 3000, h: 2300, arms: [down, hold], face: [{at: 0, v: calm}, {at: "@администратор", v: worry}], look_dx: -0.3}
+            - {<<: *tag, at: "@Лена", x: 540, y: 300, text: "ЛЕНА, 26 · АДМИНИСТРАТОР"}
+      - id: s_ira
+        start: "@Семь-0.22"
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.08, y: 900}]}
+          layers:
+            - actor: phone
+              x: 540
+              y: 900
+              w: 520
+              h: 940
+              screen: app
+              color: "#15171a"
+              glow: "#ffb23e"
+              children:
+                - {actor: chat_screen, x: 0, y: 0, w: 484, h: 904, name: "Ира", status: "была в 09:55",
+                   msgs: [{text: "Лен, если меня не будет на селфи — не смотри.", time: "09:53"}, {photo: true, time: "09:55", label: "НЕ ОТКРЫТО"}],
+                   hl: [{at: 0, v: -1}, {at: "@селфи", v: 0}, {at: "@помнит", v: 1}]}
+            - {actor: human_hand, x: 1200, y: 1500, rot: -60, skin: "#f1d2bd", sleeve: "#3f7a5a", anim: [{at: "@помнит-0.3", dur: 0.6, x: 700, y: 1160, ease: out}, {at: "@видела", dur: 0.4, x: 1000, y: 1500, ease: in}]}
+            - {<<: *tag, at: "@видела", x: 540, y: 250, text: "НЕ ВИДЕЛА СНИМОК → ПОМНИТ"}
+            - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · ЧАТ", time: "10:02:20"}
+      - id: s_tema
+        start: "@Сын-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05, y: 940}]}
+          layers:
+            - {actor: kitchen, x: -200, y: 0, w: 1500, h: 1920, floor_y: 1400, window: [560, 260, 560, 640], steam: 1}
+            - {<<: *tema, x: 540, y: 1760, h: 1150, arms: [hold, hold], face: calm, look_dx: 0.2}
+            - {actor: kitchen_table, x: 540, y: 1920, w: 1200, h: 560}
+            - {<<: *tag, at: "@Тёма", x: 540, y: 300, text: "ТЁМА, 7"}
+      - id: s_draw
+        start: "@рисует-0.22"
+        transition: {type: dip, dur: 0.3}
+        draw:
+          bg: "#e9e2d4"
+          camera: {keys: [{t: 0, z: 1.0, x: 540, y: 960}, {t: "@синей", z: 1.0}, {t: end, z: 1.5, x: 620, y: 1000, ease: inout}]}
+          layers:
+            - {actor: shape, kind: rect, x: 0, y: 0, w: 1080, h: 1920, fill: {linear: ["#f2efe8", "#e6e0d2"], angle: 180}, origin: top-left}
+            - {actor: drawing, x: 540, y: 960, w: 860, h: 618, rot: -3, door: [{at: 0, v: 0}, {at: "@синей-0.3", v: 1, dur: 1.4, ease: linear}],
+               marker: [{at: 0, v: [0.62, 0.9]}, {at: "@синей-0.3", v: [0.55, 0.62], dur: 0.7}, {at: "@синей+0.4", v: [0.53, 0.8], dur: 0.6}, {at: "@Такого", v: [0.8, 1.05], dur: 0.5}]}
+            - {actor: shape, kind: rect, x: 160, y: 1420, w: 40, h: 220, fill: "#e05a44", radius: 10, rot: 20}
+            - {actor: shape, kind: rect, x: 900, y: 1380, w: 40, h: 220, fill: "#5fa040", radius: 10, rot: -35}
+            - {actor: shape, kind: rect, x: 820, y: 520, w: 40, h: 220, fill: "#ffd23e", radius: 10, rot: 70}
+            - {actor: text, slot: subtitle, at: "@Такого", enter: fade, text: "ТАКОГО ДОМА У НИХ НЕТ", font: cond, size: 80, weight: 700, color: "#f6f2ea", bg: {color: "rgba(18,16,14,.85)", pad: 20}}
+    sfx:
+      - {sound: click, at: "@Десять", gain: -16}
+      - {sound: pop, at: "@Лена", gain: -18}
+      - {sound: blip, at: "@пропала", gain: -14}
+      - {sound: scrape, at: "@рисует", gain: -16}
+
+  # ------------------------------------------------------------------ 3. PROBLEM — новости: Заречье; 214 снимков; «наш дом»
+  - id: problem
+    text: "В новостях спутник. На месте Ольховска город. Подпись: Заречье. У Лены звенит телефон. В галерее двести четырнадцать новых снимков. Она их не делала. Набережная. Карусель. Дом с синей дверью. Мам, это же наш дом! Мы там никогда не были, Тёма."
+    lines:
+      - {who: tema, say: "Мам, это же наш дом!"}
+      - {who: lena, say: "Мы там никогда не были, Тёма."}
+    caption_marks: {"двести четырнадцать": "#ffb23e"}
+    shots:
+      - id: p_news
+        ambience: [{sound: hum, gain: -24}]
+        captions_top: 1450
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: "@город", z: 1.0}, {t: end, z: 1.06, ease: inout}]}
+          layers:
+            - {actor: news_studio, x: 0, y: 0, chair_y: 1200, chair_rot: 30}
+            - actor: photo
+              x: 540
+              y: 760
+              w: 820
+              h: 560
+              border: 0
+              shadow: 0
+              date: ""
+              children: [{actor: group, x: -100, y: -460, scale: 0.5, children: [{actor: satellite, x: 0, y: 0, label: "", erase: 1, patch: 1, patch_label_on: [{at: 0, v: 0}, {at: "@Заречье", v: 1, dur: 0.3}]}]}]
+            - {actor: news_desk, x: 0, y: 0, desk_y: 1240, backdrop: false, title: "НА МЕСТЕ ОЛЬХОВСКА — ГОРОД", sub: "10:03 · спутник: «Заречье»", ticker: "ЗАРЕЧЬЕ · ГОРОД НА МЕСТЕ ОЛЬХОВСКА · ЖИТЕЛИ: «МЫ ВСЕГДА ТАМ ЖИЛИ» · ТРАССА М-4: ДВИЖЕНИЕ ЗАТРУДНЕНО"}
+            - {<<: *ev, src: "ЭФИР · НОВОСТИ 24", time: "10:03:12", rec: true}
+      - id: p_gallery
+        start: "@звенит-0.22"
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: end, z: 1.06, y: 920}], shakes: [{at: "@звенит", amp: 5, dur: 0.5}]}
+          layers:
+            - actor: phone
+              x: 540
+              y: 960
+              w: 520
+              h: 940
+              screen: app
+              color: "#15171a"
+              glow: "#ffb23e"
+              children:
+                - {actor: phone_gallery, x: 0, y: 0, w: 484, h: 904, count: 30, total: "+214", ira: [4, 9, 13, 17, 22, 26],
+                   n: [{at: 0, v: 0}, {at: "@двести", v: 30, dur: 1.8, ease: linear}], scroll: [{at: 0, v: 0}, {at: "@делала", v: 160, dur: 1.2}]}
+            - {actor: buzz, x: 540, y: 960, w: 580, h: 1000, times: ["@звенит", "@звенит+0.5"]}
+            - {<<: *tag, at: "@двести", x: 540, y: 300, text: "+214 ФОТО · НЕ ЕЁ"}
+            - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · ГАЛЕРЕЯ", time: "10:03:40"}
+      - id: p_photos
+        start: "@Набережная-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - {actor: photo, x: 470, y: 900, w: 740, h: 880, scale: 0.92, rot: -6, date: "'98 07 14", at: "@Набережная-0.15", enter: {type: drop, dur: 0.3}, children: *emb}
+            - {actor: photo, x: 600, y: 940, w: 740, h: 880, scale: 0.92, rot: 4, date: "'03 06 01", at: "@Карусель-0.15", enter: {type: drop, dur: 0.3}, children: *car_park}
+            - {actor: photo, x: 540, y: 980, w: 740, h: 880, scale: 0.92, rot: -1, date: "'11 09 01", at: "@синей-0.4", enter: {type: drop, dur: 0.3}, children: *house_blue}
+            - {<<: *tag, at: "@синей", x: 540, y: 330, text: "ДОМ С СИНЕЙ ДВЕРЬЮ"}
+            - {<<: *ev, src: "ГАЛЕРЕЯ · 214 НОВЫХ", time: "10:04:02"}
+      - id: p_tema
+        start: "@Мам-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05, y: 940}]}
+          layers:
+            - {actor: kitchen, x: -200, y: 0, w: 1500, h: 1920, floor_y: 1500, window: [560, 260, 560, 640]}
+            - {<<: *lena, x: 790, y: 3050, h: 2300, arms: [down, down], face: worry, look_dx: -0.5, talk: [["@Мы", "@Тёма.end"]]}
+            - {<<: *tema, x: 300, y: 2750, h: 1550, arms: [down, hold], face: laugh, look_dx: 0.6, talk: [["@Мам", "@дом#2.end"]]}
+            - {actor: drawing, x: 330, y: 1700, w: 330, h: 237, rot: -8, door: 1}
+            - {<<: *title, at: "@дом#2", text: "«ЭТО ЖЕ НАШ ДОМ!»"}
+    sfx:
+      - {sound: blip, at: "@новостях", gain: -16}
+      - {sound: buzz, at: "@звенит", gain: -10}
+      - {sound: shutter, at: "@двести", gain: -10}
+      - {sound: shutter, at: "@Набережная", gain: -10}
+      - {sound: shutter, at: "@Карусель", gain: -10}
+      - {sound: shutter, at: "@синей", gain: -10}
+      - {sound: heartbeat, at: "@дом#2", gain: -10}
+
+  # ------------------------------------------------------------------ 4. RULE — 10:09: Лена помнит Заречье (правило 3)
+  - id: rule
+    text: "Десять ноль девять. Лена вдруг помнит Заречье. Запах реки. Скрип карусели. Дорогу в школу мимо синей двери. Как в пять лет упала с карусели. Под снимком тысячи комментариев: я там вырос. Никто там не был. Прошло семь минут."
+    caption_marks: {"семь минут": "#ffb23e"}
+    shots:
+      - id: r_memory
+        transition: {type: dissolve, dur: 0.4}
+        ambience: [{sound: wind, gain: -26}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06, y: 940}]}
+          layers:
+            - {actor: kitchen, x: -200, y: 0, w: 1500, h: 1920, floor_y: 1500, window: [560, 260, 560, 640], brightness: 0.7}
+            - {<<: *lena, x: 330, y: 3050, h: 2300, arms: [down, down], face: calm, look_dx: 0.5}
+            - {actor: photo, x: 720, y: 820, w: 740, h: 880, scale: 0.68, rot: 4, date: "'98 07 14", children: *emb,
+               opacity: [{at: 0, v: 0}, {at: "@помнит", v: 0.95, dur: 1.4}], blur: [{at: 0, v: 10}, {at: "@помнит", v: 0, dur: 1.6}]}
+            - {actor: timetag, slot: tag, at: "@Десять", enter: fade, text: "10:09 · ПРОШЛО 7 МИНУТ"}
+      - id: r_carousel
+        start: "@Скрип-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@упала", amp: 10, dur: 0.35}]}
+          layers:
+            - {actor: photo, x: 540, y: 900, w: 740, h: 880, scale: 0.95, rot: -2, date: "'03 06 01", until: "@Дорогу-0.1", children: *car_park}
+            - actor: photo
+              x: 540
+              y: 900
+              w: 740
+              h: 880
+              scale: 0.95
+              rot: 1
+              date: "'04 09 01"
+              at: "@Дорогу-0.1"
+              until: "@Как-0.1"
+              children:
+                - {actor: group, x: 0, y: 0, children: *house_blue}
+                - {actor: shape, kind: path, d: "M40,850 C200,820 330,800 460,790 S640,760 720,770", fill: none, stroke: orange, sw: 8, dash: "18 14", at: "@школу", enter: draw, decor: true}
+            - {actor: photo, x: 540, y: 900, w: 740, h: 880, scale: 0.95, rot: -3, date: "'03 06 01", at: "@Как-0.1", glitch: [{at: "@упала", dur: 0.3}], children: *car_park}
+            - {<<: *tag, at: "@школу", until: "@Как-0.1", exit: fade, x: 540, y: 300, text: "ДОРОГА В ШКОЛУ"}
+            - {<<: *tag, at: "@упала", x: 540, y: 300, text: "«УПАЛА С КАРУСЕЛИ В 5 ЛЕТ»"}
+            - {<<: *ev, src: "ПАМЯТЬ ЛЕНЫ · 10:09", time: "10:09:30"}
+      - id: r_comments
+        start: "@Под-0.22"
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05}]}
+          layers:
+            - actor: phone
+              x: 540
+              y: 960
+              w: 520
+              h: 940
+              screen: app
+              color: "#15171a"
+              glow: "#ffb23e"
+              children:
+                - {actor: comments, x: 0, y: 0, w: 484, h: 904, count: {from: 12, to: 48000, at: "@тысячи", dur: 2.2},
+                   scroll: [{at: 0, v: 0}, {at: "@тысячи", v: 520, dur: 3.4, ease: linear}], hl: [{at: 0, v: -1}, {at: "@вырос", v: 0}]}
+            - {<<: *tag, at: "@вырос", x: 540, y: 300, text: "«Я ТАМ ВЫРОС» · 48 000"}
+      - id: r_card
+        start: "@Никто-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - {actor: timeline, x: 540, y: 780, w: 960, h: 380, title: "ДЕЛО 0841 · ЗАРЕЧЬЕ", marks: [{x: 0.04, time: "10:02", label: "СНИМОК"}, {x: 0.96, time: "10:09", label: "ПАМЯТЬ"}],
+               span: {a: 0.04, b: 0.96, label: "7 МИНУТ"}, span_k: [{at: 0, v: 0}, {at: "@был", v: 1, dur: 0.8}]}
+            - {actor: rule_card, x: 540, y: 1220, at: "@семь-0.1", enter: {type: wipe_right, dur: 0.25}, kicker: "ПРАВИЛО 3", text: "НОВОЕ МЕСТО → 7 МИНУТ → ПАМЯТЬ", size: 66}
+            - {<<: *ev, src: "ДЕЛО 0841 · ХРОНОЛОГИЯ", time: "10:09:00"}
+    sfx:
+      - {sound: chime, at: "@помнит", gain: -14}
+      - {sound: scrape, at: "@Скрип", gain: -16}
+      - {sound: glitch, at: "@упала", gain: -14}
+      - {sound: noise_sweep, at: "@тысячи", gain: -16}
+      - {sound: boom, at: "@семь", gain: -12}
+
+  # ------------------------------------------------------------------ 5. CLUE — на каждом снимке Ира
+  - id: clue
+    text: "Лена листает снимки. Набережная. Карусель. Школьный двор. И на каждом, на заднем плане, одна и та же женщина. Тёмный пучок. Бежевый свитер. В руках два кофе. Лена увеличивает лицо. Это Ира."
+    caption_marks: {"Это Ира": "#ffb23e"}
+    shots:
+      - id: c_swipe
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - actor: phone
+              x: 540
+              y: 960
+              w: 520
+              h: 940
+              screen: app
+              color: "#15171a"
+              glow: "#ffb23e"
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 484, h: 904, fill: "#0d0e10", origin: top-left}
+                - {actor: photo, x: 242, y: 452, w: 740, h: 880, scale: 0.62, border: 0, shadow: 0, date: "'98 07 14", until: "@Карусель-0.1", children: [{actor: group, x: 0, y: 0, children: *emb}, {actor: group, x: 610, y: 700, children: [{<<: *ira, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}]}
+                - {actor: photo, x: 242, y: 452, w: 740, h: 880, scale: 0.62, border: 0, shadow: 0, date: "'03 06 01", at: "@Карусель-0.1", until: "@двор-0.1", children: [{actor: group, x: 0, y: 0, children: *car_park}, {actor: group, x: 640, y: 770, children: [{<<: *ira, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}]}
+                - {actor: photo, x: 242, y: 452, w: 740, h: 880, scale: 0.62, border: 0, shadow: 0, date: "'05 09 01", at: "@двор-0.1", children: [{actor: group, x: 0, y: 0, children: *school_yard}, {actor: group, x: 120, y: 800, children: [{<<: *ira, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}]}
+                - {actor: text, x: 242, y: 90, text: [{at: 0, v: "37 / 214"}, {at: "@Карусель-0.1", v: "38 / 214"}, {at: "@двор-0.1", v: "39 / 214"}], font: inter, size: 28, weight: 600, color: "#ffffff"}
+            - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · ГАЛЕРЕЯ", time: "10:12:04"}
+      - id: c_three
+        start: "@каждом-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05}]}
+          layers:
+            - {actor: photo, x: 300, y: 820, w: 740, h: 880, scale: 0.42, rot: -6, date: "'98 07 14", marks: [{of: ira1, at: "@женщина", pad: 8}],
+               children: [{actor: group, x: 0, y: 0, children: *emb}, {actor: group, x: 610, y: 700, children: [{<<: *ira, id: ira1, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}]}
+            - {actor: photo, x: 780, y: 820, w: 740, h: 880, scale: 0.42, rot: 6, date: "'03 06 01", marks: [{of: ira2, at: "@женщина+0.15", pad: 8}],
+               children: [{actor: group, x: 0, y: 0, children: *car_park}, {actor: group, x: 640, y: 770, children: [{<<: *ira, id: ira2, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}]}
+            - {actor: photo, x: 540, y: 1180, w: 740, h: 880, scale: 0.42, rot: -1, date: "'05 09 01", marks: [{of: ira3, at: "@женщина+0.3", pad: 8}],
+               children: [{actor: group, x: 0, y: 0, children: *school_yard}, {actor: group, x: 120, y: 800, children: [{<<: *ira, id: ira3, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}]}
+            - {<<: *title, at: "@женщина", text: "ОДНА И ТА ЖЕ ЖЕНЩИНА"}
+      - id: c_detail
+        start: "@Тёмный-0.22"
+        transition: {type: zoom}
+        draw:
+          bg: "#141517"
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.08, y: 920}]}
+          layers:
+            - actor: photo
+              x: 540
+              y: 900
+              w: 860
+              h: 1100
+              border: 0
+              shadow: 0
+              grain: 0.12
+              date: ""
+              marks: [{of: iraz, at: "@свитер", pad: 10}, {of: cupk, at: "@кофе", pad: 8}]
+              children:
+                - {actor: group, x: -900, y: -1350, scale: 3.2, children: *emb}
+                - {<<: *ira, id: iraz, x: 430, y: 1500, h: 1180, arms: [hold, hold], face: calm, blur: 1.2}
+                - {actor: paper_cup, x: 385, y: 800, scale: 0.42, sleeve: "#8f6a46"}
+                - {actor: paper_cup, id: cupk, x: 475, y: 800, scale: 0.42, letter: "К", sugar: false}
+            - {<<: *tag, at: "@кофе", x: 540, y: 300, text: "ДВА КОФЕ · «К»"}
+            - {<<: *ev, src: "ФОТО 39 · ZOOM ×8", time: "10:12:40"}
+      - id: c_face
+        start: "@увеличивает-0.22"
+        transition: {type: dip, dur: 0.3}
+        draw:
+          bg: "#a49c8f"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - {<<: *ira, x: 540, y: 6100, h: 6000, face: calm, blur: [{at: 0, v: 18}, {at: "@лицо", v: 1.5, dur: 1.2}]}
+            - {actor: shape, kind: rect, x: 540, y: 300, w: 1400, h: 600, fill: {linear: ["rgba(0,0,0,.7)", "rgba(0,0,0,0)"], angle: 180}}
+            - {<<: *title, slot: lower, at: "@Ира", text: "ЭТО ИРА"}
+            - {<<: *ev, src: "ФОТО 39 · ZOOM ×24", time: "10:13:02"}
+    sfx:
+      - {sound: click, at: "@Набережная", gain: -16}
+      - {sound: click, at: "@Карусель", gain: -16}
+      - {sound: click, at: "@двор", gain: -16}
+      - {sound: blip, at: "@женщина", gain: -14}
+      - {sound: chime, at: "@кофе", gain: -14}
+      - {sound: gong, at: "@Ира", gain: -10}
+
+  # ------------------------------------------------------------------ 6. SERGEY — сосед уезжает и пропадает со снимка (правило 4)
+  - id: sergey
+    text: "Десять двадцать. Во дворе сосед Сергей грузит машину. Я вспомнил, где мой дом. Жена машет ему с балкона. Он уезжает. Десять двадцать одна. Лена открывает снимок с летних шашлыков. Сергея на нём нет. Его жена накрывает стол на троих."
+    lines:
+      - {who: sergey, say: "Я вспомнил, где мой дом."}
+    caption_marks: {"на троих": "#ffb23e"}
+    shots:
+      - id: g_yard
+        ambience: [{sound: city, gain: -22}, {sound: birds, gain: -22}]
+        draw:
+          world: [1500, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 700, y: 960}, {t: "@машет-0.3", z: 1.0, x: 700, y: 960}, {t: "@машет+0.3", z: 1.25, x: 640, y: 560, ease: inout}, {t: end, z: 1.25, x: 640, y: 560}]}
+          layers:
+            - {actor: yard, x: 0, y: 0, w: 1500, h: 1920, ground_y: 900, arch_x: 1260}
+            - {actor: facade, x: 0, y: -300, w: 1500, h: 1200, cols: 7, rows: 5, wall: "#d9c2a4", wave: [3, 3], wave_k: [{at: 0, v: 0}, {at: "@машет", v: 1, dur: 0.2}, {at: "@уезжает", v: 0, dur: 0.3}], seed: 12}
+            - {actor: tree, kind: round, x: 120, y: 1120, h: 700, seed: 4}
+            - {actor: car, x: 820, y: 1260, w: 560, color: "#5a7d9a", trunk: [{at: 0, v: 1}, {at: "@дом+0.2", v: 0, dur: 0.5}], boxes: true}
+            - {<<: *sergey, x: 450, y: 1270, h: 440, arms: [hold, hold], face: smile, look_dx: 0.2, talk: [["@Я", "@дом.end"]]}
+            - {actor: shape, kind: rect, x: 450, y: 1080, w: 110, h: 80, fill: "#c4975e", stroke: "#8a6a3e", sw: 3, anim: [{at: "@грузит", dur: 0.8, x: 640, y: 1110}], opacity: [{at: 0, v: 1}, {at: "@грузит+0.8", v: 0, dur: 0.1}]}
+            - {<<: *tema, x: 1080, y: 1520, h: 300, view: back}
+            - {<<: *tag, at: "@Сергей", until: "@машет-0.3", exit: fade, x: 540, y: 300, text: "СОСЕД СЕРГЕЙ"}
+            - {<<: *ev, src: "ОКНО ЛЕНЫ · ДВОР", time: "10:20:05"}
+      - id: g_leave
+        start: "@уезжает-0.22"
+        draw:
+          world: [1500, 1920]
+          camera: {keys: [{t: 0, z: 1.0, x: 760, y: 960}, {t: end, z: 1.02, x: 800, y: 960}]}
+          layers:
+            - {actor: yard, x: 0, y: 0, w: 1500, h: 1920, ground_y: 900, arch_x: 1260}
+            - {actor: facade, x: 0, y: -300, w: 1500, h: 1200, cols: 7, rows: 5, wall: "#d9c2a4", wave: [3, 3], seed: 12}
+            - {actor: tree, kind: round, x: 120, y: 1120, h: 700, seed: 4}
+            - {actor: car, x: 820, y: 1260, w: 560, color: "#5a7d9a", roll: [{at: 0, v: 0}, {at: "@уезжает", v: 30, dur: 1.8, ease: in}], anim: [{at: "@уезжает", dur: 1.8, x: 1700, ease: in}]}
+            - {<<: *tema, x: 1080, y: 1520, h: 300, view: back}
+            - {actor: text, slot: tag, at: "@двадцать#2", enter: fade, text: "10:21", font: plex, size: 72, weight: 600, color: orange, bg: {color: "rgba(18,16,14,.86)", pad: 14}}
+            - {<<: *ev, src: "ОКНО ЛЕНЫ · ДВОР", time: "10:20:40"}
+      - id: g_bbq
+        start: "@открывает-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: "@нет", z: 1.0}, {t: end, z: 1.12, x: 560, y: 900, ease: inout}]}
+          layers:
+            - actor: photo
+              x: 540
+              y: 900
+              w: 780
+              h: 640
+              rot: -2
+              date: "'26 07 12"
+              glitch: [{at: "@нет", dur: 0.4}]
+              marks: [{of: serg, at: "@нет+0.3", pad: 6}]
+              children:
+                - {actor: sky, x: 0, y: 0, w: 780, h: 440, hour: 18, clouds: 0}
+                - {actor: tree, kind: round, x: 110, y: 450, h: 400, seed: 2}
+                - {actor: tree, kind: round, x: 690, y: 440, h: 380, seed: 7}
+                - {actor: shape, kind: rect, x: 0, y: 420, w: 780, h: 220, fill: "#7ea35a", origin: top-left}
+                - {actor: grill, x: 390, y: 600, w: 170}
+                - {<<: *lena, x: 170, y: 610, h: 300, arms: [down, hold], face: laugh}
+                - {<<: *sergey, id: serg, x: 300, y: 612, h: 310, arms: [down, hold], face: smile, gone: [{at: 0, v: 0}, {at: "@нет", v: 1, dur: 0.4}]}
+                - {actor: figure, x: 500, y: 610, h: 295, top: sweater, top_color: "#c0503a", hair: long, hair_color: "#6a3a2a", arms: [around, down], face: smile, seed: 31}
+                - {<<: *tema, x: 600, y: 612, h: 190, face: laugh}
+                - {actor: figure, kid: true, x: 660, y: 612, h: 170, top: tshirt, top_color: "#6ab0d8", hair: ponytail, hair_color: "#6a3a2a", face: smile, seed: 33}
+            - {<<: *tag, at: "@нет", x: 540, y: 330, text: "10:21 · ПРОПАЛ СО СНИМКА"}
+            - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · ИЮЛЬ", time: "10:21:10"}
+      - id: g_table
+        start: "@жена#2-0.22"
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0, y: 900}, {t: end, z: 1.08, y: 880}]}
+          layers:
+            - {actor: shape, kind: rect, x: 0, y: 0, w: 1080, h: 1920, fill: "#d9c2a4", origin: top-left}
+            - actor: photo
+              x: 540
+              y: 760
+              w: 820
+              h: 720
+              border: 0
+              shadow: 0
+              date: ""
+              tone: warm
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 820, h: 720, fill: "#efe2c6", origin: top-left}
+                - {actor: shape, kind: rect, x: 560, y: 90, w: 180, h: 240, fill: "#9cc8e8", origin: top-left}
+                - {actor: figure, x: 520, y: 650, h: 520, top: sweater, top_color: "#c0503a", hair: long, hair_color: "#6a3a2a", arms: [hold, hold], face: calm, seed: 31}
+                - {actor: figure, kid: true, x: 200, y: 700, h: 360, top: tshirt, top_color: "#f0a05a", hair: short, hair_color: "#3a2a22", face: calm, seed: 35}
+                - {actor: figure, kid: true, x: 330, y: 700, h: 340, top: tshirt, top_color: "#6ab0d8", hair: ponytail, hair_color: "#6a3a2a", face: calm, seed: 33}
+                - {actor: shape, kind: rect, x: 660, y: 470, w: 22, h: 250, fill: "#7a5a3e", origin: top-left}
+                - {actor: shape, kind: rect, x: 640, y: 470, w: 130, h: 22, fill: "#7a5a3e", origin: top-left}
+                - {actor: kitchen_table, x: 410, y: 720, w: 600, h: 300}
+                - {actor: shape, kind: ellipse, x: 230, y: 432, w: 90, h: 26, fill: "#ffffff", at: "@накрывает", enter: pop}
+                - {actor: shape, kind: ellipse, x: 410, y: 432, w: 90, h: 26, fill: "#ffffff", at: "@накрывает+0.25", enter: pop}
+                - {actor: shape, kind: ellipse, x: 590, y: 432, w: 90, h: 26, fill: "#ffffff", at: "@накрывает+0.5", enter: pop}
+            - {actor: shape, kind: rect, x: 540, y: 760, w: 860, h: 760, fill: none, stroke: "#f3ede2", sw: 40, decor: true}
+            - {actor: shape, kind: rect, x: 540, y: 1150, w: 940, h: 40, fill: "#f1ede4", decor: true}
+            - {<<: *tag, at: "@троих", x: 540, y: 250, text: "3 ТАРЕЛКИ · 4 СТУЛА"}
+            - {actor: rule_card, x: 540, y: 1330, at: "@троих", enter: {type: wipe_right, dur: 0.25}, kicker: "ПРАВИЛО 4", text: "ВЪЕХАЛ В ЗАРЕЧЬЕ → ПРОПАЛ СО СНИМКОВ", size: 58}
+    sfx:
+      - {sound: slam, at: "@грузит", gain: -16}
+      - {sound: whoosh, at: "@уезжает", gain: -14}
+      - {sound: glitch, at: "@нет", gain: -12}
+      - {sound: boom, at: "@троих", gain: -12}
+
+  # ------------------------------------------------------------------ 7. STAMP — повторы: город закрашен штампом
+  - id: stamp
+    text: "Ира учила Лену смотреть, как ретушёр. Искать повторы. Одна и та же волна на реке трижды. Одно облако четыре раза. В пяти окнах один и тот же мужчина поливает цветок. Это штамп. Город закрасили, как дыру на снимке."
+    caption_marks: {"Это штамп": "#ffb23e"}
+    shots:
+      - id: m_river
+        transition: {type: zoom}
+        draw:
+          bg: "#141517"
+          camera: {keys: [{t: 0, z: 1.0}]}
+          layers:
+            - actor: retouch_screen
+              x: 540
+              y: 900
+              w: 1000
+              h: 1160
+              file: "ZARECHYE_037.JPG"
+              zoom: "200%"
+              cursor: [{at: 0, v: [120, 300]}, {at: "@повторы", v: [460, 420], dur: 1.2}, {at: "@трижды", v: [560, 480], dur: 0.6}]
+              cursor_on: [{at: 0, v: 0}, {at: "@учила", v: 1, dur: 0.1}]
+              children:
+                - actor: photo
+                  x: 335
+                  y: 529
+                  w: 670
+                  h: 1058
+                  border: 0
+                  shadow: 0
+                  grain: 0.08
+                  marks:
+                    - {in: emz, x: 100, y: 430, w: 104, h: 44, at: "@трижды", dash: "1 0", pad: 0}
+                    - {in: emz, x: 370, y: 500, w: 104, h: 44, at: "@трижды+0.15", dash: "1 0", pad: 0}
+                    - {in: emz, x: 562, y: 450, w: 104, h: 44, at: "@трижды+0.3", dash: "1 0", pad: 0}
+                  children: [{actor: group, id: emz, x: -200, y: -220, scale: 1.45, children: *emb}]
+            - {<<: *tag, at: "@трижды", x: 540, y: 300, text: "КОПИЯ ×3 · ВОЛНА"}
+            - {<<: *ev, src: "РЕТУШЬ · ЗАРЕЧЬЕ 037", time: "10:25:10"}
+      - id: m_cloud
+        start: "@облако-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - {actor: photo, x: 540, y: 900, w: 740, h: 880, rot: -1, date: "'98 07 14", children: *emb,
+               marks: [{x: 72, y: 74, w: 160, h: 76, at: "@четыре", dash: "1 0", pad: 0}, {x: 252, y: 34, w: 160, h: 76, at: "@четыре+0.12", dash: "1 0", pad: 0},
+                       {x: 432, y: 74, w: 160, h: 76, at: "@четыре+0.24", dash: "1 0", pad: 0}, {x: 582, y: 24, w: 156, h: 76, at: "@четыре+0.36", dash: "1 0", pad: 0}]}
+            - {<<: *tag, at: "@четыре", x: 540, y: 300, text: "КОПИЯ ×4 · ОБЛАКО"}
+      - id: m_windows
+        start: "@пяти-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.1}, {t: end, z: 1.0, ease: out}]}
+          layers:
+            - actor: photo
+              x: 540
+              y: 900
+              w: 740
+              h: 880
+              rot: 1
+              date: "'98 07 14"
+              marks:
+                - {x: 25, y: 23, w: 98, h: 152, at: "@мужчина", dash: "1 0", pad: 0}
+                - {x: 469, y: 243, w: 98, h: 152, at: "@мужчина+0.1", dash: "1 0", pad: 0}
+                - {x: 173, y: 463, w: 98, h: 152, at: "@мужчина+0.2", dash: "1 0", pad: 0}
+                - {x: 617, y: 463, w: 98, h: 152, at: "@мужчина+0.3", dash: "1 0", pad: 0}
+                - {x: 321, y: 683, w: 98, h: 152, at: "@мужчина+0.4", dash: "1 0", pad: 0}
+              children:
+                - {actor: facade, x: 0, y: 0, w: 740, h: 880, cols: 5, rows: 4, wall: "#f2d9b0", man: [[0, 0], [3, 1], [1, 2], [4, 2], [2, 3]], seed: 5,
+                   water: [{at: 0, v: 0}, {at: "@поливает", v: 1, dur: 0.6}, {at: "@цветок", v: 0.3, dur: 0.5}, {at: "@штамп-0.3", v: 1, dur: 0.4}]}
+            - {<<: *tag, at: "@цветок", x: 540, y: 300, text: "КОПИЯ ×5 · ОКНО"}
+      - id: m_stamp
+        start: "@штамп-0.22"
+        draw:
+          bg: "#141517"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - actor: retouch_screen
+              x: 540
+              y: 900
+              w: 1000
+              h: 1160
+              file: "ZARECHYE_SAT.TIF"
+              zoom: "25%"
+              tool: "ШТАМП"
+              cursor: [{at: 0, v: [200, 300]}, {at: "@штамп", v: [420, 520], dur: 0.8}, {at: "@дыру", v: [300, 700], dur: 0.8}]
+              cursor_on: 1
+              children:
+                - {actor: group, x: -130, y: -230, scale: 0.47, children: [{actor: satellite, x: 0, y: 0, label: "", erase: 1, patch_label_on: 0,
+                   patch: [{at: 0, v: 1}, {at: "@дыру-0.1", v: 0.45, dur: 0.2}, {at: "@дыру+0.7", v: 1, dur: 0.4}], patch_hl: [{at: 0, v: 0}, {at: "@штамп", v: 1, dur: 0.3}]}]}
+            - {<<: *title, slot: lower, at: "@дыру", text: "ГОРОД ЗАКРАСИЛИ"}
+            - {<<: *ev, src: "РЕТУШЬ · СПУТНИК", time: "10:27:30"}
+    sfx:
+      - {sound: blip, at: "@трижды", gain: -14}
+      - {sound: blip, at: "@четыре", gain: -14}
+      - {sound: blip, at: "@поливает", gain: -14}
+      - {sound: click, at: "@штамп", gain: -12}
+      - {sound: glitch, at: "@дыру", gain: -12}
+
+  # ------------------------------------------------------------------ 8. TWIST — последний снимок: «Это заплатка. Не езжай»
+  - id: twist
+    text: "Последний снимок. Ира смотрит прямо в объектив. В руке листок. Почерк Иры. Это заплатка. Не езжай. Заречье — не город. Мир закрашивает дыру на месте Ольховска копиями. А Ира внутри."
+    caption_marks: {"Не езжай": "#ffb23e"}
+    shots:
+      - id: t_last
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: "@объектив", z: 1.0}, {t: end, z: 1.3, x: 560, y: 760, ease: inout}]}
+          layers:
+            - actor: phone
+              x: 540
+              y: 960
+              w: 520
+              h: 940
+              screen: app
+              color: "#15171a"
+              glow: "#ffb23e"
+              children:
+                - {actor: shape, kind: rect, x: 0, y: 0, w: 484, h: 904, fill: "#0d0e10", origin: top-left}
+                - {actor: photo, x: 242, y: 452, w: 740, h: 1180, scale: 0.62, border: 0, shadow: 0, date: "'26 10 29", children: [{actor: group, x: 0, y: 150, children: *emb}, {<<: *ira, x: 380, y: 1260, h: 1080, arms: [down, down], face: calm}]}
+                - {actor: text, x: 242, y: 90, text: "214 / 214", font: inter, size: 28, weight: 600, color: "#ffffff"}
+            - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · ПОСЛЕДНИЙ СНИМОК", time: "10:31:00"}
+      - id: t_note
+        start: "@руке-0.22"
+        draw:
+          bg: "#3a4a52"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}]}
+          layers:
+            - {actor: photo, x: 540, y: 960, w: 740, h: 880, scale: 1.6, border: 0, shadow: 0, date: "", blur: 10, brightness: 0.8, children: *emb}
+            - {actor: human_hand, x: 380, y: 1340, rot: 10, scale: 1.6, skin: "#f1d2bd", sleeve: "#d9c9a8"}
+            - {actor: note, x: 560, y: 900, w: 640, h: 460, rot: -4, lines: ["ЭТО ЗАПЛАТКА.", "НЕ ЕЗЖАЙ"], reveal: [{at: 0, v: 0}, {at: "@заплатка-0.2", v: 1, dur: 0.6}, {at: "@езжай-0.3", v: 2, dur: 0.5}]}
+            - {<<: *tag, at: "@Почерк", x: 540, y: 300, text: "ПОЧЕРК ИРЫ"}
+      - id: t_patch
+        start: "@Заречье-0.22"
+        draw:
+          world: [2000, 2800]
+          camera: {keys: [{t: 0, z: 1.0, x: 1000, y: 1400}, {t: end, z: 0.72, x: 1000, y: 1400, ease: out}]}
+          layers:
+            - {actor: satellite, x: 0, y: 0, label: "", erase: 1, patch: 1, patch_label_on: 0, patch_outline: [{at: 0, v: 0}, {at: "@город", v: 1, dur: 1.4, ease: linear}], patch_hl: [{at: 0, v: 0}, {at: "@копиями", v: 1, dur: 0.3}]}
+            - {<<: *title, slot: lower, at: "@копиями", text: "ЗАПЛАТКА НА МЕСТЕ ОЛЬХОВСКА"}
+            - {<<: *ev, src: "СПУТНИК · КОНТУР ОЛЬХОВСКА", time: "10:32:00"}
+      - id: t_inside
+        start: "@Ира#2-0.22"
+        transition: {type: dip, dur: 0.3}
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.25, x: 640, y: 900}, {t: end, z: 1.0, x: 540, y: 900, ease: out}]}
+          layers:
+            - {actor: photo, x: 540, y: 900, w: 740, h: 880, rot: -1, date: "'26 10 29", children: [{actor: group, x: 0, y: 0, children: *emb}, {actor: group, x: 612, y: 700, children: [{<<: *ira, x: 0, y: 0, h: 190, arms: [hold, hold]}, {actor: paper_cup, x: -10.1, y: -104.1, scale: 0.084}, {actor: paper_cup, x: 10.1, y: -104.1, scale: 0.084}]}],
+               marks: [{x: 100, y: 430, w: 104, h: 44, at: "@внутри", dash: "1 0", pad: 0}, {x: 370, y: 500, w: 104, h: 44, at: "@внутри", dash: "1 0", pad: 0}, {x: 252, y: 34, w: 160, h: 76, at: "@внутри", dash: "1 0", pad: 0}]}
+            - {<<: *title, at: "@внутри", text: "ИРА ВНУТРИ"}
+    sfx:
+      - {sound: shutter, at: "@Последний", gain: -10}
+      - {sound: heartbeat, at: "@заплатка", gain: -10}
+      - {sound: heartbeat, at: "@езжай", gain: -10}
+      - {sound: boom, at: "@копиями", gain: -12}
+      - {sound: gong, at: "@внутри", gain: -10}
+
+  # ------------------------------------------------------------------ 9. ROAD — дрон над трассой: машины гаснут под знаком
+  - id: road
+    text: "Десять сорок. Съёмка с дрона. Трасса на Заречье. Пробка на сорок километров. Все едут домой, где не были ни разу. Под знаком Заречье машины гаснут одна за другой. Новости называют это переездом. Для этого мира их больше нет."
+    caption_marks: {"больше нет": "#ffb23e"}
+    shots:
+      - id: w_drone
+        ambience: [{sound: wind, gain: -24}, {sound: city, gain: -26}]
+        draw:
+          world: [1600, 2400]
+          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 1500}, {t: end, z: 1.06, x: 790, y: 1440}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.25}}
+          layers:
+            - {actor: highway_top, x: 0, y: 0, sign_y: 520, speed: 24, t0: "@road.start"}
+            - {actor: drone_hud, x: 0, y: 0, space: screen, time: "10:40:12"}
+      - id: w_jam
+        start: "@Пробка-0.22"
+        draw:
+          world: [1600, 2400]
+          camera: {keys: [{t: 0, z: 0.95, x: 800, y: 1400}, {t: end, z: 0.7, x: 800, y: 1300, ease: out}]}
+          layers:
+            - {actor: highway_top, x: 0, y: 0, sign_y: 520, speed: 24, t0: "@road.start"}
+            - {actor: drone_hud, x: 0, y: 0, space: screen, time: "10:40:31", alt: [{at: 0, v: 120}, {at: "@Пробка", v: 300, dur: 3}]}
+            - {actor: text, slot: subtitle, space: screen, at: "@сорок#2", enter: fade, text: "ПРОБКА: {n} КМ", font: plex, size: 56, weight: 600, color: orange, bg: {color: "rgba(18,16,14,.8)", pad: 16},
+               count: {from: 3, to: 40, at: "@сорок#2", dur: 1.6}}
+      - id: w_sign
+        start: "@Под-0.22"
+        draw:
+          world: [1600, 2400]
+          camera: {keys: [{t: 0, z: 1.35, x: 800, y: 700}, {t: end, z: 1.45, x: 790, y: 680}]}
+          layers:
+            - {actor: highway_top, x: 0, y: 0, sign_y: 520, speed: 24, t0: "@road.start"}
+            - {actor: drone_hud, x: 0, y: 0, space: screen, time: "10:41:02", alt: 60}
+            - {<<: *tag, at: "@гаснут", x: 540, y: 1180, text: "ПОД ЗНАКОМ — ПУСТО"}
+            - {actor: text, slot: subtitle, space: screen, at: "@переездом", enter: fade, text: "НОВОСТИ: «ПЕРЕЕЗД»", font: cond, size: 72, weight: 700, color: "#f6f2ea", bg: {color: "rgba(18,16,14,.85)", pad: 20}}
+      - id: w_none
+        start: "@Для-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.05}]}
+          layers:
+            - {actor: timeline, x: 540, y: 800, w: 960, h: 380, title: "ДЕЛО 0841 · ТРАССА", marks: [{x: 0.04, time: "ВЪЕЗД", label: "ЗНАК"}, {x: 0.5, time: "−1 МИН", label: "СНИМКИ"}, {x: 0.96, time: "−7 МИН", label: "ПАМЯТЬ"}],
+               span: {a: 0.04, b: 0.96, label: "ДЛЯ ЭТОГО МИРА"}, span_k: [{at: 0, v: 0}, {at: "@мира", v: 1, dur: 0.8}]}
+            - {actor: text, x: 540, y: 1240, at: "@больше", enter: fade, text: "ПРОПАЛИ СО СНИМКОВ: {n}", font: plex, size: 54, weight: 600, color: orange, bg: {color: "rgba(18,16,14,.8)", pad: 16},
+               count: {from: 0, to: 12408, at: "@больше", dur: 1.4}}
+            - {<<: *ev, src: "ДЕЛО 0841 · ТРАССА М-4", time: "10:41:40"}
+    sfx:
+      - {sound: blip, at: "@Съёмка", gain: -16}
+      - {sound: noise_sweep, at: "@сорок#2", gain: -16}
+      - {sound: glitch, at: "@гаснут", gain: -12}
+      - {sound: glitch, at: "@другой", gain: -14}
+      - {sound: slam, at: "@нет", gain: -12}
+
+  # ------------------------------------------------------------------ 10. DILEMMA — Тёма у двери; его уже закрашивают
+  - id: dilemma
+    text: "Тёма стоит у двери в куртке. Мам, поехали домой. Ира сказала не ехать. Лена смотрит на фото Тёмы на холодильнике. За его спиной трижды повторяется одна ветка. Его уже закрашивают. Поехать с ним? Или удержать?"
+    lines:
+      - {who: tema, say: "Мам, поехали домой."}
+      - {who: lena, say: "Ира сказала не ехать."}
+    caption_marks: {"Его уже закрашивают": "#ffb23e"}
+    shots:
+      - id: d_door
+        transition: {type: dip, dur: 0.3}
+        ambience: [{sound: room, gain: -22}]
+        draw:
+          camera: {keys: [{t: 0, z: 1.08, x: 600}, {t: end, z: 1.0, x: 600}]}
+          layers:
+            - {actor: hallway, x: -160, y: 0, w: 1400, h: 1920, floor_y: 1330, door_x: 720}
+            - {<<: *tema_out, x: 840, y: 1350, h: 640, arms: [down, hold], face: [{at: 0, v: calm}, {at: "@Мам", v: smile}], talk: [["@Мам", "@домой.end"]]}
+            - {actor: drawing, x: 905, y: 1040, w: 200, h: 144, rot: -8, door: 1}
+            - {<<: *lena, x: 300, y: 1360, h: 1020, arms: [fold, fold], face: worry, look_dx: 0.5}
+            - {<<: *title, at: "@домой", text: "«ПОЕХАЛИ ДОМОЙ»"}
+            - {<<: *ev, src: "ПРИХОЖАЯ ЛЕНЫ", time: "10:52:00"}
+      - id: d_no
+        start: "@Ира-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06, y: 940}]}
+          layers:
+            - {actor: hallway, x: -300, y: 0, w: 1600, h: 1920, floor_y: 1500, door_x: 900}
+            - {<<: *lena, x: 540, y: 3000, h: 2300, arms: [down, hold], face: sad, talk: [["@Ира", "@ехать.end"]]}
+            - {<<: *tag, at: "@ехать", x: 540, y: 300, text: "ЗАПИСКА ИРЫ: «НЕ ЕЗЖАЙ»"}
+      - id: d_fridge
+        start: "@фото-0.22"
+        draw:
+          bg: "#e8dcc6"
+          camera: {keys: [{t: 0, z: 1.0, y: 960}, {t: "@повторяется", z: 1.0}, {t: end, z: 1.22, x: 520, y: 880, ease: inout}]}
+          layers:
+            - {actor: kitchen, x: -400, y: 0, w: 1800, h: 1920, floor_y: 1800, window: [-300, 200, 200, 400]}
+            - {actor: fridge, x: 540, y: 2350, h: 2400}
+            - actor: photo
+              x: 520
+              y: 880
+              w: 560
+              h: 680
+              rot: 3
+              date: "'26 08 03"
+              glitch: [{at: "@закрашивают", dur: 0.5}]
+              marks: [{x: 40, y: 40, w: 150, h: 150, at: "@повторяется", dash: "1 0", pad: 0}, {x: 200, y: 40, w: 150, h: 150, at: "@повторяется+0.12", dash: "1 0", pad: 0}, {x: 360, y: 40, w: 150, h: 150, at: "@повторяется+0.24", dash: "1 0", pad: 0}]
+              children:
+                - {actor: sky, x: 0, y: 0, w: 560, h: 500, hour: 15, clouds: 0}
+                - {actor: shape, kind: rect, x: 0, y: 480, w: 560, h: 200, fill: "#7ea35a", origin: top-left}
+                - {actor: branch, x: 115, y: -30, scale: 0.6, seed: 3}
+                - {actor: branch, x: 275, y: -30, scale: 0.6, seed: 3}
+                - {actor: branch, x: 435, y: -30, scale: 0.6, seed: 3}
+                - {<<: *tema, x: 280, y: 640, h: 400, arms: [wave, down], face: laugh}
+            - {<<: *title, slot: lower, at: "@закрашивают", text: "ЕГО УЖЕ ЗАКРАШИВАЮТ"}
+      - id: d_choice
+        start: "@Поехать-0.22"
+        draw:
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - {actor: hallway, x: -160, y: 0, w: 1400, h: 1920, floor_y: 1330, door_x: 720, brightness: 0.55, blur: 3}
+            - {<<: *tema_out, x: 840, y: 1350, h: 640, arms: [down, hold], face: calm, brightness: 0.55, blur: 3}
+            - {actor: rule_card, x: 540, y: 520, space: screen, at: "@Поехать", enter: {type: wipe_right, dur: 0.25}, kicker: "А · ПОЕХАТЬ С НИМ", text: "СТЕРЕТЬСЯ ОТСЮДА ВМЕСТЕ", size: 58}
+            - {actor: rule_card, x: 540, y: 780, space: screen, at: "@удержать", enter: {type: wipe_right, dur: 0.25}, kicker: "Б · УДЕРЖАТЬ", text: "ПОСЛУШАТЬ ИРУ", size: 58}
+    sfx:
+      - {sound: heartbeat, at: "@домой", gain: -10}
+      - {sound: blip, at: "@ехать", gain: -14}
+      - {sound: glitch, at: "@закрашивают", gain: -12}
+      - {sound: click, at: "@Поехать", gain: -12}
+      - {sound: click, at: "@удержать", gain: -12}
+
+  # ------------------------------------------------------------------ 11. CLIFF — снимок из будущего: 11:30 у карусели
+  - id: cliff
+    text: "Десять пятьдесят восемь. Телефон звенит. Новый снимок. Лена и Тёма у карусели в Заречье. Улыбаются. Дата: сегодня, одиннадцать тридцать. Сейчас десять пятьдесят восемь. Лена ещё ничего не решила. А за ними Ира. Качает головой."
+    caption_marks: {"одиннадцать тридцать": "#ffb23e"}
+    shots:
+      - id: f_buzz
+        draw:
+          bg: "#2a2724"
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}], shakes: [{at: "@звенит", amp: 5, dur: 0.5}]}
+          layers:
+            - actor: phone
+              x: 540
+              y: 960
+              w: 520
+              h: 940
+              screen: app
+              color: "#15171a"
+              glow: "#ffb23e"
+              children:
+                - {actor: phone_gallery, x: 0, y: 0, w: 484, h: 904, count: 30, total: "+1", ira: [0, 4, 9, 13], sel: [{at: 0, v: -1}, {at: "@снимок", v: 0}]}
+            - {actor: buzz, x: 540, y: 960, w: 580, h: 1000, times: ["@звенит", "@звенит+0.5"]}
+            - {<<: *tag, at: "@звенит", x: 540, y: 300, text: "+1 ФОТО · 10:58"}
+      - id: f_photo
+        start: "@Лена-0.22"
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.06}]}
+          layers:
+            - actor: photo
+              x: 540
+              y: 900
+              w: 740
+              h: 880
+              rot: -1
+              date: "'26 10 29  11:30"
+              children:
+                - {actor: group, x: 0, y: 0, children: *car_park}
+                - {actor: group, x: 640, y: 770, children: [{<<: *ira, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}
+                - {<<: *lena, x: 270, y: 860, h: 400, arms: [down, down], face: laugh}
+                - {<<: *tema_out, x: 370, y: 862, h: 260, arms: [down, down], face: laugh}
+            - {<<: *tag, at: "@Заречье", x: 540, y: 300, text: "ЗАРЕЧЬЕ · КАРУСЕЛЬ"}
+            - {<<: *ev, src: "ТЕЛЕФОН ЛЕНЫ · НОВОЕ ФОТО", time: "10:58:04"}
+      - id: f_date
+        start: "@Дата-0.22"
+        transition: {type: zoom}
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.6, x: 640, y: 1100}, {t: end, z: 1.75, x: 660, y: 1120}]}
+          layers:
+            - actor: photo
+              x: 540
+              y: 900
+              w: 740
+              h: 880
+              rot: -1
+              date: "'26 10 29  11:30"
+              children:
+                - {actor: group, x: 0, y: 0, children: *car_park}
+                - {actor: group, x: 640, y: 770, children: [{<<: *ira, x: 0, y: 0, h: 170, arms: [hold, hold]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}
+                - {<<: *lena, x: 270, y: 860, h: 400, arms: [down, down], face: laugh}
+                - {<<: *tema_out, x: 370, y: 862, h: 260, arms: [down, down], face: laugh}
+            - {<<: *title, at: "@тридцать", text: "СЕГОДНЯ 11:30"}
+            - {actor: text, slot: subtitle, space: screen, at: "@Сейчас", enter: fade, text: "СЕЙЧАС 10:58", font: plex, size: 64, weight: 600, color: orange, bg: {color: "rgba(18,16,14,.86)", pad: 16}}
+      - id: f_ira
+        start: "@за-0.22"
+        transition: {type: fade, dur: 0.3}
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.3, x: 480, y: 980}, {t: "@Ира", z: 1.3, x: 480, y: 980}, {t: end, z: 1.9, x: 760, y: 840, ease: inout}]}
+          layers:
+            - actor: photo
+              x: 540
+              y: 900
+              w: 740
+              h: 880
+              rot: -1
+              date: "'26 10 29  11:30"
+              marks: [{of: iraf, at: "@Ира", pad: 8}]
+              children:
+                - {actor: group, x: 0, y: 0, children: *car_park}
+                - {actor: group, x: 640, y: 770, children: [{<<: *ira, id: iraf, x: 0, y: 0, h: 170, arms: [hold, hold], face: sad,
+                   look_dx: [{at: 0, v: 0}, {at: "@Качает", v: -1, dur: 0.25}, {at: "@Качает+0.3", v: 1, dur: 0.3}, {at: "@Качает+0.65", v: -1, dur: 0.3}, {at: "@Качает+1.0", v: 0, dur: 0.3}]}, {actor: paper_cup, x: -9.0, y: -93.2, scale: 0.075}, {actor: paper_cup, x: 9.0, y: -93.2, scale: 0.075}]}
+                - {<<: *lena, x: 270, y: 860, h: 400, arms: [down, down], face: laugh}
+                - {<<: *tema_out, x: 370, y: 862, h: 260, arms: [down, down], face: laugh}
+            - {<<: *tag, at: "@Ира", x: 540, y: 300, text: "ИРА КАЧАЕТ ГОЛОВОЙ"}
+    sfx:
+      - {sound: buzz, at: "@звенит", gain: -10}
+      - {sound: shutter, at: "@Лена", gain: -10}
+      - {sound: boom, at: "@тридцать", gain: -12}
+      - {sound: hiss, at: "@Качает", gain: -14}
+
+  # ------------------------------------------------------------------ 12. CTA — снимок опережает мир; ты бы поехал?
+  - id: cta
+    text: "Снимок всегда опережает мир. Значит, они поедут. Ты бы поехал в город, который помнишь, но где никогда не был? Да или нет? В третьей части Лена войдёт в заплатку."
+    caption_marks: {"Да или нет": "#ffb23e"}
+    shots:
+      - id: z_rule
+        transition: {type: dissolve, dur: 0.5}
+        draw:
+          bg: *desk_bg
+          camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.04}]}
+          layers:
+            - {actor: timeline, x: 540, y: 780, w: 960, h: 380, title: "ДЕЛО 0841 · ПРАВИЛО ЧАСТИ 1", marks: [{x: 0.04, time: "10:58", label: "СНИМОК"}, {x: 0.96, time: "11:30", label: "МИР"}],
+               span: {a: 0.04, b: 0.96, label: "32 МИНУТЫ"}, span_k: [{at: 0, v: 0}, {at: "@опережает", v: 1, dur: 0.8}]}
+            - {actor: rule_card, x: 540, y: 1200, at: "@поедут-0.3", enter: {type: wipe_right, dur: 0.25}, kicker: "СНИМОК ОПЕРЕЖАЕТ МИР", text: "ЗНАЧИТ, ОНИ ПОЕДУТ", size: 70}
+      - id: z_cta
+        start: "@Ты-0.22"
+        draw:
+          world: [1600, 2400]
+          camera: {keys: [{t: 0, z: 1.2, x: 800, y: 760}, {t: end, z: 1.3, x: 800, y: 740}]}
+          layers:
+            - {actor: highway_top, x: 0, y: 0, sign_y: 520, empty: true}
+            - {actor: shape, kind: rect, x: 540, y: 960, w: 1080, h: 1920, fill: "rgba(18,16,14,.35)", space: screen}
+            - {<<: *title, at: "@поехал-0.1", text: "ТЫ БЫ ПОЕХАЛ?"}
+            - {actor: text, x: 540, y: 1000, space: screen, at: "@Да-0.1", enter: pop, text: "ДА  /  НЕТ", font: cond, size: 120, weight: 700, color: orange, bg: {color: "rgba(18,16,14,.85)", pad: 24}}
+      - id: z_part3
+        start: "@третьей-0.4"
+        transition: {type: dissolve, dur: 0.5}
+        draw:
+          world: [2000, 2800]
+          camera: {keys: [{t: 0, z: 0.72, x: 1000, y: 1400}, {t: end, z: 0.8, x: 1000, y: 1400}]}
+          layers:
+            - {actor: satellite, x: 0, y: 0, label: "", erase: 1, patch: 1, patch_label_on: 1, patch_outline: 1, glow_k: [{at: 0, v: 0}, {at: "@Лена", v: 1, dur: 0.6}]}
+            - {actor: rule_card, x: 540, y: 620, space: screen, at: "@заплатку-0.2", enter: {type: wipe_right, dur: 0.25}, kicker: "ЧАСТЬ 3", text: "ВНУТРИ ЗАПЛАТКИ", size: 62}
+            - {<<: *ev, src: "СПУТНИК · 3 М/ПИКС", time: "11:00:00", sub: "ЗАРЕЧЬЕ"}
+    sfx:
+      - {sound: boom, at: "@поедут", gain: -12}
+      - {sound: click, at: "@поехал", gain: -14}
+      - {sound: riser, at: "@войдёт", gain: -14}

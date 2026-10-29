@@ -10,6 +10,13 @@
 //   erase (дорожка 0..1): полоса прогрузки сверху вниз — под ней города нет, только степь; дороги снаружи остаются и
 //   обрываются на границе. scan (дорожка 0..1): полоса прогрузки первого снимка. ghost (0..1): проступает другой город
 //   (часть 2). label, seed. Якоря: center, road_end:i (конец i-й трассы на границе города).
+//   patch (дорожка 0..1): полоса прогрузки — на месте города проступает «заплатка» Заречье (яркие крыши, набережная, парк с
+//   каруселью; кварталы — повторы одного куска, как штамп); patch_label, patch_label_on (дорожка); patch_outline (дорожка
+//   0..1 — оранжевый контур бывшего Ольховска рисуется по краю); patch_hl (дорожка 0..1 — рамки вокруг одинаковых кусков).
+// highway_top: трасса через поля сверху (origin — верхний левый угол мира): две полосы к Заречью в пробке, встречные пусты,
+//   над дорогой знак-портал «ЗАРЕЧЬЕ» на sign_y; машина, проехавшая под знаком, гаснет помехой и пропадает со снимка.
+//   w, h, sign_y, speed (px/с), t0 (время ролика, с которого машины едут — обычно начало сцены), empty (без машин), seed.
+//   Якоря: sign.
 
 const ORANGE = "#ffb23e";
 const MONO = `"IBM Plex Mono", monospace`;
@@ -282,6 +289,44 @@ export const satellite = {
     const steppe = `<path d="${bndD}" fill="#a6a46c"/><g clip-path="url(#satc${seed})">${Array.from({ length: 60 }, (_, i) => { const rr = H.rng(seed * 7 + i); return `<ellipse cx="${cx + (rr() - 0.5) * R * 2.4}" cy="${cy + (rr() - 0.5) * R * 2}" rx="${60 + rr() * 140}" ry="${20 + rr() * 60}" fill="${rr() < 0.5 ? "#aeaa72" : "#a2a068"}" opacity=".35"/>`; }).join("")}</g>`;
     const B = H.svg(fields(seed) + riverSvg + `<defs><clipPath id="satc${seed}"><path d="${bndD}"/></clipPath></defs>` + steppe + roads(false) + pl(false), w, h);
     const ghost = p.ghost != null ? H.svg(city(seed + 50) + roads(true), w, h) : null;
+    // «заплатка» Заречье: bright town inside the boundary built from ONE stamped tile repeated (clone-stamp look)
+    const usePatch = ["patch", "patch_outline", "patch_hl"].some((k) => p[k] != null);
+    let patchClip = null, outline = null, hl = null, zlabel = null;
+    if (usePatch) {
+      const r = H.rng(seed + 70), blk = 120, T = blk * 3;
+      let tile = "";
+      for (let by = 0; by < 3; by++) for (let bx = 0; bx < 3; bx++) {
+        const x0 = bx * blk, y0 = by * blk;
+        tile += `<rect x="${x0 + 6}" y="${y0 + 6}" width="${blk - 12}" height="${blk - 12}" fill="#c9bfae"/>`;
+        const nb = 2 + Math.floor(r() * 2);
+        for (let i = 0; i < nb; i++) {
+          const bw = 34 + r() * 30, bh = 28 + r() * 34, x = x0 + 12 + r() * (blk - bw - 24), y = y0 + 12 + r() * (blk - bh - 24);
+          const c = ["#c8553d", "#3d7fb8", "#e0a040", "#c8553d", "#e9e4d8", "#5f8a46"][Math.floor(r() * 6)];
+          tile += `<rect x="${x + 6}" y="${y + 8}" width="${bw}" height="${bh}" fill="rgba(0,0,0,.3)"/><rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="${c}"/><rect x="${x}" y="${y + bh / 2 - 2}" width="${bw}" height="4" fill="rgba(0,0,0,.12)"/>`;
+        }
+        if (r() < 0.3) tile += `<circle cx="${x0 + blk * 0.75}" cy="${y0 + blk * 0.3}" r="14" fill="#4f7a36"/>`;
+      }
+      let zs = `<defs><clipPath id="satz${seed}"><path d="${bndD}"/></clipPath></defs><g clip-path="url(#satz${seed})"><rect x="0" y="0" width="${w}" height="${h}" fill="#e6dfd2"/>`;
+      const tiles = [];
+      for (let y = cy - R * 1.5; y < cy + R * 1.5; y += T) for (let x = cx - R * 1.5; x < cx + R * 1.5; x += T) { zs += `<g transform="translate(${x},${y})">${tile}</g>`; tiles.push([x, y]); }
+      zs += riverSvg + `<path d="${river}" stroke="#e9dfcf" stroke-width="134" fill="none" opacity=".0"/>`;
+      // embankment edges and a park with the carousel on the north bank
+      zs += `<path d="${river}" stroke="#efe6d6" stroke-width="10" fill="none" transform="translate(0,-64)"/><path d="${river}" stroke="#efe6d6" stroke-width="10" fill="none" transform="translate(0,64)"/>`;
+      const pk = [w * 0.42, h * 0.5];
+      zs += `<ellipse cx="${pk[0]}" cy="${pk[1]}" rx="170" ry="110" fill="#6f9a52"/>`;
+      for (let i = 0; i < 9; i++) { const rr = H.rng(seed + 90 + i); zs += `<circle cx="${pk[0] + (rr() - 0.5) * 280}" cy="${pk[1] + (rr() - 0.5) * 170}" r="${16 + rr() * 10}" fill="#4f7a36"/>`; }
+      for (let i = 0; i < 10; i++) zs += `<path d="M${pk[0]},${pk[1]} L${pk[0] + Math.cos(i / 10 * Math.PI * 2) * 46},${pk[1] + Math.sin(i / 10 * Math.PI * 2) * 46} L${pk[0] + Math.cos((i + 1) / 10 * Math.PI * 2) * 46},${pk[1] + Math.sin((i + 1) / 10 * Math.PI * 2) * 46}Z" fill="${i % 2 ? "#f6f2ea" : "#d8463a"}"/>`;
+      zs += `</g>` + roads(true) + bridge;
+      const Z = H.svg(zs, w, h);
+      patchClip = H.div(`width:${w}px;height:0px;overflow:hidden`);
+      patchClip.appendChild(Z);
+      // highlight frames around three identical copies of the tile
+      const pick = tiles.filter(([x, y]) => Math.hypot(x + T / 2 - cx, y + T / 2 - cy) < R * 0.75).slice(0, 3);
+      hl = H.svg(pick.map(([x, y]) => `<rect x="${x + 4}" y="${y + 4}" width="${T - 8}" height="${T - 8}" fill="none" stroke="${ORANGE}" stroke-width="12" stroke-dasharray="40 20"/>`).join(""), w, h);
+      hl.style.opacity = 0;
+      outline = H.svg(`<path d="${bndD}" fill="none" stroke="${ORANGE}" stroke-width="16" pathLength="1" stroke-dasharray="0 1" class="ol"/>`, w, h);
+      zlabel = H.div(`left:${cx - 400}px;top:${cy - R * 1.12}px;width:800px;text-align:center;font:600 58px ${MONO};letter-spacing:10px;color:#fff;text-shadow:0 2px 8px #000`, p.patch_label ?? "ЗАРЕЧЬЕ");
+    }
     const clipB = H.div(`width:${w}px;height:0px;overflow:hidden`);
     clipB.appendChild(B);
     const scanLine = H.div(`width:${w}px;height:16px;background:linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.75), rgba(255,255,255,0));opacity:0`);
@@ -290,6 +335,7 @@ export const satellite = {
     const label = H.div(`left:${cx - 300}px;top:${cy - R * 1.12}px;width:600px;text-align:center;font:600 54px ${MONO};letter-spacing:8px;color:#fff;text-shadow:0 2px 6px #000`, p.label ?? "");
     el.append(A, clipB);
     if (ghost) { ghost.style.opacity = 0; el.appendChild(ghost); }
+    if (patchClip) el.append(patchClip, hl, outline, zlabel);
     el.append(label, scanLine, cover);
     return {
       el, w, h,
@@ -298,7 +344,14 @@ export const satellite = {
         clipB.style.height = `${e * h}px`;
         cover.style.top = `${sc * h}px`;
         cover.style.height = `${(1 - sc) * h}px`;
-        const line = e > 0 && e < 1 ? e : sc > 0 && sc < 1 ? sc : -1;
+        const pz = H.clamp(it.v("patch", 0), 0, 1);
+        if (patchClip) {
+          patchClip.style.height = `${pz * h}px`;
+          hl.style.opacity = H.clamp(it.v("patch_hl", 0), 0, 1);
+          outline.firstChild.setAttribute("stroke-dasharray", `${H.clamp(it.v("patch_outline", 0), 0, 1)} 1`);
+          zlabel.style.opacity = H.clamp(it.v("patch_label_on", 1), 0, 1) * (pz > 0.6 ? 1 : 0);
+        }
+        const line = e > 0 && e < 1 ? e : pz > 0 && pz < 1 ? pz : sc > 0 && sc < 1 ? sc : -1;
         scanLine.style.opacity = line >= 0 ? 1 : 0;
         scanLine.style.top = `${line * h - 8}px`;
         label.style.opacity = it.v("label_on", 1) * (1 - (e > 0.6 ? 1 : 0));
@@ -312,3 +365,80 @@ export const satellite = {
     };
   },
 };
+
+export const highway_top = {
+  origin: "top-left",
+  backdrop: true,
+  surface: true,
+  create(p, H) {
+    const w = p.w ?? 1600, h = p.h ?? 2400, rx = w / 2, ln = 74, sy = p.sign_y ?? h * 0.3;
+    const r = H.rng(p.seed ?? 41);
+    let s = `<rect x="0" y="0" width="${w}" height="${h}" fill="#8f9a5e"/>`;
+    const cell = 240;
+    for (let y = -cell; y < h + cell; y += cell) for (let x = -cell; x < w + cell; x += cell) {
+      if (Math.abs(x + cell / 2 - rx) < 260) continue;
+      const c = ["#9aa564", "#a7a86d", "#88965a", "#b8b07a", "#7f8f54", "#c2b984"][Math.floor(r() * 6)];
+      s += `<path d="M${x + wob(r)},${y + wob(r)} l${cell + 8},${wob(r)} l${wob(r)},${cell + 8} l${-cell - 8},${wob(r)}Z" fill="${c}"/>`;
+      if (r() < 0.4) for (let k = 0; k < 5; k++) s += `<line x1="${x + 12}" y1="${y + 26 + k * 44}" x2="${x + cell - 12}" y2="${y + 30 + k * 44}" stroke="rgba(60,60,30,.15)" stroke-width="5"/>`;
+    }
+    for (let i = 0; i < 16; i++) { const x = r() < 0.5 ? r() * (rx - 300) : rx + 300 + r() * (w - rx - 300), y = r() * h; s += `<path d="M${x},${y} q${80 + r() * 120},${wob(r) * 2} ${200 + r() * 200},${wob(r) * 3}" stroke="#4d6a33" stroke-width="${16 + r() * 10}" fill="none" stroke-linecap="round" opacity=".85"/>`; }
+    // Заречье starts at the top: bright roofs
+    s += `<rect x="0" y="0" width="${w}" height="${sy * 0.42}" fill="#e6dfd2"/>`;
+    for (let i = 0; i < 70; i++) { const x = r() * w, y = r() * sy * 0.38; if (Math.abs(x - rx) < 200) continue; s += `<rect x="${x + 6}" y="${y + 8}" width="${40 + r() * 40}" height="${30 + r() * 30}" fill="rgba(0,0,0,.25)"/><rect x="${x}" y="${y}" width="${40 + r() * 40}" height="${30 + r() * 30}" fill="${["#c8553d", "#3d7fb8", "#e0a040", "#e9e4d8"][i % 4]}"/>`; }
+    // road: shoulders, 2 lanes up (left), 2 lanes down (right), marks
+    s += `<rect x="${rx - 2 * ln - 30}" y="0" width="${4 * ln + 60}" height="${h}" fill="#b7b1a4"/><rect x="${rx - 2 * ln}" y="0" width="${4 * ln}" height="${h}" fill="#4a4d52"/>`;
+    s += `<rect x="${rx - 4}" y="0" width="8" height="${h}" fill="#e9e6dc"/><rect x="${rx + 6}" y="0" width="4" height="${h}" fill="#e9e6dc"/>`;
+    for (let y = 0; y < h; y += 80) s += `<rect x="${rx - ln - 2}" y="${y}" width="4" height="44" fill="#e9e6dc"/><rect x="${rx + ln - 2}" y="${y}" width="4" height="44" fill="#e9e6dc"/>`;
+    s += `<rect x="${rx - 2 * ln - 4}" y="0" width="4" height="${h}" fill="#e9e6dc"/><rect x="${rx + 2 * ln}" y="0" width="4" height="${h}" fill="#e9e6dc"/>`;
+    const svg = H.svg(s, w, h);
+    // cars of the jam (going up, toward the sign)
+    const carsG = H.el("g", {}, svg);
+    const cars = [];
+    if (!p.empty) {
+      const cols = ["#d8d4cc", "#2b2f3a", "#8a2a2a", "#5a7d9a", "#c9c4ba", "#3f6a4f", "#e0a040", "#1d1f22", "#9aa0a6"];
+      for (let lane = 0; lane < 2; lane++) {
+        let y = sy - 40 - r() * 60;
+        while (y < h + (p.speed ?? 22) * 40) {
+          const g = H.el("g", {}, carsG);
+          const c = cols[Math.floor(r() * cols.length)];
+          H.el("rect", { x: -26, y: 0, width: 52, height: 104, rx: 12, fill: "rgba(0,0,0,.3)", transform: "translate(6,8)" }, g);
+          H.el("rect", { x: -26, y: 0, width: 52, height: 104, rx: 12, fill: c }, g);
+          H.el("rect", { x: -21, y: 22, width: 42, height: 20, rx: 5, fill: "#1e2a33" }, g);
+          H.el("rect", { x: -20, y: 46, width: 40, height: 34, rx: 4, fill: H.shade(c, 0.12) }, g);
+          H.el("rect", { x: -20, y: 82, width: 40, height: 12, rx: 4, fill: "#1e2a33" }, g);
+          cars.push({ g, x: rx - ln * (lane + 0.5), y0: y, ph: r() * 6 });
+          y += 128 + r() * 40;
+        }
+      }
+    }
+    // the sign gantry across all lanes
+    const sign = H.el("g", {}, svg);
+    H.el("rect", { x: rx - 2 * ln - 70, y: sy - 8, width: 4 * ln + 140, height: 16, fill: "#6a6e74" }, sign);
+    H.el("rect", { x: rx - 2 * ln - 80, y: sy - 18, width: 26, height: 36, fill: "#3a3e44" }, sign);
+    H.el("rect", { x: rx + 2 * ln + 54, y: sy - 18, width: 26, height: 36, fill: "#3a3e44" }, sign);
+    H.el("rect", { x: rx - 2 * ln + 6, y: sy - 50, width: 2 * ln * 2 - 12, height: 92, rx: 6, fill: "rgba(0,0,0,.35)", transform: "translate(10,24)" }, sign);
+    H.el("rect", { x: rx - 2 * ln + 6, y: sy - 50, width: 2 * ln * 2 - 12, height: 92, rx: 6, fill: "#1f7a46", stroke: "#f4f1ea", "stroke-width": 4 }, sign);
+    const lab = H.el("text", { x: rx, y: sy + 14, "text-anchor": "middle", "font-family": "Oswald, sans-serif", "font-weight": 700, "font-size": 54, fill: "#fff", "letter-spacing": 3 }, sign);
+    lab.textContent = p.sign ?? "ЗАРЕЧЬЕ";
+    return {
+      el: svg, w, h,
+      update(t, it) {
+        const sp = it.v("speed", p.speed ?? 22);
+        const fr = Math.floor(t * 30);
+        cars.forEach((c) => {
+          const y = c.y0 - sp * (t - (p.t0 ?? 0)) + Math.sin(t * 0.8 + c.ph) * 6;
+          const past = sy - y;                        // px of the car's nose beyond the sign
+          if (past > sp * 0.5 + 20) { c.g.style.display = "none"; return; }
+          c.g.style.display = y > h + 20 ? "none" : "";
+          if (past > 0) {
+            const rr = H.rng(fr * 131 + Math.round(c.y0));
+            c.g.style.opacity = rr() < 0.5 ? 0.15 : 0.8;
+            c.g.setAttribute("transform", `translate(${c.x + (rr() - 0.5) * 30},${y})`);
+          } else { c.g.style.opacity = 1; c.g.setAttribute("transform", `translate(${c.x},${y})`); }
+        });
+      },
+      anchor(name) { return name === "sign" ? [rx, sy] : null; },
+    };
+  },
+};
+function wob(r) { return (r() - 0.5) * 40; }
