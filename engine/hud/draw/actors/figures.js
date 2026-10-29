@@ -1,3 +1,4 @@
+// Library (since «Люди выпадают из фотографий», projects/vanish — reused by the series).
 // «Люди выпадают из фотографий» — взрослые люди в спокойной плоской манере (не аниме-марионетки библиотеки).
 // figure: человек спереди (или со спины), реальные пропорции (~7.5 голов), минимальное лицо, одежда по слоям.
 //   h (px роста), skin, hair (short bun bob long cap bald ponytail), hair_color, top (jacket sweater dress suit coat tshirt shirt),
