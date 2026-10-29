@@ -302,6 +302,22 @@ anim:
 
 Пример: [`projects/shadow1`](../projects/shadow1/project.yaml) — тени на площади тают на слове, тень на стене растёт, когда свеча опускается, тень поднимает руку сама.
 
+### 7.9 Фотоархив свидетельств (`figures.js`, `evidence.js`, `places.js`, `aerial.js`, `home.js`, `phone_screens.js`, серия «Выпадение»)
+
+| Актёр | Что это | Параметры |
+|---|---|---|
+| `figure` | взрослый человек в спокойной плоской манере (~7.5 голов); `kid: true` — ребёнок 6–8 лет (голова крупнее) | `h top top_color top2 hair hair_color crown glasses bag view arms face talk look_dx step lean`, `gone` (дорожка 0..1 — человек «выпадает»). Якоря `head hand_l hand_r top hip` |
+| `class_photo` | школьный класс на ступенях | `rows cols gap gap_id seed` |
+| `photo` | отпечаток с белым полем и оранжевой датой, внутри — сцена `children` | `w h date tone glitch fade border`, `marks: [{of: id}]` — рамки по вложенным элементам (§10.1) |
+| `evidence`, `rule_card`, `timeline`, `viewfinder`, `camera_back`, `cam_ui`, `call_screen` | оверлей свидетельства; карточка правила; лист дела с метками и интервалом; видоискатель; экран фотоаппарата; интерфейс камеры; экран звонка | см. шапку `evidence.js` |
+| `storefront sidewalk branch paper_cup counter album retouch_screen studio_room shelves station_hall wedding_hall mirror news_studio news_desk cam_grid phone_float` | места и предметы части 1 | см. шапку `places.js` |
+| `crossing_top`, `drone_hud`, `satellite`, `highway_top` | перекрёсток сверху; оверлей дрона; спутниковый снимок (`erase` — город стирается, `patch` — проступает «заплатка» из повторов, `patch_outline`, `patch_hl`); трасса сверху с порталом-знаком (`sign_y speed t0 empty`: машина под знаком гаснет) | |
+| `kitchen kitchen_table fridge hallway yard facade` | кухня с окном во двор; стол; холодильник; прихожая; двор многоэтажки; фасад с окнами (`man` — один и тот же мужчина в нескольких окнах, `wave` — женщина машет с балкона) | см. шапку `home.js` |
+| `drawing town_house river carousel car grill note` | детский рисунок (`door` — дверь закрашивается, `marker`); дом с синей дверью; набережная (`waves`, `clouds` — одинаковые копии-штамп); карусель; машина (`trunk roll boxes`); мангал; записка маркером (`lines`, `shown` — сколько строк написано) | |
+| `phone_gallery`, `chat_screen`, `comments` | экраны для `phone` (`screen: app`, children): галерея (`n scroll ira sel`), мессенджер (`msgs hl`), лента комментариев (`count scroll hl`) | |
+
+Примеры: [`projects/vanish`](../projects/vanish/project.yaml), [`projects/vanish2`](../projects/vanish2/project.yaml).
+
 ## 8. Библиотеки
 
 Все библиотеки лежат в `engine/hud/vendor/` (работают офлайн, версии зафиксированы):
@@ -347,6 +363,8 @@ export const sunburst = {
 
 **Время своего актёра.** `it.at` — момент появления элемента, но если `at` в YAML не задан, это **−1e9** (элемент виден «всегда»). Не считайте от него прошедшее время и не интегрируйте по нему (цикл «от it.at до t» зависнет, таймкод уйдёт в мусор): берите `const t0 = it.at > -1e8 ? it.at : (H.shot?.start ?? 0)`. Так сделаны дождь с разворотом вверх (`rain`, скорость — дорожка `v`, положение — интеграл) и таймкод `archive` в `projects/tide/actors/`.
 
+
+**Имена параметров.** `count reveal grow routes spins bursts rain enter exit follow highlight` — служебные ключи элемента (`CONFIG_KEYS` в `core.js`): движок не делает из них дорожку, и `it.v("reveal")` вернёт мусор (`NaN` в размерах). Не называйте так параметры своих актёров — берите `shown`, `n`, `k`. И в HTML-строках внутри `style="…"` шрифт пишите в одинарных кавычках (`'Inter', sans-serif`): двойные закрывают атрибут, и весь стиль после них пропадает (текст становится невидимым).
 
 Встроенные актёры — в `engine/hud/draw/actors/*.js`; новый файл подключается строкой в `actors/index.js`. Новый библиотечный актёр добавьте в галерею и обновите эталоны стенда (`vg.py bench --update`, §10.5); если у объекта есть реальный размер, объявите `size_m`; если он стоит на земле — `grounded: true`, если он сам поверхность — `surface: true` (§10.6).
 

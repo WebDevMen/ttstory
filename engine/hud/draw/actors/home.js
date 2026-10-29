@@ -22,7 +22,7 @@
 // carousel: карусель с лошадками (origin — низ); h, speed (оборотов в секунду), lights
 // town_house: двухэтажный дом провинциального города (пастельная стена, вальмовая крыша, белые наличники, крыльцо с
 //   синей дверью, фонарь); origin — низ; w, floors (1|2), wall, roof, door, seed
-// note: тетрадный листок с надписью маркером; w, h, lines: [строки], reveal (дорожка 0..N строк)
+// note: тетрадный листок с надписью маркером; w, h, lines: [строки], shown (дорожка 0..N — сколько строк уже написано)
 
 const ORANGE = "#ffb23e";
 const HAND = `"Caveat", cursive`, MONO = `"IBM Plex Mono", monospace`;
@@ -540,7 +540,7 @@ export const note = {
     return {
       el: svg, w, h,
       update(t, it) {
-        const k = it.v("reveal", lines.length);
+        const k = it.v("shown", lines.length);
         clips.forEach((rc, i) => rc.setAttribute("width", H.clamp(k - i, 0, 1) * w));
       },
     };
