@@ -654,7 +654,7 @@ scenes:
           camera: {keys: [{t: 0, z: 1.0}, {t: end, z: 1.08}]}
           layers:
             - {actor: photo, x: 540, y: 960, w: 740, h: 880, scale: 1.6, border: 0, shadow: 0, date: "", blur: 10, brightness: 0.8, children: *emb}
-            - {actor: human_hand, x: 380, y: 1340, rot: 10, scale: 1.6, skin: "#f1d2bd", sleeve: "#d9c9a8"}
+            - {actor: human_hand, x: 470, y: 1110, rot: 10, scale: 1.6, skin: "#f1d2bd", sleeve: "#d9c9a8"}
             - {actor: note, x: 560, y: 900, w: 640, h: 460, rot: -4, lines: ["ЭТО ЗАПЛАТКА.", "НЕ ЕЗЖАЙ"], shown: [{at: 0, v: 0}, {at: "@заплатка-0.2", v: 1, dur: 0.6}, {at: "@езжай-0.3", v: 2, dur: 0.5}]}
             - {<<: *tag, at: "@Почерк", x: 540, y: 300, text: "ПОЧЕРК ИРЫ"}
       - id: t_patch
@@ -692,7 +692,7 @@ scenes:
         ambience: [{sound: wind, gain: -24}, {sound: city, gain: -26}]
         draw:
           world: [1600, 2400]
-          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 1500}, {t: end, z: 1.06, x: 790, y: 1440}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.25}}
+          camera: {keys: [{t: 0, z: 1.0, x: 800, y: 1400}, {t: end, z: 1.06, x: 790, y: 1360}], sway: {x: 4, y: 3, roll: 0.3, freq: 0.25}}
           layers:
             - {actor: highway_top, x: 0, y: 0, sign_y: 520, speed: 24, t0: "@road.start"}
             - {actor: drone_hud, x: 0, y: 0, space: screen, time: "10:40:12"}
@@ -700,7 +700,7 @@ scenes:
         start: "@Пробка-0.22"
         draw:
           world: [1600, 2400]
-          camera: {keys: [{t: 0, z: 0.95, x: 800, y: 1400}, {t: end, z: 0.7, x: 800, y: 1300, ease: out}]}
+          camera: {keys: [{t: 0, z: 0.98, x: 800, y: 1300}, {t: end, z: 0.84, x: 800, y: 1200, ease: out}]}
           layers:
             - {actor: highway_top, x: 0, y: 0, sign_y: 520, speed: 24, t0: "@road.start"}
             - {actor: drone_hud, x: 0, y: 0, space: screen, time: "10:40:31", alt: [{at: 0, v: 120}, {at: "@Пробка", v: 300, dur: 3}]}

@@ -200,6 +200,10 @@ export const figure = {
             // arms raised in front of the body are drawn over the torso
             const front = ["camera", "phone", "fold", "hold"].includes(pose) && !back;
             (front ? armsFront : armsBack).appendChild(A.a);
+            // an arm across the body in the torso's colour would vanish into it (only a floating hand is left):
+            // the sleeve in front of the body is drawn a shade darker
+            const sc = front && sleeve === topC ? H.shade(sleeve, -0.16) : sleeve;
+            A.up.setAttribute("stroke", sc); A.lo.setAttribute("stroke", sc);
           });
           const camOn = pp[0] === "camera" || pp[1] === "camera";
           cam.style.display = camOn ? "" : "none";
